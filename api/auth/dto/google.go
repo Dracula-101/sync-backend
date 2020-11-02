@@ -11,7 +11,6 @@ import (
 // ||          Google Request           ||
 // =======================================
 
-
 type GoogleLoginRequest struct {
 	coredto.BaseDeviceRequest
 	coredto.BaseLocationRequest
