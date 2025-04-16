@@ -5,9 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"sync-backend/internal/api/middleware"
 	"sync-backend/internal/api/route"
 	"sync-backend/internal/infrastructure/config"
-	appConfig "sync-backend/internal/infrastructure/config"
 	"sync-backend/internal/server"
 	"sync-backend/pkg/console"
 	"sync-backend/pkg/logger"
@@ -27,15 +27,19 @@ func (s *ServeCommand) Run() console.CommandRunner {
 	return func(
 		logger logger.Logger,
 		server server.Server,
+		middlewares middleware.Middlewares,
+		baseRateLimiter middleware.BaseRateLimitMiddleware,
 		routes route.Routes,
-		config *config.Config,
+		appConfig *config.Config,
 	) {
 		logger.Info("Loading environment variables")
-		appConfig.LoadEnv()
+		config.LoadEnv()
 		logger.Info("Starting server")
-		baseApiPrefix := fmt.Sprintf("%s/v%s", config.API.Prefix, config.API.Version)
-		apiRouterGroup := server.Group(baseApiPrefix)
+		middlewares.Setup()
+		baseApiPrefix := fmt.Sprintf("%s/v%s", appConfig.API.Prefix, appConfig.API.Version)
+		apiRouterGroup := server.Group(baseApiPrefix, baseRateLimiter.Handle())
 		routes.Setup(apiRouterGroup)
+
 		if err := server.Run(); err != nil {
 			logger.Fatal(err)
 		}

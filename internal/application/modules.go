@@ -1,6 +1,7 @@
 package application
 
 import (
+	"sync-backend/internal/api/middleware"
 	"sync-backend/internal/api/route"
 	"sync-backend/internal/infrastructure/config"
 	"sync-backend/internal/server"
@@ -15,4 +16,5 @@ var CommonModules = fx.Options(
 	fx.Provide(config.GetConfig),
 	fx.Provide(server.NewServer),
 	route.Module,
+	middleware.Module,
 )
