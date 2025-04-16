@@ -1,0 +1,47 @@
+auth:
+  password:
+    min_length: 8
+    max_length: 64
+    require_special_characters: true
+    require_numbers: true
+    require_uppercase: true
+    require_lowercase: true
+    history_count: 5
+    expiration: 90d
+    lockout_threshold: 5
+    lockout_duration: 30m
+    reset_token_expiry: 1h
+    reset_token_length: 32
+    reset_token_characters: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+  verification:
+    require_email_verification: true
+    email_verification_expiry: 24h
+    verification_token_length: 32
+
+  password-reset:
+    require_password_reset: true
+    password_reset_expiry: 24h
+    password_reset_token_length: 32
+
+  csrf:
+    token_length: 32
+    token_expiry: 15m
+    token_storage: in-memory # in-memory, redis, database
+
+  rate_limit:
+    login:
+      requests: 5
+      duration: 1m
+    registration:
+      requests: 3
+      duration: 1h
+    password_reset:
+      requests: 3
+      duration: 1h
+    verification:
+      requests: 5
+      duration: 1h
+    general:
+      requests: 100
+      duration: 1m
