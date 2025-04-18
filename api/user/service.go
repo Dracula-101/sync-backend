@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"sync-backend/api/user/model"
 	"sync-backend/arch/mongo"
@@ -30,7 +31,7 @@ func (s *userService) CreateUser(email string, password string, name string, pro
 		return nil, fmt.Errorf("error checking for existing user: %v", err)
 	}
 	if existingUser != nil {
-		return nil, fmt.Errorf("a user with the email %s already exists", email)
+		return nil, errors.New("user with this email already exists")
 	}
 
 	hashedPassword, err := utils.HashPassword(password)

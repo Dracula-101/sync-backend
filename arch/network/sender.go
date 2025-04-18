@@ -92,13 +92,9 @@ func (s *send) sendError(err ApiError) {
 	case http.StatusNotFound:
 		res = NewNotFoundResponse(err.GetMessage())
 	case http.StatusInternalServerError:
-		if s.debug {
-			res = NewInternalServerErrorResponse(err.Unwrap().Error())
-		}
+		res = NewInternalServerErrorResponse(err.Unwrap().Error())
 	default:
-		if s.debug {
-			res = NewInternalServerErrorResponse(err.Unwrap().Error())
-		}
+		res = NewInternalServerErrorResponse(err.Unwrap().Error())
 	}
 
 	if res == nil {
