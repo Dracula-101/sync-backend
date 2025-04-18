@@ -24,10 +24,7 @@ type Env struct {
 }
 
 func NewEnv(file string) Env {
-	error := gotenv.Load(file)
-	if error != nil {
-		panic("Error loading .env file")
-	}
+	_ = gotenv.Load(file)
 	env := Env{
 		Host:          GetStrEnvOrPanic("HOST"),
 		Port:          GetIntEnvOrPanic("PORT"),
