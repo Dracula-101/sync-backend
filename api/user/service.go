@@ -26,9 +26,8 @@ func NewUserService(db mongo.Database) UserService {
 func (s *userService) CreateUser(email string, password string, name string, profilePicUrl string) (*model.User, error) {
 	// Check if a user with the same email already exists
 	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email})
-	if err != nil {
-		fmt.Printf("Error checking for existing user: %v\n", err)
-		return nil, err
+	if err != nil && !mongo.IsNoDocumentFoundError(err) {
+		return nil, fmt.Errorf("error checking for existing user: %v", err)
 	}
 	if existingUser != nil {
 		return nil, fmt.Errorf("a user with the email %s already exists", email)
