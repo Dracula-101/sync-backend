@@ -67,3 +67,10 @@ local.*
 
 # Logs
 /logs/
+
+# Keys
+*.pem
+
+__debug*
+
+build

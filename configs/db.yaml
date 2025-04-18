@@ -1,0 +1,28 @@
+# Database Configuration
+host: ${DB_HOST}
+port: ${DB_PORT}
+username: ${DB_USER}
+password: ${DB_PASSWORD}
+ssl_mode: enable
+min_pool_size: 5
+max_pool_size: 20
+
+# Timeout settings
+timeout_config:
+  connect_timeout: 30s
+  query_timeout: 30s
+  idle_timeout: 5m
+
+# Connection pool settings
+connection_config:
+  idle_timeout: 10m
+  idle_check_interval: 1m
+  idle_max_lifetime: 1h
+  idle_max_idle_conns: 10
+  idle_max_open_conns: 100
+  connect_retries: 3
+  connect_retry_delay: 5s
+  connect_max_idle_time: 30m
+  connect_max_lifetime: 1h
+  connect_max_idle_conns: 25
+  connect_max_open_conns: 100

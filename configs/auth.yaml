@@ -1,4 +1,14 @@
 auth:
+  jwt:
+    expiration: 1h
+    issuer: "your-issuer"
+    audience: "your-audience"
+    algorithm: "RS256"
+    access_token_expiry: 1h
+    refresh_token_expiry: 30d
+    private_key_path: keys/private.pem
+    public_key_path: keys/public.pem
+
   password:
     min_length: 8
     max_length: 64
