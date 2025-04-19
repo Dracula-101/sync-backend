@@ -20,11 +20,7 @@ server:
 api:
   version: 1
   prefix: /api
-  rate_limit:
-    enabled: true
-    max_requests: 1000
-    window: 1m
-    burst: 2000
+
   cors:
     enabled: true
     allow_origin: "*"

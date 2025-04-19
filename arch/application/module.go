@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"sync-backend/api/auth"
+	authMW "sync-backend/api/auth/middleware"
+	"sync-backend/api/user"
 	"sync-backend/arch/config"
 	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/mongo"
@@ -20,6 +22,7 @@ type appModule struct {
 	DB          mongo.Database
 	Store       redis.Store
 	AuthService auth.AuthService
+	UserService user.UserService
 }
 
 func (m *appModule) GetInstance() *appModule {
@@ -28,20 +31,27 @@ func (m *appModule) GetInstance() *appModule {
 
 func (m *appModule) Controllers() []network.Controller {
 	return []network.Controller{
-		auth.NewAuthController(m.AuthService),
+		auth.NewAuthController(m.AuthService, m.AuthenticationProvider()),
 	}
+}
+
+func (m *appModule) AuthenticationProvider() network.AuthenticationProvider {
+	return authMW.NewAuthenticationProvider(m.AuthService, m.UserService)
 }
 
 func (m *appModule) RootMiddlewares() []network.RootMiddleware {
-	return []network.RootMiddleware{
-		coreMW.NewErrorCatcher(), // NOTE: this should be the first handler to be mounted
-		// authMW.NewKeyProtection(m.AuthService),
-		coreMW.NewNotFound(),
+	middlewares := []network.RootMiddleware{}
+	middlewares = append(middlewares, coreMW.NewErrorCatcher())
+	middlewares = append(middlewares, coreMW.NewNotFound())
+	if m.Config.API.RateLimit.Enabled {
+		middlewares = append(middlewares, coreMW.NewRateLimiter(m.Store, *m.Config))
 	}
+
+	return middlewares
 }
 func NewAppModule(context context.Context, env *config.Env, config *config.Config, db mongo.Database, store redis.Store) Module {
-	authService := auth.NewAuthService(db, config)
-
+	userService := user.NewUserService(db)
+	authService := auth.NewAuthService(db, userService, config)
 	return &appModule{
 		Context:     context,
 		Env:         env,
@@ -49,5 +59,6 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 		DB:          db,
 		Store:       store,
 		AuthService: authService,
+		UserService: userService,
 	}
 }

@@ -41,6 +41,10 @@ func (s *send) BadRequestError(message string, err error) {
 	s.sendError(NewBadRequestError(message, err))
 }
 
+func (s *send) TooManyRequestsError(message string, err error) {
+	s.sendError(NewTooManyRequestsError(message, err))
+}
+
 func (s *send) ForbiddenError(message string, err error) {
 	s.sendError(NewForbiddenError(message, err))
 }
@@ -85,6 +89,8 @@ func (s *send) sendError(err ApiError) {
 	switch err.GetCode() {
 	case http.StatusBadRequest:
 		res = NewBadRequestResponse(err.GetMessage())
+	case http.StatusTooManyRequests:
+		res = NewTooManyRequestsResponse(err.GetMessage())
 	case http.StatusForbidden:
 		res = NewForbiddenResponse(err.GetMessage())
 	case http.StatusUnauthorized:

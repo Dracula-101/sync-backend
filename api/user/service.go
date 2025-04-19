@@ -12,6 +12,9 @@ import (
 
 type UserService interface {
 	CreateUser(email string, password string, name string, profilePicUrl string) (*model.User, error)
+	FindUserByEmail(email string) (*model.User, error)
+	ValidateUserPassword(user *model.User, password string) error
+	GetUserById(id string) (*model.User, error)
 }
 
 type userService struct {
@@ -49,5 +52,42 @@ func (s *userService) CreateUser(email string, password string, name string, pro
 		return nil, err
 	}
 	user.ID = *id
+	return user, nil
+}
+
+func (s *userService) FindUserByEmail(email string) (*model.User, error) {
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email})
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *userService) ValidateUserPassword(user *model.User, password string) error {
+	if user.Password == nil {
+		return errors.New("user has no password set")
+	}
+
+	isValid, err := utils.CheckPasswordHash(password, *user.Password)
+	if err != nil {
+		return fmt.Errorf("error comparing password: %v", err)
+	}
+	if !isValid {
+		return errors.New("invalid password")
+	}
+	return nil
+}
+
+func (s *userService) GetUserById(id string) (*model.User, error) {
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"_id": id})
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
 	return user, nil
 }

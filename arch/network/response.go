@@ -61,6 +61,14 @@ func NewBadRequestResponse(message string) Response {
 	}
 }
 
+func NewTooManyRequestsResponse(message string) Response {
+	return &response{
+		ResCode: failue_code,
+		Status:  http.StatusTooManyRequests,
+		Message: message,
+	}
+}
+
 func NewForbiddenResponse(message string) Response {
 	return &response{
 		ResCode: failue_code,

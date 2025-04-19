@@ -22,7 +22,6 @@ type Query[T any] interface {
 	InsertMany(doc []*T) ([]primitive.ObjectID, error)
 	InsertAndRetrieveMany(doc []*T) ([]*T, error)
 	FilterOne(filter bson.M) (*T, error)
-	FilterMany(filter bson.M) ([]*T, error)
 	FilterPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
 	FilterCount(filter bson.M) (int64, error)
 	UpdateOne(filter bson.M, update bson.M) (*mongo.UpdateResult, error)
@@ -224,32 +223,6 @@ func (q *query[T]) FilterOne(filter bson.M) (*T, error) {
 	}
 
 	return &doc, nil
-}
-
-func (q *query[T]) FilterMany(filter bson.M) ([]*T, error) {
-	defer q.Close()
-	cursor, err := q.collection.Find(q.context, filter)
-	if err != nil {
-		return nil, fmt.Errorf("error executing query: %w", err)
-	}
-	defer cursor.Close(q.context)
-
-	var docs []*T
-
-	for cursor.Next(q.context) {
-		var result T
-		err := cursor.Decode(&result)
-		if err != nil {
-			return nil, fmt.Errorf("error decoding result: %w", err)
-		}
-		docs = append(docs, &result)
-	}
-
-	if err := cursor.Err(); err != nil {
-		return nil, fmt.Errorf("cursor error: %w", err)
-	}
-
-	return docs, nil
 }
 
 func (q *query[T]) FilterPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error) {

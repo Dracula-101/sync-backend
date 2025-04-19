@@ -16,21 +16,18 @@ type authController struct {
 
 func NewAuthController(
 	service AuthService,
+	authProvider network.AuthenticationProvider,
 ) network.Controller {
 	return &authController{
-		BaseController: network.NewBaseController("/api/v1/auth"),
+		BaseController: network.NewBaseController("/api/v1/auth", authProvider),
 		ContextPayload: common.NewContextPayload(),
 		service:        service,
 	}
 }
 
 func (c *authController) MountRoutes(group *gin.RouterGroup) {
-	group.POST("/ping", c.Ping)
 	group.POST("/signup", c.SignUp)
-}
-
-func (c *authController) Ping(ctx *gin.Context) {
-	c.Send(ctx).SuccessMsgResponse("pong")
+	group.POST("/login", c.Login)
 }
 
 func (c *authController) SignUp(ctx *gin.Context) {
@@ -45,4 +42,18 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessDataResponse("User created successfully", data)
+}
+
+func (c *authController) Login(ctx *gin.Context) {
+	body, err := network.ReqBody(ctx, dto.NewLoginRequest())
+	if err != nil {
+		c.Send(ctx).BadRequestError(err.Error(), err)
+		return
+	}
+	data, err := c.service.Login(body)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("User logged in successfully", data)
 }

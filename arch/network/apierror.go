@@ -47,6 +47,10 @@ func NewBadRequestError(message string, err error) ApiError {
 	return newApiError(http.StatusBadRequest, message, err)
 }
 
+func NewTooManyRequestsError(message string, err error) ApiError {
+	return newApiError(http.StatusTooManyRequests, message, err)
+}
+
 func NewForbiddenError(message string, err error) ApiError {
 	return newApiError(http.StatusForbidden, message, err)
 }

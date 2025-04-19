@@ -84,10 +84,9 @@ type APIConfig struct {
 
 // RateLimitConfig holds rate limiting configuration
 type RateLimitConfig struct {
-	Enabled     bool   `mapstructure:"enabled"`
-	MaxRequests int    `mapstructure:"max_requests"`
-	Window      string `mapstructure:"window"`
-	Burst       int    `mapstructure:"burst"`
+	Enabled     bool          `mapstructure:"enabled"`
+	MaxRequests int           `mapstructure:"max_requests"`
+	Window      time.Duration `mapstructure:"window"`
 }
 
 // CORSConfig holds CORS configuration
@@ -182,8 +181,8 @@ type AuthRateLimitConfig struct {
 
 // RateLimitRule holds rate limit rule configuration
 type RateLimitRule struct {
-	Requests int    `mapstructure:"requests"`
-	Duration string `mapstructure:"duration"`
+	Requests int           `mapstructure:"requests"`
+	Duration time.Duration `mapstructure:"duration"`
 }
 
 // OAuthConfig holds OAuth configuration

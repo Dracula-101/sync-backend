@@ -25,6 +25,7 @@ type SendResponse interface {
 	SuccessMsgResponse(message string)
 	SuccessDataResponse(message string, data any)
 	BadRequestError(message string, err error)
+	TooManyRequestsError(message string, err error)
 	ForbiddenError(message string, err error)
 	UnauthorizedError(message string, err error)
 	NotFoundError(message string, err error)
@@ -114,6 +115,7 @@ type Router interface {
 type BaseModule[T any] interface {
 	GetInstance() *T
 	RootMiddlewares() []RootMiddleware
+	AuthenticationProvider() AuthenticationProvider
 }
 
 type Module[T any] interface {

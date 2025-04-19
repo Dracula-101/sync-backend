@@ -5,10 +5,11 @@ import (
 	"time"
 )
 
-func ParseDuration(durationStr string) time.Duration {
+func ParseDuration(durationStr string) (time.Duration, error) {
 	durationStr = strings.TrimSpace(durationStr)
 	if len(durationStr) == 0 {
-		return 0
+		return 0, nil
+
 	}
 
 	// Handle days explicitly
@@ -19,7 +20,7 @@ func ParseDuration(durationStr string) time.Duration {
 
 		days, err := time.ParseDuration(daysPart + "h")
 		if err != nil {
-			panic(err)
+			return 0, err
 		}
 
 		remainingDuration := time.Duration(0)
@@ -30,12 +31,13 @@ func ParseDuration(durationStr string) time.Duration {
 			}
 		}
 
-		return days*24 + remainingDuration
+		return days + remainingDuration, nil
 	}
 
 	duration, err := time.ParseDuration(durationStr)
 	if err != nil {
-		panic(err)
+		return 0, err
+
 	}
-	return duration
+	return duration, nil
 }
