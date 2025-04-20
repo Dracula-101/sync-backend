@@ -43,6 +43,7 @@ func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 	middlewares := []network.RootMiddleware{}
 	middlewares = append(middlewares, coreMW.NewErrorCatcher())
 	middlewares = append(middlewares, coreMW.NewNotFound())
+	middlewares = append(middlewares, coreMW.NewMethodNotAllowed())
 	if m.Config.API.RateLimit.Enabled {
 		middlewares = append(middlewares, coreMW.NewRateLimiter(m.Store, *m.Config))
 	}

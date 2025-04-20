@@ -2,8 +2,8 @@ package auth
 
 import (
 	"sync-backend/api/auth/dto"
-	"sync-backend/arch/network"
 	"sync-backend/arch/common"
+	"sync-backend/arch/network"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,7 +33,6 @@ func (c *authController) MountRoutes(group *gin.RouterGroup) {
 func (c *authController) SignUp(ctx *gin.Context) {
 	body, err := network.ReqBody(ctx, dto.NewSignUpRequest())
 	if err != nil {
-		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
 	}
 	data, err := c.service.SignUp(body)
@@ -47,7 +46,6 @@ func (c *authController) SignUp(ctx *gin.Context) {
 func (c *authController) Login(ctx *gin.Context) {
 	body, err := network.ReqBody(ctx, dto.NewLoginRequest())
 	if err != nil {
-		c.Send(ctx).BadRequestError(err.Error(), err)
 		return
 	}
 	data, err := c.service.Login(body)

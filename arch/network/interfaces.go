@@ -25,10 +25,13 @@ type SendResponse interface {
 	SuccessMsgResponse(message string)
 	SuccessDataResponse(message string, data any)
 	BadRequestError(message string, err error)
+	ConflictError(message string, err error)
+	UnprocessableEntityError(message string, err error)
 	TooManyRequestsError(message string, err error)
 	ForbiddenError(message string, err error)
 	UnauthorizedError(message string, err error)
 	NotFoundError(message string, err error)
+	MethodNotAllowedError(message string, err error)
 	InternalServerError(message string, err error)
 	MixedError(err error)
 }

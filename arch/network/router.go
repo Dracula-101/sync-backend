@@ -27,6 +27,7 @@ func NewRouter(env string) Router {
 	eng.Use(gin.Recovery())
 	eng.Use(gin.Logger())
 	eng.Use(gin.ErrorLogger())
+	eng.HandleMethodNotAllowed = true
 	r := router{
 		engine: eng,
 	}
