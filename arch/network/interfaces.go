@@ -15,7 +15,6 @@ type ApiError interface {
 }
 
 type Response interface {
-	GetResCode() ResCode
 	GetStatus() int
 	GetMessage() string
 	GetData() any

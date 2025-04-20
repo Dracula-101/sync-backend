@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 	"fmt"
-	"log"
+	"sync-backend/utils"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -23,10 +23,11 @@ type Store interface {
 
 type store struct {
 	*redis.Client
+	logger  utils.AppLogger
 	context context.Context
 }
 
-func NewStore(context context.Context, config *Config) Store {
+func NewStore(context context.Context, logger utils.AppLogger, config *Config) Store {
 	client := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.Host, config.Port),
 		Password: config.Pwd,
@@ -34,6 +35,7 @@ func NewStore(context context.Context, config *Config) Store {
 	})
 	return &store{
 		context: context,
+		logger:  logger,
 		Client:  client,
 	}
 }
@@ -43,19 +45,20 @@ func (r *store) GetInstance() *store {
 }
 
 func (r *store) Connect() {
-	fmt.Println("connecting to redis")
+	r.logger.Info("Connecting to redis...")
+	r.logger.Debug("%s", fmt.Sprintf("Redis URI: %s:%d", r.Options().Addr, r.Options().DB))
 	pong, err := r.Ping(r.context).Result()
 	if err != nil {
-		panic(fmt.Errorf("could not connect to redis: %v", err))
+		panic(fmt.Errorf("Could not connect to redis: %v", err))
 	}
-	fmt.Println("connected to Redis:", pong)
+	r.logger.Info("Connected to redis: %s", pong)
 }
 
 func (r *store) Disconnect() {
-	fmt.Println("disconnecting redis...")
+	r.logger.Info("Disconnecting from redis...")
 	err := r.Close()
 	if err != nil {
-		log.Panic(err)
+		panic(fmt.Errorf("Could not disconnect from redis: %v", err))
 	}
-	fmt.Println("disconnected redis")
+	r.logger.Info("Disconnected from redis")
 }

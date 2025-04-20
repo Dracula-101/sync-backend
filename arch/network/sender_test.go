@@ -21,7 +21,6 @@ func TestSend_MixedError_Nil(t *testing.T) {
 	sender.Send(ctx).MixedError(nil)
 
 	assert.Equal(t, http.StatusInternalServerError, resp.Code)
-	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, failue_code))
 	assert.Contains(t, resp.Body.String(), `"message":"something went wrong"`)
 }
 
@@ -35,7 +34,6 @@ func TestSend_MixedError_Err(t *testing.T) {
 	sender.Send(ctx).MixedError(err)
 
 	assert.Equal(t, http.StatusInternalServerError, resp.Code)
-	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, failue_code))
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, err.Error()))
 }
 
@@ -49,7 +47,6 @@ func TestSend_MixedError_UnauthorizedError(t *testing.T) {
 	sender.Send(ctx).MixedError(err)
 
 	assert.Equal(t, http.StatusUnauthorized, resp.Code)
-	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, failue_code))
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, "test message"))
 }
 
@@ -62,7 +59,6 @@ func TestSend_SuccessMsgResponse(t *testing.T) {
 	sender.Send(ctx).SuccessMsgResponse("test message")
 
 	assert.Equal(t, http.StatusOK, resp.Code)
-	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, success_code))
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, "test message"))
 }
 
@@ -81,7 +77,6 @@ func TestSend_SuccessDataResponse(t *testing.T) {
 	sender.Send(ctx).SuccessDataResponse("test message", data)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
-	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"code":"%s"`, success_code))
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"message":"%s"`, "test message"))
 	assert.Contains(t, resp.Body.String(), fmt.Sprintf(`"data":%s`, `{"field":"test data"}`))
 }

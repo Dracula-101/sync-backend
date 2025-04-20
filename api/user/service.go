@@ -48,7 +48,6 @@ func (s *userService) CreateUser(email string, password string, name string, pro
 
 	id, err := s.userQueryBuilder.SingleQuery().InsertOne(user.GetValue())
 	if err != nil {
-		fmt.Printf("Error inserting user: %v\n", err)
 		return nil, err
 	}
 	user.ID = *id

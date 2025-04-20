@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"fmt"
+	"sync-backend/utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -31,6 +32,7 @@ type Query[T any] interface {
 
 type query[T any] struct {
 	collection *mongo.Collection
+	logger     utils.AppLogger
 	context    context.Context
 	cancel     context.CancelFunc
 }
@@ -59,9 +61,7 @@ func (q *query[T]) Close() {
 
 func (q *query[T]) CreateIndexes(indexes []mongo.IndexModel) error {
 	defer q.Close()
-	fmt.Println("database indexing for: " + q.collection.Name())
-	result, err := q.collection.Indexes().CreateMany(q.context, indexes)
-	fmt.Println(q.collection.Name(), result)
+	_, err := q.collection.Indexes().CreateMany(q.context, indexes)
 	return err
 }
 

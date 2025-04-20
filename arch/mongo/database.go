@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"sync-backend/utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -36,13 +36,15 @@ type Database interface {
 
 type database struct {
 	*mongo.Database
+	logger  utils.AppLogger
 	context context.Context
 	config  DbConfig
 }
 
-func NewDatabase(ctx context.Context, config DbConfig) Database {
+func NewDatabase(ctx context.Context, logger utils.AppLogger, config DbConfig) Database {
 	db := database{
 		context: ctx,
+		logger:  logger,
 		config:  config,
 	}
 	return &db
@@ -53,10 +55,13 @@ func (db *database) GetInstance() *database {
 }
 
 func (db *database) Connect() {
+	db.logger.Info("Connecting to mongo...")
 	uri := fmt.Sprintf(
 		"mongodb+srv://%s:%s@%s",
 		db.config.User, db.config.Pwd, db.config.Host,
 	)
+	db.logger.Debug("Mongo URI: %s", uri)
+
 	clientOptions := options.Client().ApplyURI(uri)
 	clientOptions.SetConnectTimeout(db.config.Timeout)
 	clientOptions.SetAppName(db.config.Name)
@@ -69,28 +74,26 @@ func (db *database) Connect() {
 	clientOptions.SetMinPoolSize(uint64(db.config.MinPoolSize))
 	clientOptions.SetMaxPoolSize(uint64(db.config.MaxPoolSize))
 
-	fmt.Println("connecting mongo...")
 	client, err := mongo.Connect(db.context, clientOptions)
 	if err != nil {
-		log.Fatal("connection to mongo failed!: ", err)
+		panic(fmt.Errorf("Failed to connect to mongo: %v", err))
 	}
 
 	err = client.Ping(db.context, nil)
 	if err != nil {
-		log.Panic("pinging to mongo failed!: ", err)
+		panic(fmt.Errorf("Failed to ping mongo: %v", err))
 	}
-	fmt.Println("connected to mongo!")
-
+	db.logger.Info("Connected to mongo")
 	db.Database = client.Database(db.config.Name)
 }
 
 func (db *database) Disconnect() {
-	fmt.Println("disconnecting mongo...")
+	db.logger.Info("Disconnecting from mongo...")
 	err := db.Client().Disconnect(db.context)
 	if err != nil {
-		log.Panic(err)
+		panic(fmt.Errorf("Failed to disconnect from mongo: %v", err))
 	}
-	fmt.Println("disconnected mongo")
+	db.logger.Info("Disconnected from mongo")
 }
 
 func NewObjectID(id string) (primitive.ObjectID, error) {

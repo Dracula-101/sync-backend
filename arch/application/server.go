@@ -9,6 +9,7 @@ import (
 	"sync-backend/arch/mongo"
 	"sync-backend/arch/network"
 	"sync-backend/arch/redis"
+	"sync-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,6 +32,8 @@ func Server() {
 func create(env *config.Env, config *config.Config) (network.Router, Module, Shutdown) {
 	context := context.Background()
 
+	logger := utils.DefaultAppLogger(env.Env)
+
 	dbConfig := mongo.DbConfig{
 		User:        env.DBUser,
 		Pwd:         env.DBPassword,
@@ -41,7 +44,7 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 		Timeout:     config.DB.TimeoutConfig.ConnectTimeout,
 	}
 
-	db := mongo.NewDatabase(context, dbConfig)
+	db := mongo.NewDatabase(context, logger, dbConfig)
 	db.Connect()
 
 	if env.Env != gin.TestMode {
@@ -55,11 +58,11 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 		DB:   env.RedisDB,
 	}
 
-	store := redis.NewStore(context, &redisConfig)
+	store := redis.NewStore(context, logger, &redisConfig)
 	store.Connect()
 
-	module := NewAppModule(context, env, config, db, store)
-	router := network.NewRouter(env.Env)
+	module := NewAppModule(context, logger, env, config, db, store)
+	router := network.NewRouter(env.Env, logger)
 	router.RegisterValidationParsers(network.CustomTagNameFunc())
 	router.LoadRootMiddlewares(module.RootMiddlewares())
 	router.LoadControllers(module.Controllers())

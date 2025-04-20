@@ -1,6 +1,8 @@
 package network
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type baseController struct {
 	ResponseSender
