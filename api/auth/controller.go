@@ -3,7 +3,7 @@ package auth
 import (
 	"sync-backend/api/auth/dto"
 	"sync-backend/arch/network"
-	"sync-backend/common"
+	"sync-backend/arch/common"
 
 	"github.com/gin-gonic/gin"
 )

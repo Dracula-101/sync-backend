@@ -4,7 +4,7 @@ import (
 	"sync-backend/api/auth"
 	"sync-backend/api/user"
 	"sync-backend/arch/network"
-	"sync-backend/common"
+	"sync-backend/arch/common"
 
 	"github.com/gin-gonic/gin"
 )
