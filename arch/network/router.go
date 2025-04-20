@@ -34,8 +34,8 @@ func NewRouter(env string, appLogger utils.AppLogger) Router {
 	eng.Use(gin.ErrorLogger())
 
 	eng.HandleMethodNotAllowed = true
-	eng.NoMethod(NotFound())
-	eng.NoRoute(NotAllowed())
+	eng.NoMethod(NotAllowed())
+	eng.NoRoute(NotFound())
 	r := router{
 		engine: eng,
 	}
