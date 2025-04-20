@@ -44,9 +44,6 @@ func (m *appModule) AuthenticationProvider() network.AuthenticationProvider {
 func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 	middlewares := []network.RootMiddleware{}
 	middlewares = append(middlewares, coreMW.NewErrorCatcher(&m.Logger))
-	// middlewares = append(middlewares, coreMW.NewLogger(&m.Logger, "development"))
-	middlewares = append(middlewares, coreMW.NewNotFound())
-	middlewares = append(middlewares, coreMW.NewMethodNotAllowed())
 	if m.Config.API.RateLimit.Enabled {
 		middlewares = append(middlewares, coreMW.NewRateLimiter(m.Store, *m.Config))
 	}
