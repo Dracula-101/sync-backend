@@ -11,7 +11,7 @@ import (
 
 // ErrorResponse represents the standard error response structure
 type ErrorResponse struct {
-	StatusCode int      `json:"status_code"`
+	StatusCode int      `json:"status"`
 	Message    string   `json:"message"`
 	Details    []string `json:"details,omitempty"`
 }

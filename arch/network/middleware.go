@@ -19,8 +19,8 @@ func (m *baseMiddleware) Debug() bool {
 func NotAllowed() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(405, gin.H{
-			"message":     "Method Not Allowed",
-			"status_code": 405,
+			"message": "Method Not Allowed",
+			"status":  405,
 		})
 		c.Abort()
 	}
@@ -29,8 +29,8 @@ func NotAllowed() gin.HandlerFunc {
 func NotFound() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(404, gin.H{
-			"message":     "Url Not Found",
-			"status_code": 404,
+			"message": "Url Not Found",
+			"status":  404,
 		})
 		c.Abort()
 	}

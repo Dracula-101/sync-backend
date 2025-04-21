@@ -203,7 +203,11 @@ func (s *send) sendError(err ApiError) {
 	case http.StatusTooManyRequests:
 		res = NewTooManyRequestsResponse(err.GetMessage())
 	case http.StatusInternalServerError:
-		res = NewInternalServerErrorResponse(err.Unwrap().Error())
+		if s.debug {
+			res = NewInternalServerErrorResponse(err.Unwrap().Error())
+		} else {
+			res = NewInternalServerErrorResponse(err.GetMessage())
+		}
 	case http.StatusNotImplemented:
 		res = NewNotImplementedResponse(err.GetMessage())
 	case http.StatusBadGateway:
@@ -215,7 +219,11 @@ func (s *send) sendError(err ApiError) {
 	case http.StatusHTTPVersionNotSupported:
 		res = NewHTTPVersionNotSupportedResponse(err.GetMessage())
 	default:
-		res = NewInternalServerErrorResponse(err.Unwrap().Error())
+		if s.debug {
+			res = NewInternalServerErrorResponse(err.Unwrap().Error())
+		} else {
+			res = NewInternalServerErrorResponse(err.GetMessage())
+		}
 	}
 
 	if res == nil {

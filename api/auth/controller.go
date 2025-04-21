@@ -4,7 +4,6 @@ import (
 	"sync-backend/api/auth/dto"
 	"sync-backend/api/user"
 	"sync-backend/arch/common"
-	"sync-backend/arch/mongo"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
 
@@ -46,7 +45,7 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 	exists, err := c.userService.FindUserByEmail(body.Email)
-	if err != nil && !mongo.IsNoDocumentFoundError(err) {
+	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
@@ -54,8 +53,12 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		c.Send(ctx).ConflictError("User with this email already exists", nil)
 		return
 	}
-
+	body.IPAddress = c.MustGetIP(ctx)
+	body.UserAgent = c.MustGetUserAgent(ctx)
+	body.DeviceId = c.MustGetDeviceId(ctx)
+	body.DeviceName = c.MustGetDeviceName(ctx)
 	data, err := c.authService.SignUp(body)
+
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
@@ -68,6 +71,11 @@ func (c *authController) Login(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
+	body.IPAddress = c.MustGetIP(ctx)
+	body.UserAgent = c.MustGetUserAgent(ctx)
+	body.DeviceId = c.MustGetDeviceId(ctx)
+	body.DeviceName = c.MustGetDeviceName(ctx)
+
 	data, err := c.authService.Login(body)
 	if err != nil {
 		c.Send(ctx).MixedError(err)

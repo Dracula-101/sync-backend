@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"sync-backend/api/auth"
+	"sync-backend/api/token"
 	"sync-backend/api/user"
-	"sync-backend/arch/network"
 	"sync-backend/arch/common"
+	"sync-backend/arch/network"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,43 +12,38 @@ import (
 type authenticationProvider struct {
 	network.ResponseSender
 	common.ContextPayload
-	authService auth.AuthService
-	userService user.UserService
+	tokenService token.TokenService
+	userService  user.UserService
 }
 
 func NewAuthenticationProvider(
-	authService auth.AuthService,
+	tokenService token.TokenService,
 	userService user.UserService,
 ) *authenticationProvider {
 	return &authenticationProvider{
 		ResponseSender: network.NewResponseSender(),
-		authService:    authService,
+		tokenService:   tokenService,
 		userService:    userService,
 	}
 }
 
 func (p *authenticationProvider) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		tokenString := ctx.GetHeader(network.AuthorizationHeader)
-		if tokenString == "" {
-			p.Send(ctx).UnauthorizedError("permission denied: no token provided", nil)
+		authHeader := ctx.GetHeader(network.AuthorizationHeader)
+		if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+			p.Send(ctx).UnauthorizedError("Invalid or missing Authorization header", nil)
+			ctx.Abort()
 			return
 		}
+		tokenString := authHeader[7:]
 
-		token, claims, err := p.authService.ValidateToken(tokenString)
+		token, claims, err := p.tokenService.ValidateToken(tokenString)
 		if err != nil || !token.Valid {
 			p.Send(ctx).UnauthorizedError("permission denied: invalid token", nil)
 			return
 		}
 
-		userId := claims["user_id"].(string)
-		user, err := p.userService.GetUserById(userId)
-		if err != nil {
-			p.Send(ctx).UnauthorizedError("permission denied: user not found", nil)
-			return
-		}
-
-		p.SetUser(ctx, user)
+		p.SetUserId(ctx, claims.UserID)
 		ctx.Next()
 	}
 }

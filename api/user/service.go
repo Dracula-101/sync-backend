@@ -3,11 +3,12 @@ package user
 import (
 	"errors"
 	"fmt"
+
+	"go.mongodb.org/mongo-driver/bson"
+
 	"sync-backend/api/user/model"
 	"sync-backend/arch/mongo"
 	"sync-backend/utils"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type UserService interface {
@@ -29,7 +30,7 @@ func NewUserService(db mongo.Database) UserService {
 
 func (s *userService) CreateUser(email string, password string, name string, profilePicUrl string) (*model.User, error) {
 	// Check if a user with the same email already exists
-	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email})
+	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email}, nil)
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		return nil, fmt.Errorf("error checking for existing user: %v", err)
 	}
@@ -55,10 +56,10 @@ func (s *userService) CreateUser(email string, password string, name string, pro
 }
 
 func (s *userService) FindUserByEmail(email string) (*model.User, error) {
-	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email})
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
-			return nil, errors.New("user not found")
+			return nil, nil
 		}
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func (s *userService) ValidateUserPassword(user *model.User, password string) er
 }
 
 func (s *userService) GetUserById(id string) (*model.User, error) {
-	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"_id": id})
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"_id": id}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			return nil, errors.New("user not found")

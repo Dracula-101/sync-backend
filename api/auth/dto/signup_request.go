@@ -11,6 +11,10 @@ type SignUpRequest struct {
 	Email         string `json:"email" binding:"required,email" validate:"email"`
 	Password      string `json:"password" binding:"required" validate:"required,min=6,max=100"`
 	ProfilePicUrl string `json:"profile_pic_url" binding:"omitempty,max=500" validate:"omitempty,max=500"`
+	DeviceId      string `json:"device_id"`
+	UserAgent     string `json:"user_agent"`
+	IPAddress     string `json:"ip_address"`
+	DeviceName    string `json:"device_name"`
 }
 
 func NewSignUpRequest() *SignUpRequest {

@@ -41,3 +41,11 @@ func ParseDuration(durationStr string) (time.Duration, error) {
 	}
 	return duration, nil
 }
+
+func ParseSafeDuration(durationStr string) time.Duration {
+	duration, err := ParseDuration(durationStr)
+	if err != nil {
+		panic(err)
+	}
+	return duration
+}

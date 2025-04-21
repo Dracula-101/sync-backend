@@ -7,8 +7,12 @@ import (
 )
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email      string `json:"email" binding:"required,email"`
+	Password   string `json:"password" binding:"required"`
+	DeviceId   string `json:"device_id" binding:"omitempty,max=100"`
+	UserAgent  string `json:"user_agent"`
+	IPAddress  string `json:"ip_address"`
+	DeviceName string `json:"device_name"`
 }
 
 func NewLoginRequest() *LoginRequest {

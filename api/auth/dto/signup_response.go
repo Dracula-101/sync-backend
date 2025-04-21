@@ -3,14 +3,18 @@ package dto
 import "github.com/go-playground/validator/v10"
 
 type SignUpResponse struct {
-	UserId string `json:"user_id" validate:"required"`
-	Token  string `json:"token" validate:"required"`
+	UserId       string `json:"user_id" validate:"required"`
+	SessiondId   string `json:"session_id" validate:"required"`
+	AccessToken  string `json:"access_token" validate:"required"`
+	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
-func NewSignUpResponse(userId string, token string) *SignUpResponse {
+func NewSignUpResponse(userId string, sessionId string, accessToken, refreshToken string) *SignUpResponse {
 	return &SignUpResponse{
-		UserId: userId,
-		Token:  token,
+		UserId:       userId,
+		SessiondId:   sessionId,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}
 }
 

@@ -22,12 +22,14 @@ type Query[T any] interface {
 	InsertAndRetrieveOne(doc *T) (*T, error)
 	InsertMany(doc []*T) ([]primitive.ObjectID, error)
 	InsertAndRetrieveMany(doc []*T) ([]*T, error)
-	FilterOne(filter bson.M) (*T, error)
+	FilterOne(filter bson.M, opts *options.FindOneOptions) (*T, error)
+	FilterMany(filter bson.M, opts *options.FindOptions) ([]*T, error)
 	FilterPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
 	FilterCount(filter bson.M) (int64, error)
 	UpdateOne(filter bson.M, update bson.M) (*mongo.UpdateResult, error)
 	UpdateMany(filter bson.M, update bson.M) (*mongo.UpdateResult, error)
 	DeleteOne(filter bson.M) (*mongo.DeleteResult, error)
+	DeleteMany(filter bson.M) (*mongo.DeleteResult, error)
 }
 
 type query[T any] struct {
@@ -214,15 +216,41 @@ func (q *query[T]) InsertAndRetrieveMany(docs []*T) ([]*T, error) {
 	return retrieved, nil
 }
 
-func (q *query[T]) FilterOne(filter bson.M) (*T, error) {
+func (q *query[T]) FilterOne(filter bson.M, opts *options.FindOneOptions) (*T, error) {
 	defer q.Close()
 	var doc T
-	err := q.collection.FindOne(q.context, filter).Decode(&doc)
+	err := q.collection.FindOne(q.context, filter, opts).Decode(&doc)
 	if err != nil {
 		return nil, err
 	}
 
 	return &doc, nil
+}
+
+func (q *query[T]) FilterMany(filter bson.M, opts *options.FindOptions) ([]*T, error) {
+	defer q.Close()
+	cursor, err := q.collection.Find(q.context, filter, opts)
+	if err != nil {
+		return nil, fmt.Errorf("error executing query: %w", err)
+	}
+	defer cursor.Close(q.context)
+
+	var docs []*T
+
+	for cursor.Next(q.context) {
+		var result T
+		err := cursor.Decode(&result)
+		if err != nil {
+			return nil, fmt.Errorf("error decoding result: %w", err)
+		}
+		docs = append(docs, &result)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("cursor error: %w", err)
+	}
+
+	return docs, nil
 }
 
 func (q *query[T]) FilterPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error) {
@@ -295,6 +323,16 @@ func (q *query[T]) UpdateMany(filter bson.M, update bson.M) (*mongo.UpdateResult
 func (q *query[T]) DeleteOne(filter bson.M) (*mongo.DeleteResult, error) {
 	defer q.Close()
 	result, err := q.collection.DeleteOne(q.context, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (q *query[T]) DeleteMany(filter bson.M) (*mongo.DeleteResult, error) {
+	defer q.Close()
+	result, err := q.collection.DeleteMany(q.context, filter)
 	if err != nil {
 		return nil, err
 	}
