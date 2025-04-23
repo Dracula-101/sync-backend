@@ -22,30 +22,23 @@ type Env struct {
 	RedisPort     int    `mapstructure:"REDIS_PORT"`
 	RedisPassword string `mapstructure:"REDIS_PWD"`
 	RedisDB       int    `mapstructure:"REDIS_DB"`
-
-	GoogleClientId     string `mapstructure:"GOOGLE_CLIENT_ID"`
-	GoogleClientSecret string `mapstructure:"GOOGLE_CLIENT_SECRET"`
-	GoogleRedirectUrl  string `mapstructure:"GOOGLE_REDIRECT_URL"`
 }
 
 func NewEnv(file string) Env {
 	_ = gotenv.Load(file)
 	env := Env{
-		Host:               GetStrEnvOrPanic("HOST"),
-		Port:               GetIntEnvOrPanic("PORT"),
-		Env:                GetStrEnvOrPanic("ENV"),
-		LogLevel:           GetStrEnvOrPanic("LOG_LEVEL"),
-		DBUser:             GetStrEnvOrPanic("DB_USER"),
-		DBPassword:         GetStrEnvOrPanic("DB_PASSWORD"),
-		DBHost:             GetStrEnvOrPanic("DB_HOST"),
-		DBName:             GetStrEnvOrPanic("DB_NAME"),
-		RedisHost:          GetStrEnvOrPanic("REDIS_HOST"),
-		RedisPort:          GetIntEnvOrPanic("REDIS_PORT"),
-		RedisDB:            GetIntEnvOrPanic("REDIS_DB"),
-		RedisPassword:      GetStrEnvOrPanic("REDIS_PASSWORD"),
-		GoogleClientId:     GetStrEnvOrPanic("GOOGLE_CLIENT_ID"),
-		GoogleClientSecret: GetStrEnvOrPanic("GOOGLE_CLIENT_SECRET"),
-		GoogleRedirectUrl:  GetStrEnvOrPanic("GOOGLE_REDIRECT_URL"),
+		Host:          GetStrEnvOrPanic("HOST"),
+		Port:          GetIntEnvOrPanic("PORT"),
+		Env:           GetStrEnvOrPanic("ENV"),
+		LogLevel:      GetStrEnvOrPanic("LOG_LEVEL"),
+		DBUser:        GetStrEnvOrPanic("DB_USER"),
+		DBPassword:    GetStrEnvOrPanic("DB_PASSWORD"),
+		DBHost:        GetStrEnvOrPanic("DB_HOST"),
+		DBName:        GetStrEnvOrPanic("DB_NAME"),
+		RedisHost:     GetStrEnvOrPanic("REDIS_HOST"),
+		RedisPort:     GetIntEnvOrPanic("REDIS_PORT"),
+		RedisDB:       GetIntEnvOrPanic("REDIS_DB"),
+		RedisPassword: GetStrEnvOrPanic("REDIS_PASSWORD"),
 	}
 	return env
 }
