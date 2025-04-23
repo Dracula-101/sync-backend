@@ -99,6 +99,5 @@ func (w *logWriter) Write(p []byte) (n int, err error) {
 	default:
 		w.appLogger.Info("[GIN-%s]: %s", w.level, s)
 	}
-
 	return len(p), nil
 }
