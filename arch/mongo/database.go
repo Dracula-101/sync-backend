@@ -60,7 +60,7 @@ func (db *database) GetLogger() utils.AppLogger {
 }
 
 func (db *database) Connect() {
-	db.logger.Info("Connecting to mongo...")
+	db.logger.Debug("Connecting to mongo...")
 	uri := fmt.Sprintf(
 		"mongodb+srv://%s:%s@%s",
 		db.config.User, db.config.Pwd, db.config.Host,
@@ -81,24 +81,24 @@ func (db *database) Connect() {
 
 	client, err := mongo.Connect(db.context, clientOptions)
 	if err != nil {
-		panic(fmt.Errorf("failed to connect to mongo: %v", err))
+		db.logger.Fatal("Failed to connect to mongo: %v", err)
 	}
 
 	err = client.Ping(db.context, nil)
 	if err != nil {
-		panic(fmt.Errorf("failed to ping mongo: %v", err))
+		db.logger.Fatal("Failed to ping mongo: %v", err)
 	}
-	db.logger.Info("Connected to mongo")
+	db.logger.Success("Connected to mongo")
 	db.Database = client.Database(db.config.Name)
 }
 
 func (db *database) Disconnect() {
-	db.logger.Info("Disconnecting from mongo...")
+	db.logger.Debug("Disconnecting from mongo...")
 	err := db.Client().Disconnect(db.context)
 	if err != nil {
-		panic(fmt.Errorf("failed to disconnect from mongo: %v", err))
+		db.logger.Fatal("Failed to disconnect from mongo: %v", err)
 	}
-	db.logger.Info("Disconnected from mongo")
+	db.logger.Success("Disconnected from mongo")
 }
 
 func NewObjectID(id string) (primitive.ObjectID, error) {

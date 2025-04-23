@@ -101,7 +101,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 }
 
 func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*dto.GoogleLoginResponse, network.ApiError) {
-	s.logger.Info("Logging in user with Google ID: %s", googleLoginRequest.GoogleIdToken)
+	s.logger.Info("Logging in user with Google")
 	user, err := s.userService.GetUserByGoogleId(googleLoginRequest.GoogleIdToken)
 	if err != nil {
 		return nil, network.NewInternalServerError("error finding user", err)
@@ -123,7 +123,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		return nil, network.NewInternalServerError("error creating session", err)
 	}
 	loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
-	s.logger.Success("User logged in successfully with Google ID: %s", googleLoginRequest.GoogleIdToken)
+	s.logger.Success("User logged in successfully with Google")
 	return loginResponse, nil
 }
 

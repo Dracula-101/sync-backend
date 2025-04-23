@@ -114,7 +114,7 @@ func (s *userService) GetUserById(id string) (*model.User, error) {
 }
 
 func (s *userService) GetUserByGoogleId(googleId string) (*model.User, error) {
-	s.logger.Debug("Getting user by Google ID: %s", googleId)
+	s.logger.Debug("Getting user by Google Id")
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"googleId": googleId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
@@ -128,35 +128,27 @@ func (s *userService) GetUserByGoogleId(googleId string) (*model.User, error) {
 }
 
 func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User, error) {
-	s.logger.Debug("Creating user with Google ID token: %s", googleIdToken)
+	s.logger.Debug("Creating user with Google ID token: %s", googleIdToken[0:10]+"***********")
 	googleUser, err := utils.DecodeGoogleJWTToken(googleIdToken)
 	if err != nil {
 		s.logger.Error("Error decoding Google ID token: %v", err)
 		return nil, fmt.Errorf("error decoding Google ID token: %v", err)
 	}
-	s.logger.Debug("Google user info: %v", googleUser)
-	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"googleId": googleIdToken}, nil)
-	if err != nil && !mongo.IsNoDocumentFoundError(err) {
-		s.logger.Error("Error checking for existing user: %v", err)
-		return nil, fmt.Errorf("error checking for existing user: %v", err)
-	}
-	if existingUser != nil {
-		s.logger.Error("User with this Google ID already exists: %s", googleIdToken)
-		return nil, errors.New("user with this Google ID already exists")
-	}
-	if googleUser.Name == "" {
-		s.logger.Debug("Google user name is empty, generating name from given and family name")
-		userName := fmt.Sprintf("%s %s", googleUser.GivenName, googleUser.FamilyName)
-		googleUser.Name = userName
-	}
 
-	s.logger.Debug("Creating new user with Google ID: %s", googleIdToken)
-	existingUser, err = s.userQueryBuilder.SingleQuery().FindOne(bson.M{"email": googleUser.Email}, nil)
+	s.logger.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
+	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": googleUser.Email}, nil)
+
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		return nil, fmt.Errorf("error checking for existing user: %v", err)
 	}
 
 	if existingUser != nil {
+		for _, provider := range existingUser.Providers {
+			if provider.AuthProvider == "google" {
+				s.logger.Debug("User already exists with Google ID: %s", googleIdToken[0:10]+"***********")
+				return existingUser, nil
+			}
+		}
 		existingUser.Providers = append(existingUser.Providers, model.Provider{
 			Id:           primitive.NewObjectID(),
 			AuthIdToken:  googleIdToken,
@@ -167,7 +159,7 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 		existingUser.ProfilePicURL = googleUser.Picture
 		existingUser.Name = googleUser.Name
 		existingUser.UpdatedAt = time.Now()
-		s.logger.Debug("Updating existing user with Google ID: %s", googleIdToken)
+		s.logger.Debug("Updating existing user with Google Provider")
 		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"_id": existingUser.ID}, bson.M{
 			"$set": existingUser.GetValue(),
 		})
@@ -178,7 +170,7 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 		s.logger.Debug("User updated successfully: %s", existingUser.Email)
 		return existingUser, nil
 	} else {
-		s.logger.Debug("Creating new user with Google ID: %s", googleIdToken)
+		s.logger.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
 		user, err := model.NewUser(googleUser.Email, googleUser.Sub, googleUser.Name, googleUser.Picture)
 		if err != nil {
 			return nil, err
