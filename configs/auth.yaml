@@ -9,15 +9,6 @@ auth:
     private_key_path: keys/private.pem
     public_key_path: keys/public.pem
 
-  oauth:
-    google:
-      client_id: ${GOOGLE_CLIENT_ID}
-      client_secret: ${GOOGLE_CLIENT_SECRET}
-      redirect_url: ${GOOGLE_REDIRECT_URL}
-      scopes:
-        - "email"
-        - "profile"
-
   password:
     min_length: 8
     max_length: 64
