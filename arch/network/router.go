@@ -29,7 +29,11 @@ func NewRouter(env string, appLogger utils.AppLogger) Router {
 		gin.DefaultErrorWriter = &logWriter{appLogger: appLogger, level: "error"}
 	}
 	eng := gin.New()
-	eng.Use(gin.Logger())
+	eng.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+		Formatter: func(param gin.LogFormatterParams) string {
+			return LoggerFormatter(appLogger, gin.DebugMode == "debug")(param)
+		},
+	}))
 	eng.Use(gin.Recovery())
 	eng.Use(gin.ErrorLogger())
 
@@ -77,29 +81,23 @@ type logWriter struct {
 
 func (w *logWriter) Write(p []byte) (n int, err error) {
 	s := string(p)
-
-	// Remove trailing newlines if present
 	for len(s) > 0 && (s[len(s)-1] == '\n' || s[len(s)-1] == '\r') {
 		s = s[:len(s)-1]
 	}
-
-	// Skip empty strings
 	if len(s) == 0 {
-		return len(p), nil
+		return 0, nil
 	}
-
-	// Log at appropriate level
 	switch w.level {
 	case "info":
-		w.appLogger.Info("GIN: %s", s)
+		w.appLogger.Info("[GIN-%s]: %s", w.level, s)
 	case "debug":
-		w.appLogger.Debug("GIN: %s", s)
+		w.appLogger.Debug("[GIN-%s]: %s", w.level, s)
 	case "warn":
-		w.appLogger.Warn("GIN: %s", s)
+		w.appLogger.Warn("[GIN-%s]: %s", w.level, s)
 	case "error":
-		w.appLogger.Error("GIN: %s", s)
+		w.appLogger.Error("[GIN-%s]: %s", w.level, s)
 	default:
-		w.appLogger.Info("GIN: %s", s)
+		w.appLogger.Info("[GIN-%s]: %s", w.level, s)
 	}
 
 	return len(p), nil

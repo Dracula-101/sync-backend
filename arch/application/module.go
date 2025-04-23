@@ -42,7 +42,7 @@ func (m *appModule) Controllers() []network.Controller {
 }
 
 func (m *appModule) AuthenticationProvider() network.AuthenticationProvider {
-	return authMW.NewAuthenticationProvider(m.TokenService, m.UserService)
+	return authMW.NewAuthenticationProvider(m.Logger, m.TokenService, m.UserService)
 }
 
 func (m *appModule) RootMiddlewares() []network.RootMiddleware {
@@ -57,8 +57,8 @@ func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 func NewAppModule(context context.Context, logger utils.AppLogger, env *config.Env, config *config.Config, db mongo.Database, store redis.Store) Module {
 	tokenService := token.NewTokenService(config)
 	sessionService := session.NewSessionService(db)
-	userService := user.NewUserService(db)
-	authService := auth.NewAuthService(userService, sessionService, tokenService, config)
+	userService := user.NewUserService(db, logger)
+	authService := auth.NewAuthService(logger, userService, sessionService, tokenService, config)
 	return &appModule{
 		Context:        context,
 		Logger:         logger,

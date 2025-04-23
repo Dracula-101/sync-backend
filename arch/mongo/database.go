@@ -29,6 +29,7 @@ type Document[T any] interface {
 }
 
 type Database interface {
+	GetLogger() utils.AppLogger
 	GetInstance() *database
 	Connect()
 	Disconnect()
@@ -54,6 +55,10 @@ func (db *database) GetInstance() *database {
 	return db
 }
 
+func (db *database) GetLogger() utils.AppLogger {
+	return db.logger
+}
+
 func (db *database) Connect() {
 	db.logger.Info("Connecting to mongo...")
 	uri := fmt.Sprintf(
@@ -76,12 +81,12 @@ func (db *database) Connect() {
 
 	client, err := mongo.Connect(db.context, clientOptions)
 	if err != nil {
-		panic(fmt.Errorf("Failed to connect to mongo: %v", err))
+		panic(fmt.Errorf("failed to connect to mongo: %v", err))
 	}
 
 	err = client.Ping(db.context, nil)
 	if err != nil {
-		panic(fmt.Errorf("Failed to ping mongo: %v", err))
+		panic(fmt.Errorf("failed to ping mongo: %v", err))
 	}
 	db.logger.Info("Connected to mongo")
 	db.Database = client.Database(db.config.Name)
@@ -91,7 +96,7 @@ func (db *database) Disconnect() {
 	db.logger.Info("Disconnecting from mongo...")
 	err := db.Client().Disconnect(db.context)
 	if err != nil {
-		panic(fmt.Errorf("Failed to disconnect from mongo: %v", err))
+		panic(fmt.Errorf("failed to disconnect from mongo: %v", err))
 	}
 	db.logger.Info("Disconnected from mongo")
 }

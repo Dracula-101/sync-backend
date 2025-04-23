@@ -1,6 +1,8 @@
 package common
 
 import (
+	coredto "sync-backend/arch/dto"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +20,8 @@ type ContextPayload interface {
 	MustGetUserAgent(ctx *gin.Context) string
 	MustGetDeviceId(ctx *gin.Context) string
 	MustGetDeviceName(ctx *gin.Context) string
+
+	SetRequestDetails(ctx *gin.Context, req *coredto.BaseRequest)
 }
 
 type payload struct{}
@@ -60,4 +64,11 @@ func (payload *payload) MustGetDeviceName(ctx *gin.Context) string {
 		return "default-device-name"
 	}
 	return value
+}
+
+func (payload *payload) SetRequestDetails(ctx *gin.Context, req *coredto.BaseRequest) {
+	req.IPAddress = payload.MustGetIP(ctx)
+	req.UserAgent = payload.MustGetUserAgent(ctx)
+	req.DeviceId = payload.MustGetDeviceId(ctx)
+	req.DeviceName = payload.MustGetDeviceName(ctx)
 }

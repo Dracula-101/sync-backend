@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"sync-backend/arch/config"
 	"sync-backend/arch/mongo"
@@ -22,7 +23,7 @@ func Server() {
 	router, _, shutdown := create(&env, &config)
 	defer shutdown()
 	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
+	signal.Notify(stop, syscall.SIGTERM, os.Interrupt)
 	go func() {
 		router.Start(env.Host, uint16(env.Port))
 	}()
@@ -32,7 +33,7 @@ func Server() {
 func create(env *config.Env, config *config.Config) (network.Router, Module, Shutdown) {
 	context := context.Background()
 
-	logger := utils.DefaultAppLogger(env.Env)
+	logger := utils.DefaultAppLogger(env.Env, env.LogLevel)
 
 	dbConfig := mongo.DbConfig{
 		User:        env.DBUser,

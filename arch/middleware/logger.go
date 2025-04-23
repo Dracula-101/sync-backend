@@ -98,13 +98,10 @@ func (m *logger) Handler(ctx *gin.Context) {
 		m.appLogger.Warn("%s", responseLog)
 	case status >= 300:
 		m.appLogger.Info("%s", responseLog)
+	case status >= 200:
+		m.appLogger.Success("%s", responseLog)
 	default:
-		// For 2xx responses, log as debug in production and info in development
-		if m.environment == "production" {
-			m.appLogger.Debug("%s", responseLog)
-		} else {
-			m.appLogger.Info("%s", responseLog)
-		}
+		m.appLogger.Info("%s", responseLog)
 	}
 
 	// Add additional logging for errors if present

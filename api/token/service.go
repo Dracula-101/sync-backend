@@ -106,12 +106,16 @@ func (s *tokenService) GenerateTokenPair(userId string) (*model.TokenPair, error
 }
 
 func (s *tokenService) ValidateToken(tokenString string) (*jwt.Token, *model.TokenClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &model.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return s.publicKey, nil
-	})
+	token, err := jwt.ParseWithClaims(
+		tokenString, 
+		&model.TokenClaims{}, 
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return s.publicKey, nil
+		},
+	)
 
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid token: %w", err)

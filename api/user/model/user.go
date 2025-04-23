@@ -22,6 +22,7 @@ type User struct {
 	ProfilePicURL string             `bson:"profilePicUrl,omitempty" validate:"omitempty,max=500"`
 	Verified      bool               `bson:"verified" validate:"-"`
 	Status        bool               `bson:"status" validate:"-"`
+	Providers     []Provider         `bson:"providers,omitempty"`
 	CreatedAt     time.Time          `bson:"createdAt" validate:"required"`
 	UpdatedAt     time.Time          `bson:"updatedAt" validate:"required"`
 }
@@ -45,6 +46,20 @@ func NewUser(email string, pwdHash string, name string, profilePicUrl string) (*
 	return &u, nil
 }
 
+func NewAuthProvider(authIdToken string, authProvider string) (*Provider, error) {
+	now := time.Now()
+	p := Provider{
+		AuthIdToken:  authIdToken,
+		AuthProvider: authProvider,
+		AddedAt:      now,
+	}
+	if err := p.Validate(); err != nil {
+		return nil, err
+	}
+	p.Id = primitive.NewObjectID()
+	return &p, nil
+}
+
 func (user *User) GetValue() *User {
 	return user
 }
@@ -52,6 +67,23 @@ func (user *User) GetValue() *User {
 func (user *User) Validate() error {
 	validate := validator.New()
 	return validate.Struct(user)
+}
+
+func (user *User) GetUserInfo() *UserInfo {
+	var providerInfo = make([]ProviderInfo, len(user.Providers))
+	for i, provider := range user.Providers {
+		providerInfo[i] = ProviderInfo{
+			ProviderName: provider.AuthProvider,
+			AddedAt:      provider.AddedAt,
+		}
+	}
+	return &UserInfo{
+		UserId:     user.ID.Hex(),
+		Name:       user.Name,
+		Email:      user.Email,
+		ProfilePic: user.ProfilePicURL,
+		Providers:  providerInfo,
+	}
 }
 
 func (*User) EnsureIndexes(db mongo.Database) {

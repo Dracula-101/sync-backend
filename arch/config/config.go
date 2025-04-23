@@ -192,9 +192,10 @@ type OAuthConfig struct {
 
 // GoogleOAuthConfig holds Google OAuth configuration
 type GoogleOAuthConfig struct {
-	ClientID    string   `mapstructure:"client_id"`
-	RedirectURL string   `mapstructure:"redirect_url"`
-	Scopes      []string `mapstructure:"scopes"`
+	ClientID     string   `mapstructure:"client_id"`
+	ClientSecret string   `mapstructure:"client_secret"`
+	RedirectURL  string   `mapstructure:"redirect_url"`
+	Scopes       []string `mapstructure:"scopes"`
 }
 
 // LogConfig holds logging configuration
