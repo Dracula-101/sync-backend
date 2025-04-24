@@ -33,7 +33,9 @@ func Server() {
 func create(env *config.Env, config *config.Config) (network.Router, Module, Shutdown) {
 	context := context.Background()
 
-	logger := utils.DefaultAppLogger(env.Env, env.LogLevel)
+	serverLogger := utils.DefaultAppLogger(env.Env, env.LogLevel, "Server")
+	dbLogger := utils.DefaultAppLogger(env.Env, env.LogLevel, "Database")
+	redisLogger := utils.DefaultAppLogger(env.Env, env.LogLevel, "Redis")
 
 	dbConfig := mongo.DbConfig{
 		User:        env.DBUser,
@@ -45,7 +47,7 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 		Timeout:     config.DB.TimeoutConfig.ConnectTimeout,
 	}
 
-	db := mongo.NewDatabase(context, logger, dbConfig)
+	db := mongo.NewDatabase(context, dbLogger, dbConfig)
 	db.Connect()
 
 	if env.Env != gin.TestMode {
@@ -59,11 +61,11 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 		DB:   env.RedisDB,
 	}
 
-	store := redis.NewStore(context, logger, &redisConfig)
+	store := redis.NewStore(context, redisLogger, &redisConfig)
 	store.Connect()
 
-	module := NewAppModule(context, logger, env, config, db, store)
-	router := network.NewRouter(env.Env, logger)
+	module := NewAppModule(context, env, config, db, store)
+	router := network.NewRouter(env.Env, serverLogger)
 	router.RegisterValidationParsers(network.CustomTagNameFunc())
 	router.LoadRootMiddlewares(module.RootMiddlewares())
 	router.LoadControllers(module.Controllers())

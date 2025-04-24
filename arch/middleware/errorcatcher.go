@@ -11,13 +11,13 @@ import (
 
 type errorCatcher struct {
 	network.BaseMiddleware
-	logger *utils.AppLogger
+	logger utils.AppLogger
 }
 
-func NewErrorCatcher(logger *utils.AppLogger) network.RootMiddleware {
+func NewErrorCatcher() network.RootMiddleware {
 	return &errorCatcher{
 		BaseMiddleware: network.NewBaseMiddleware(),
-		logger:         logger,
+		logger:         utils.NewServiceLogger("ErrorCatcher"),
 	}
 }
 
@@ -38,10 +38,7 @@ func (m *errorCatcher) Handler(ctx *gin.Context) {
 				r,
 				string(stackTrace))
 
-			// Log to standard logger
-			if m.logger != nil {
-				m.logger.Error("%s", errorMsg)
-			}
+			m.logger.Error("%s", errorMsg)
 
 			// Return appropriate response to client
 			if err, ok := r.(error); ok {

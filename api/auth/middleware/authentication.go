@@ -20,14 +20,13 @@ type authenticationProvider struct {
 }
 
 func NewAuthenticationProvider(
-	logger utils.AppLogger,
 	tokenService token.TokenService,
 	userService user.UserService,
 ) *authenticationProvider {
 	return &authenticationProvider{
 		ResponseSender: network.NewResponseSender(),
 		ContextPayload: common.NewContextPayload(),
-		logger:         logger,
+		logger:         utils.NewServiceLogger("AuthProvider"),
 		tokenService:   tokenService,
 		userService:    userService,
 	}

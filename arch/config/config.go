@@ -109,7 +109,6 @@ type AuthConfig struct {
 	PasswordReset PasswordResetConfig `mapstructure:"password-reset"`
 	CSRF          CSRFConfig          `mapstructure:"csrf"`
 	RateLimit     AuthRateLimitConfig `mapstructure:"rate_limit"`
-	OAuth         OAuthConfig         `mapstructure:"oauth"`
 }
 
 // JWTConfig holds JWT configuration
@@ -183,19 +182,6 @@ type AuthRateLimitConfig struct {
 type RateLimitRule struct {
 	Requests int           `mapstructure:"requests"`
 	Duration time.Duration `mapstructure:"duration"`
-}
-
-// OAuthConfig holds OAuth configuration
-type OAuthConfig struct {
-	Google GoogleOAuthConfig `mapstructure:"google"`
-}
-
-// GoogleOAuthConfig holds Google OAuth configuration
-type GoogleOAuthConfig struct {
-	ClientID     string   `mapstructure:"client_id"`
-	ClientSecret string   `mapstructure:"client_secret"`
-	RedirectURL  string   `mapstructure:"redirect_url"`
-	Scopes       []string `mapstructure:"scopes"`
 }
 
 // LogConfig holds logging configuration

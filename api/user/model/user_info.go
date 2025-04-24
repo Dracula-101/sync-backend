@@ -7,11 +7,11 @@ import (
 )
 
 type UserInfo struct {
-	UserId     string     `json:"id" validate:"required"`
-	Email      string     `json:"email"`
-	Name       string     `json:"name"`
-	ProfilePic string     `json:"profile_pic"`
-	Providers   []ProviderInfo `json:"provider,omitempty"`
+	UserId     string         `json:"id" validate:"required"`
+	Email      string         `json:"email"`
+	Name       string         `json:"name"`
+	ProfilePic string         `json:"profile_pic"`
+	Providers  []ProviderInfo `json:"provider,omitempty"`
 }
 
 func (u *UserInfo) GetValue() *UserInfo {
@@ -32,6 +32,6 @@ func (u *UserInfo) ValidateErrors(errs validator.ValidationErrors) ([]string, er
 }
 
 type ProviderInfo struct {
-	ProviderName string `json:"providerName"`
-	AddedAt time.Time `json:"addedAt"`
+	ProviderName string    `json:"name"`
+	AddedAt      time.Time `json:"addedAt"`
 }

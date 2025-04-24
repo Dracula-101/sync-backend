@@ -16,7 +16,7 @@ func TestErrorCatcherMiddleware(t *testing.T) {
 		panic(errors.New("panic test"))
 	}
 
-	rr := network.MockTestRootMiddleware(t, NewErrorCatcher(nil), mockHandler)
+	rr := network.MockTestRootMiddleware(t, NewErrorCatcher(), mockHandler)
 
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 	assert.Contains(t, rr.Body.String(), `"message":"panic test"`)
@@ -27,7 +27,7 @@ func TestErrorCatcherMiddleware_NonError(t *testing.T) {
 		panic(1)
 	}
 
-	rr := network.MockTestRootMiddleware(t, NewErrorCatcher(nil), mockHandler)
+	rr := network.MockTestRootMiddleware(t, NewErrorCatcher(), mockHandler)
 
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 	assert.Contains(t, rr.Body.String(), `"message":"something went wrong"`)

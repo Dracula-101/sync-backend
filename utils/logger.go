@@ -55,6 +55,7 @@ type LogConfig struct {
 	Level       LogLevel
 	Output      io.Writer
 	ErrorOutput io.Writer
+	ServiceName string
 	UseColors   bool
 }
 
@@ -84,11 +85,12 @@ func NewAppLogger(config LogConfig) AppLogger {
 	}
 }
 
-func DefaultAppLogger(env string, logLevel string) AppLogger {
+func DefaultAppLogger(env string, logLevel string, serviceName string) AppLogger {
 	config := LogConfig{
 		Environment: env,
 		Output:      os.Stdout,
 		ErrorOutput: os.Stderr,
+		ServiceName: serviceName,
 		UseColors:   true,
 	}
 	if logLevel == "debug" {
@@ -97,6 +99,10 @@ func DefaultAppLogger(env string, logLevel string) AppLogger {
 		config.Level = InfoLevel
 	}
 	return NewAppLogger(config)
+}
+
+func NewServiceLogger(serviceName string) AppLogger {
+	return DefaultAppLogger("development", "debug", serviceName)
 }
 
 func getTerminalWidth() int {
@@ -119,7 +125,7 @@ func (l *AppLogger) log(level LogLevel, prefix, levelStr, color, format string, 
 
 	contentWidth := termWidth - 2
 
-	header := fmt.Sprintf(" %s | %s %s| ", timestamp, prefix, levelStr)
+	header := fmt.Sprintf(" %s %s %-15s %s %s %s%s ", timestamp, vertical, l.config.ServiceName, vertical, prefix, levelStr, vertical)
 	headerWidth := len(header)
 
 	messageLines := strings.Split(message, "\n")
@@ -213,14 +219,10 @@ func (l *AppLogger) Success(format string, v ...interface{}) {
 	l.log(InfoLevel, "✅", "SUCCESS  ", Green, format, v...)
 }
 
-func (l *AppLogger) DB(format string, v ...interface{}) {
+func (l *AppLogger) Warn(format string, v ...interface{}) {
 	if l.config.Level > DebugLevel {
 		return
 	}
-	l.log(InfoLevel, "💾", "DATABASE ", Magenta, format, v...)
-}
-
-func (l *AppLogger) Warn(format string, v ...interface{}) {
 	l.log(WarnLevel, "⚠️ ", "WARN     ", Yellow, format, v...)
 }
 
