@@ -20,13 +20,12 @@ type authController struct {
 }
 
 func NewAuthController(
-	logger utils.AppLogger,
 	authService AuthService,
 	userService user.UserService,
 	authProvider network.AuthenticationProvider,
 ) network.Controller {
 	return &authController{
-		logger:         logger,
+		logger:         utils.NewServiceLogger("AuthController"),
 		BaseController: network.NewBaseController("/api/v1/auth", authProvider),
 		ContextPayload: common.NewContextPayload(),
 		authProvider:   authProvider,

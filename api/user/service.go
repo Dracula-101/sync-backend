@@ -23,43 +23,43 @@ type UserService interface {
 }
 
 type userService struct {
-	logger           utils.AppLogger
+	log              utils.AppLogger
 	userQueryBuilder mongo.QueryBuilder[model.User]
 }
 
-func NewUserService(db mongo.Database, logger utils.AppLogger) UserService {
+func NewUserService(db mongo.Database) UserService {
 	return &userService{
 		userQueryBuilder: mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
-		logger:           logger,
+		log:              utils.NewServiceLogger("UserService"),
 	}
 }
 
 func (s *userService) CreateUser(email string, password string, name string, profilePicUrl string) (*model.User, error) {
-	s.logger.Debug("Creating user with email: %s", email)
+	s.log.Debug("Creating user with email: %s", email)
 	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email}, nil)
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
-		s.logger.Error("Error checking for existing user: %v", err)
+		s.log.Error("Error checking for existing user: %v", err)
 		return nil, fmt.Errorf("error checking for existing user: %v", err)
 	}
 	if existingUser != nil {
-		s.logger.Error("User with this email already exists: %s", email)
+		s.log.Error("User with this email already exists: %s", email)
 		return nil, errors.New("user with this email already exists")
 	}
 
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
-		s.logger.Error("Error hashing password: %v", err)
+		s.log.Error("Error hashing password: %v", err)
 		return nil, err
 	}
 	user, err := model.NewUser(email, hashedPassword, name, profilePicUrl)
 	if err != nil {
-		s.logger.Error("Error creating user: %v", err)
+		s.log.Error("Error creating user: %v", err)
 		return nil, err
 	}
 
 	id, err := s.userQueryBuilder.SingleQuery().InsertOne(user.GetValue())
 	if err != nil {
-		s.logger.Error("Error inserting user into database: %v", err)
+		s.log.Error("Error inserting user into database: %v", err)
 		return nil, err
 	}
 	user.ID = *id
@@ -67,75 +67,74 @@ func (s *userService) CreateUser(email string, password string, name string, pro
 }
 
 func (s *userService) FindUserByEmail(email string) (*model.User, error) {
-	s.logger.Debug("Finding user by email: %s", email)
+	s.log.Debug("Finding user by email: %s", email)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			return nil, nil
 		}
-		s.logger.Error("Error finding user by email: %v", err)
+		s.log.Error("Error finding user by email: %v", err)
 		return nil, err
 	}
-	s.logger.Debug("User found: %s", user.Email)
+	s.log.Debug("User found: %s", user.Email)
 	return user, nil
 }
 
 func (s *userService) ValidateUserPassword(user *model.User, password string) error {
-	s.logger.Debug("Validating password for user: %s", user.Email)
+	s.log.Debug("Validating password for user: %s", user.Email)
 	if user.Password == nil {
-		s.logger.Error("User has no password set")
+		s.log.Error("User has no password set")
 		return errors.New("user has no password set")
 	}
 
 	isValid, err := utils.CheckPasswordHash(password, *user.Password)
 	if err != nil {
-		s.logger.Error("Error comparing password: %v", err)
+		s.log.Error("Error comparing password: %v", err)
 		return fmt.Errorf("error comparing password: %v", err)
 	}
 	if !isValid {
-		s.logger.Error("Invalid password for user: %s", user.Email)
+		s.log.Error("Invalid password for user: %s", user.Email)
 		return errors.New("invalid password")
 	}
 	return nil
 }
 
 func (s *userService) GetUserById(id string) (*model.User, error) {
-	s.logger.Debug("Getting user by ID: %s", id)
+	s.log.Debug("Getting user by ID: %s", id)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"_id": id}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			return nil, errors.New("user not found")
 		}
-		s.logger.Error("Error getting user by ID: %v", err)
+		s.log.Error("Error getting user by ID: %v", err)
 		return nil, err
 	}
-	s.logger.Debug("User found by ID: %s", user.ID)
+	s.log.Debug("User found by ID: %s", user.ID)
 	return user, nil
 }
 
 func (s *userService) GetUserByGoogleId(googleId string) (*model.User, error) {
-	s.logger.Debug("Getting user by Google Id")
+	s.log.Debug("Getting user by Google Id")
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"googleId": googleId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			return nil, nil
 		}
-		s.logger.Error("Error getting user by Google ID: %v", err)
+		s.log.Error("Error getting user by Google ID: %v", err)
 		return nil, err
 	}
-	s.logger.Debug("User found by Google ID: %s", user.Email)
+	s.log.Debug("User found by Google ID: %s", user.Email)
 	return user, nil
 }
 
 func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User, error) {
-	s.logger.Debug("Creating user with Google ID token: %s", googleIdToken[0:10]+"***********")
+	s.log.Debug("Creating user with Google ID token: %s", googleIdToken[0:10]+"***********")
 	googleUser, err := utils.DecodeGoogleJWTToken(googleIdToken)
 	if err != nil {
-		s.logger.Error("Error decoding Google ID token: %v", err)
+		s.log.Error("Error decoding Google ID token: %v", err)
 		return nil, fmt.Errorf("error decoding Google ID token: %v", err)
 	}
 
-	s.logger.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
 	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": googleUser.Email}, nil)
 
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
@@ -145,7 +144,7 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 	if existingUser != nil {
 		for _, provider := range existingUser.Providers {
 			if provider.AuthProvider == "google" {
-				s.logger.Debug("User already exists with Google ID: %s", googleIdToken[0:10]+"***********")
+				s.log.Debug("User already exists with Google ID: %s", googleIdToken[0:10]+"***********")
 				return existingUser, nil
 			}
 		}
@@ -159,18 +158,17 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 		existingUser.ProfilePicURL = googleUser.Picture
 		existingUser.Name = googleUser.Name
 		existingUser.UpdatedAt = time.Now()
-		s.logger.Debug("Updating existing user with Google Provider")
 		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"_id": existingUser.ID}, bson.M{
 			"$set": existingUser.GetValue(),
 		})
 		if err != nil {
-			s.logger.Error("Error updating existing user: %v", err)
+			s.log.Error("Error updating existing user: %v", err)
 			return nil, fmt.Errorf("error updating existing user: %v", err)
 		}
-		s.logger.Debug("User updated successfully: %s", existingUser.Email)
+		s.log.Debug("User updated successfully: %s", existingUser.Email)
 		return existingUser, nil
 	} else {
-		s.logger.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
+		s.log.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
 		user, err := model.NewUser(googleUser.Email, googleUser.Sub, googleUser.Name, googleUser.Picture)
 		if err != nil {
 			return nil, err
@@ -180,7 +178,7 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 			"google",
 		)
 		if err != nil {
-			s.logger.Error("Error creating auth provider: %v", err)
+			s.log.Error("Error creating auth provider: %v", err)
 			return nil, err
 		}
 
@@ -188,11 +186,11 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 		user.Providers = append(user.Providers, *userAuthProvider)
 		id, err := s.userQueryBuilder.SingleQuery().InsertOne(user.GetValue())
 		if err != nil {
-			s.logger.Error("Error inserting user into database: %v", err)
+			s.log.Error("Error inserting user into database: %v", err)
 			return nil, err
 		}
 		user.ID = *id
-		s.logger.Debug("User created successfully: %s", user.Email)
+		s.log.Debug("User created successfully: %s", user.Email)
 		return user, nil
 	}
 }

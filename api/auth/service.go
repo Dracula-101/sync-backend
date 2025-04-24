@@ -26,7 +26,6 @@ type authService struct {
 }
 
 func NewAuthService(
-	logger utils.AppLogger,
 	userService user.UserService,
 	sessionService session.SessionService,
 	tokenService token.TokenService,
@@ -34,7 +33,7 @@ func NewAuthService(
 ) AuthService {
 	return &authService{
 		BaseService:    network.NewBaseService(),
-		logger:         logger,
+		logger:         utils.NewServiceLogger("AuthService"),
 		userService:    userService,
 		sessionService: sessionService,
 		tokenService:   tokenService,
