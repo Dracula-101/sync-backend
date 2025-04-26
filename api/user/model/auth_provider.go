@@ -8,6 +8,10 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+var (
+	GoogleProviderName = "google"
+)
+
 type Provider struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty"`
 	AuthIdToken  string             `bson:"idToken" validate:"required"`

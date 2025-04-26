@@ -14,7 +14,7 @@ require (
 	golang.org/x/crypto v0.26.0
 )
 
-require golang.org/x/term v0.31.0 // indirect
+require golang.org/x/term v0.31.0
 
 require (
 	github.com/bytedance/sonic v1.11.9 // indirect
@@ -37,6 +37,7 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/lib/pq v1.10.9
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

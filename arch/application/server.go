@@ -4,11 +4,14 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
+	"time"
 
 	"sync-backend/arch/config"
 	"sync-backend/arch/mongo"
 	"sync-backend/arch/network"
+	pg "sync-backend/arch/postgres"
 	"sync-backend/arch/redis"
 	"sync-backend/utils"
 
@@ -50,6 +53,21 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 	db := mongo.NewDatabase(context, dbLogger, dbConfig)
 	db.Connect()
 
+	ipDbConfig := pg.DbConfig{
+		User:         env.IpDBUser,
+		Pwd:          env.IpDBPassword,
+		Host:         env.IpDBHost,
+		Port:         strconv.Itoa(env.IpDBPort),
+		Name:         env.IpDBName,
+		SSLMode:      "require",
+		MaxOpenConns: 20,
+		MaxIdleConns: 10,
+		MaxLifetime:  time.Minute * 50,
+	}
+
+	ipDb := pg.NewDatabase(context, dbLogger, ipDbConfig)
+	ipDb.Connect()
+
 	if env.Env != gin.TestMode {
 		EnsureDbIndexes(db)
 	}
@@ -64,7 +82,7 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 	store := redis.NewStore(context, redisLogger, &redisConfig)
 	store.Connect()
 
-	module := NewAppModule(context, env, config, db, store)
+	module := NewAppModule(context, env, config, db, ipDb, store)
 	router := network.NewRouter(env.Env, serverLogger)
 	router.RegisterValidationParsers(network.CustomTagNameFunc())
 	router.LoadRootMiddlewares(module.RootMiddlewares())
@@ -72,7 +90,9 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 
 	shutdown := func() {
 		db.Disconnect()
+		ipDb.Disconnect()
 		store.Disconnect()
+		context.Done()
 	}
 
 	return router, module, shutdown

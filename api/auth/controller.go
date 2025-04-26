@@ -2,6 +2,7 @@ package auth
 
 import (
 	"sync-backend/api/auth/dto"
+	"sync-backend/api/location"
 	"sync-backend/api/user"
 	"sync-backend/arch/common"
 	"sync-backend/arch/network"
@@ -14,23 +15,26 @@ type authController struct {
 	logger utils.AppLogger
 	network.BaseController
 	common.ContextPayload
-	authProvider network.AuthenticationProvider
-	authService  AuthService
-	userService  user.UserService
+	authProvider    network.AuthenticationProvider
+	authService     AuthService
+	userService     user.UserService
+	locationService location.LocationService
 }
 
 func NewAuthController(
 	authService AuthService,
-	userService user.UserService,
 	authProvider network.AuthenticationProvider,
+	userService user.UserService,
+	locationService location.LocationService,
 ) network.Controller {
 	return &authController{
-		logger:         utils.NewServiceLogger("AuthController"),
-		BaseController: network.NewBaseController("/api/v1/auth", authProvider),
-		ContextPayload: common.NewContextPayload(),
-		authProvider:   authProvider,
-		authService:    authService,
-		userService:    userService,
+		logger:          utils.NewServiceLogger("AuthController"),
+		BaseController:  network.NewBaseController("/api/v1/auth", authProvider),
+		ContextPayload:  common.NewContextPayload(),
+		authProvider:    authProvider,
+		authService:     authService,
+		userService:     userService,
+		locationService: locationService,
 	}
 }
 

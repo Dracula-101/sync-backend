@@ -2,6 +2,7 @@ package auth
 
 import (
 	"sync-backend/api/auth/dto"
+	"sync-backend/api/location"
 	"sync-backend/api/session"
 	"sync-backend/api/token"
 	"sync-backend/api/user"
@@ -19,40 +20,43 @@ type AuthService interface {
 
 type authService struct {
 	network.BaseService
-	logger         utils.AppLogger
-	userService    user.UserService
-	sessionService session.SessionService
-	tokenService   token.TokenService
+	logger          utils.AppLogger
+	userService     user.UserService
+	locationService location.LocationService
+	sessionService  session.SessionService
+	tokenService    token.TokenService
 }
 
 func NewAuthService(
 	userService user.UserService,
 	sessionService session.SessionService,
+	locationService location.LocationService,
 	tokenService token.TokenService,
 	config *config.Config,
 ) AuthService {
 	return &authService{
-		BaseService:    network.NewBaseService(),
-		logger:         utils.NewServiceLogger("AuthService"),
-		userService:    userService,
-		sessionService: sessionService,
-		tokenService:   tokenService,
+		BaseService:     network.NewBaseService(),
+		logger:          utils.NewServiceLogger("AuthService"),
+		userService:     userService,
+		locationService: locationService,
+		sessionService:  sessionService,
+		tokenService:    tokenService,
 	}
 }
 
 func (s *authService) SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpResponse, network.ApiError) {
 	s.logger.Info("Signing up user with email: %s", signUpRequest.Email)
-	user, err := s.userService.CreateUser(signUpRequest.Email, signUpRequest.Password, signUpRequest.Name, signUpRequest.ProfilePicUrl)
+	user, err := s.userService.CreateUser(signUpRequest.Email, signUpRequest.Password, signUpRequest.FirstName, signUpRequest.LastName, signUpRequest.ProfilePicUrl, signUpRequest.Bio)
 	if err != nil {
 		return nil, network.NewInternalServerError("error creating user", err)
 	}
-	token, err := s.tokenService.GenerateTokenPair(user.ID.Hex())
+	token, err := s.tokenService.GenerateTokenPair(user.UserId)
 	if err != nil {
 		return nil, network.NewInternalServerError("error generating token", err)
 	}
 
 	s.sessionService.CreateSession(
-		user.ID.Hex(), token.AccessToken, token.RefreshToken, signUpRequest.UserAgent, signUpRequest.IPAddress, token.AccessTokenExpiresIn,
+		user.UserId, token.AccessToken, token.RefreshToken, signUpRequest.UserAgent, signUpRequest.IPAddress, token.AccessTokenExpiresIn,
 	)
 	signUpResponse := dto.NewSignUpResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 	s.logger.Success("User signed up successfully: %s", signUpRequest.Email)
@@ -73,7 +77,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 	if err != nil {
 		return nil, network.NewUnauthorizedError("invalid password", err)
 	}
-	session, err := s.sessionService.GetUserActiveSession(user.ID.Hex())
+	session, err := s.sessionService.GetUserActiveSession(user.UserId)
 	if err != nil {
 		return nil, network.NewInternalServerError("error getting user session", err)
 	}
@@ -83,12 +87,12 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		return loginResponse, nil
 	} else {
 		// Create a new session
-		token, err := s.tokenService.GenerateTokenPair(user.ID.Hex())
+		token, err := s.tokenService.GenerateTokenPair(user.UserId)
 		if err != nil {
 			return nil, network.NewInternalServerError("error generating token", err)
 		}
 		_, err = s.sessionService.CreateSession(
-			user.ID.Hex(), token.AccessToken, token.RefreshToken, loginRequest.UserAgent, loginRequest.IPAddress, token.AccessTokenExpiresIn,
+			user.UserId, token.AccessToken, token.RefreshToken, loginRequest.UserAgent, loginRequest.IPAddress, token.AccessTokenExpiresIn,
 		)
 		if err != nil {
 			return nil, network.NewInternalServerError("error creating session", err)
@@ -106,17 +110,17 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		return nil, network.NewInternalServerError("error finding user", err)
 	}
 	if user == nil {
-		user, err = s.userService.CreateUserWithGoogleId(googleLoginRequest.GoogleIdToken)
+		user, err = s.userService.CreateUserWithGoogleId(googleLoginRequest.GoogleIdToken, googleLoginRequest.Bio)
 		if err != nil {
 			return nil, network.NewInternalServerError("error creating user", err)
 		}
 	}
-	token, err := s.tokenService.GenerateTokenPair(user.ID.Hex())
+	token, err := s.tokenService.GenerateTokenPair(user.UserId)
 	if err != nil {
 		return nil, network.NewInternalServerError("error generating token", err)
 	}
 	_, err = s.sessionService.CreateSession(
-		user.ID.Hex(), token.AccessToken, token.RefreshToken, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress, token.AccessTokenExpiresIn,
+		user.UserId, token.AccessToken, token.RefreshToken, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress, token.AccessTokenExpiresIn,
 	)
 	if err != nil {
 		return nil, network.NewInternalServerError("error creating session", err)

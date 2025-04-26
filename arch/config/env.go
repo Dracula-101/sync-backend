@@ -18,6 +18,12 @@ type Env struct {
 	DBHost     string `mapstructure:"DB_HOST"`
 	DBName     string `mapstructure:"DB_NAME"`
 
+	IpDBHost     string `mapstructure:"IP_DB_HOST"`
+	IpDBPort     int    `mapstructure:"IP_DB_PORT"`
+	IpDBUser     string `mapstructure:"IP_DB_USER"`
+	IpDBPassword string `mapstructure:"IP_DB_PWD"`
+	IpDBName     string `mapstructure:"IP_DB_NAME"`
+
 	RedisHost     string `mapstructure:"REDIS_HOST"`
 	RedisPort     int    `mapstructure:"REDIS_PORT"`
 	RedisPassword string `mapstructure:"REDIS_PWD"`
@@ -35,6 +41,11 @@ func NewEnv(file string) Env {
 		DBPassword:    GetStrEnvOrPanic("DB_PASSWORD"),
 		DBHost:        GetStrEnvOrPanic("DB_HOST"),
 		DBName:        GetStrEnvOrPanic("DB_NAME"),
+		IpDBHost:      GetStrEnvOrPanic("IP_DB_HOST"),
+		IpDBPort:      GetIntEnvOrPanic("IP_DB_PORT"),
+		IpDBUser:      GetStrEnvOrPanic("IP_DB_USER"),
+		IpDBPassword:  GetStrEnvOrPanic("IP_DB_PASSWORD"),
+		IpDBName:      GetStrEnvOrPanic("IP_DB_NAME"),
 		RedisHost:     GetStrEnvOrPanic("REDIS_HOST"),
 		RedisPort:     GetIntEnvOrPanic("REDIS_PORT"),
 		RedisDB:       GetIntEnvOrPanic("REDIS_DB"),

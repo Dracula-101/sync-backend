@@ -15,9 +15,11 @@ import (
 
 type SignUpRequest struct {
 	coredto.BaseRequest
-	Name          string `json:"name" binding:"required" validate:"required,max=200"`
+	FirstName     string `json:"first_name" binding:"required,name" validate:"required,name"`
+	LastName      string `json:"last_name" binding:"required,name" validate:"required,name"`
 	Email         string `json:"email" binding:"required,email" validate:"email"`
 	Password      string `json:"password" binding:"required" validate:"required,min=6,max=100"`
+	Bio           string `json:"bio" binding:"omitempty,max=500" validate:"omitempty,max=500"`
 	ProfilePicUrl string `json:"profile_pic_url" binding:"omitempty,max=500" validate:"omitempty,max=500"`
 }
 
@@ -56,8 +58,8 @@ func (s *SignUpRequest) ValidateErrors(errs validator.ValidationErrors) ([]strin
 
 type SignUpResponse struct {
 	User         model.UserInfo `json:"user"`
-	AccessToken  string   `json:"access_token" validate:"required"`
-	RefreshToken string   `json:"refresh_token" validate:"required"`
+	AccessToken  string         `json:"access_token" validate:"required"`
+	RefreshToken string         `json:"refresh_token" validate:"required"`
 }
 
 func NewSignUpResponse(userInfo model.UserInfo, accessToken string, refreshToken string) *SignUpResponse {

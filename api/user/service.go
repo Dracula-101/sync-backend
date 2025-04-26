@@ -9,32 +9,35 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"sync-backend/api/user/model"
+	"sync-backend/arch/common"
 	"sync-backend/arch/mongo"
 	"sync-backend/utils"
 )
 
 type UserService interface {
-	CreateUser(email string, password string, name string, profilePicUrl string) (*model.User, error)
+	CreateUser(email string, password string, firstName string, lastName string, profilePicUrl string, bio string) (*model.User, error)
 	FindUserByEmail(email string) (*model.User, error)
 	ValidateUserPassword(user *model.User, password string) error
 	GetUserById(id string) (*model.User, error)
 	GetUserByGoogleId(googleId string) (*model.User, error)
-	CreateUserWithGoogleId(googleIdToken string) (*model.User, error)
+	CreateUserWithGoogleId(googleIdToken string, bio string) (*model.User, error)
 }
 
 type userService struct {
-	log              utils.AppLogger
-	userQueryBuilder mongo.QueryBuilder[model.User]
+	log                utils.AppLogger
+	userQueryBuilder   mongo.QueryBuilder[model.User]
+	transactionBuilder mongo.TransactionBuilder
 }
 
 func NewUserService(db mongo.Database) UserService {
 	return &userService{
-		userQueryBuilder: mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
-		log:              utils.NewServiceLogger("UserService"),
+		userQueryBuilder:   mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
+		transactionBuilder: mongo.NewTransactionBuilder(db),
+		log:                utils.NewServiceLogger("UserService"),
 	}
 }
 
-func (s *userService) CreateUser(email string, password string, name string, profilePicUrl string) (*model.User, error) {
+func (s *userService) CreateUser(email string, password string, firstName string, lastName string, profilePicUrl string, bio string) (*model.User, error) {
 	s.log.Debug("Creating user with email: %s", email)
 	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email}, nil)
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
@@ -51,7 +54,18 @@ func (s *userService) CreateUser(email string, password string, name string, pro
 		s.log.Error("Error hashing password: %v", err)
 		return nil, err
 	}
-	user, err := model.NewUser(email, hashedPassword, name, profilePicUrl)
+	user, err := model.NewUser(
+		email,
+		hashedPassword,
+		firstName,
+		lastName,
+		bio,
+		profilePicUrl,
+		"https://placehold.co/1200x400.png",
+		common.English,
+		common.AsiaKolkata,
+		*model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
+	)
 	if err != nil {
 		s.log.Error("Error creating user: %v", err)
 		return nil, err
@@ -62,7 +76,7 @@ func (s *userService) CreateUser(email string, password string, name string, pro
 		s.log.Error("Error inserting user into database: %v", err)
 		return nil, err
 	}
-	user.ID = *id
+	user.Id = *id
 	return user, nil
 }
 
@@ -82,12 +96,8 @@ func (s *userService) FindUserByEmail(email string) (*model.User, error) {
 
 func (s *userService) ValidateUserPassword(user *model.User, password string) error {
 	s.log.Debug("Validating password for user: %s", user.Email)
-	if user.Password == nil {
-		s.log.Error("User has no password set")
-		return errors.New("user has no password set")
-	}
 
-	isValid, err := utils.CheckPasswordHash(password, *user.Password)
+	isValid, err := utils.CheckPasswordHash(password, *&user.PasswordHash)
 	if err != nil {
 		s.log.Error("Error comparing password: %v", err)
 		return fmt.Errorf("error comparing password: %v", err)
@@ -109,7 +119,7 @@ func (s *userService) GetUserById(id string) (*model.User, error) {
 		s.log.Error("Error getting user by ID: %v", err)
 		return nil, err
 	}
-	s.log.Debug("User found by ID: %s", user.ID)
+	s.log.Debug("User found by ID: %s", user.UserId)
 	return user, nil
 }
 
@@ -127,7 +137,7 @@ func (s *userService) GetUserByGoogleId(googleId string) (*model.User, error) {
 	return user, nil
 }
 
-func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User, error) {
+func (s *userService) CreateUserWithGoogleId(googleIdToken string, bio string) (*model.User, error) {
 	s.log.Debug("Creating user with Google ID token: %s", googleIdToken[0:10]+"***********")
 	googleUser, err := utils.DecodeGoogleJWTToken(googleIdToken)
 	if err != nil {
@@ -143,7 +153,7 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 
 	if existingUser != nil {
 		for _, provider := range existingUser.Providers {
-			if provider.AuthProvider == "google" {
+			if provider.AuthProvider == model.GoogleProviderName {
 				s.log.Debug("User already exists with Google ID: %s", googleIdToken[0:10]+"***********")
 				return existingUser, nil
 			}
@@ -151,14 +161,16 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 		existingUser.Providers = append(existingUser.Providers, model.Provider{
 			Id:           primitive.NewObjectID(),
 			AuthIdToken:  googleIdToken,
-			AuthProvider: "google",
+			AuthProvider: model.GoogleProviderName,
 			AddedAt:      time.Now(),
 		})
-		existingUser.Verified = googleUser.EmailVerified
-		existingUser.ProfilePicURL = googleUser.Picture
-		existingUser.Name = googleUser.Name
-		existingUser.UpdatedAt = time.Now()
-		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"_id": existingUser.ID}, bson.M{
+		existingUser.VerifiedEmail = googleUser.EmailVerified
+		existingUser.Avatar.ProfilePic.Url = googleUser.Picture
+		existingUser.FirstName = googleUser.GivenName
+		existingUser.LastName = googleUser.FamilyName
+		existingUser.Email = googleUser.Email
+		existingUser.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": existingUser.UserId}, bson.M{
 			"$set": existingUser.GetValue(),
 		})
 		if err != nil {
@@ -169,27 +181,43 @@ func (s *userService) CreateUserWithGoogleId(googleIdToken string) (*model.User,
 		return existingUser, nil
 	} else {
 		s.log.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
-		user, err := model.NewUser(googleUser.Email, googleUser.Sub, googleUser.Name, googleUser.Picture)
+		hashedPassword, err := utils.HashPassword(googleUser.Sub)
+		if err != nil {
+			s.log.Error("Error hashing password: %v", err)
+			return nil, err
+		}
+		user, err := model.NewUser(
+			googleUser.Email,
+			hashedPassword,
+			googleUser.GivenName,
+			googleUser.FamilyName,
+			bio,
+			googleUser.Picture,
+			"https://placehold.co/1200x400.png",
+			common.English,
+			common.AsiaKolkata,
+			*model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
+		)
 		if err != nil {
 			return nil, err
 		}
 		userAuthProvider, err := model.NewAuthProvider(
 			googleIdToken,
-			"google",
+			model.GoogleProviderName,
 		)
 		if err != nil {
 			s.log.Error("Error creating auth provider: %v", err)
 			return nil, err
 		}
 
-		user.Verified = googleUser.EmailVerified
+		user.VerifiedEmail = googleUser.EmailVerified
 		user.Providers = append(user.Providers, *userAuthProvider)
 		id, err := s.userQueryBuilder.SingleQuery().InsertOne(user.GetValue())
 		if err != nil {
 			s.log.Error("Error inserting user into database: %v", err)
 			return nil, err
 		}
-		user.ID = *id
+		user.UserId = id.Hex()
 		s.log.Debug("User created successfully: %s", user.Email)
 		return user, nil
 	}

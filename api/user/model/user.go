@@ -2,7 +2,9 @@ package model
 
 import (
 	"context"
+	"sync-backend/arch/common"
 	"sync-backend/arch/mongo"
+	"sync-backend/utils"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -15,30 +17,77 @@ import (
 const UserCollectionName = "users"
 
 type User struct {
-	ID            primitive.ObjectID `bson:"_id,omitempty"`
-	Name          string             `bson:"name" validate:"required,max=200"`
-	Email         string             `bson:"email" validate:"required,email"`
-	Password      *string            `bson:"password" validate:"required,min=6,max=100"`
-	ProfilePicURL string             `bson:"profilePicUrl,omitempty" validate:"omitempty,max=500"`
-	Verified      bool               `bson:"verified" validate:"-"`
-	Status        bool               `bson:"status" validate:"-"`
-	Providers     []Provider         `bson:"providers,omitempty"`
-	CreatedAt     time.Time          `bson:"createdAt" validate:"required"`
-	UpdatedAt     time.Time          `bson:"updatedAt" validate:"required"`
+	Id                primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	UserId            string             `bson:"userId" json:"userId"`
+	Email             string             `bson:"email" json:"email"`
+	PasswordHash      string             `bson:"passwordHash" json:"passwordHash"`
+	FirstName         string             `bson:"firstName" json:"firstName"`
+	LastName          string             `bson:"lastName" json:"lastName"`
+	Bio               string             `bson:"bio" json:"bio"`
+	VerifiedEmail     bool               `bson:"verifiedEmail" json:"verifiedEmail"`
+	Status            UserStatus         `bson:"status" json:"status"`
+	Avatar            UserAvatar         `bson:"avatar" json:"avatar"`
+	Synergy           UserSynergy        `bson:"synergy" json:"synergy"`
+	Providers         []Provider         `bson:"providers" json:"providers"`
+	JoinedWavelengths []string           `bson:"joinedWavelengths" json:"joinedWavelengths"`
+	ModeratorOf       []string           `bson:"moderatorOf" json:"moderatorOf"`
+	Follows           []string           `bson:"follows" json:"follows"`
+	Followers         []string           `bson:"followers" json:"followers"`
+	Preferences       UserPreferences    `bson:"preferences" json:"preferences"`
+	DeviceTokens      []DeviceToken      `bson:"deviceTokens" json:"deviceTokens"`
+	LoginHistory      []LoginHistory     `bson:"loginHistory" json:"loginHistory"`
+	LastSeen          primitive.DateTime `bson:"lastSeen" json:"lastSeen"`
+	CreatedAt         primitive.DateTime `bson:"createdAt" json:"createdAt"`
+	UpdatedAt         primitive.DateTime `bson:"updatedAt" json:"updatedAt"`
+	DeletedAt         primitive.DateTime `bson:"deletedAt" json:"deletedAt"`
 }
 
-func NewUser(email string, pwdHash string, name string, profilePicUrl string) (*User, error) {
+type UserStatus string
+
+const (
+	Active      UserStatus = "active"
+	Inactive    UserStatus = "inactive"
+	UnAvailable UserStatus = "unavailable"
+)
+
+func NewUser(
+	email string,
+	passwordHash string,
+	firstName string,
+	lastName string,
+	bio string,
+	avatarUrl string,
+	backgroundUrl string,
+	language common.Language,
+	timeZone common.TimeZone,
+	deviceToken DeviceToken,
+) (*User, error) {
 
 	now := time.Now()
 	u := User{
-		Email:         email,
-		Password:      &pwdHash,
-		Name:          name,
-		ProfilePicURL: profilePicUrl,
-		Verified:      false,
-		Status:        true,
-		CreatedAt:     now,
-		UpdatedAt:     now,
+		Id:                primitive.NewObjectID(),
+		UserId:            utils.GenerateUUID(),
+		Email:             email,
+		PasswordHash:      passwordHash,
+		FirstName:         firstName,
+		LastName:          lastName,
+		VerifiedEmail:     false,
+		Bio:               bio,
+		Status:            Active,
+		Avatar:            NewUserAvatar(avatarUrl, backgroundUrl),
+		Synergy:           NewUserSynergy(),
+		Providers:         []Provider{},
+		JoinedWavelengths: []string{},
+		ModeratorOf:       []string{},
+		Follows:           []string{},
+		Followers:         []string{},
+		Preferences:       NewUserPreferences(language.ToDetail(), timeZone.ToDetail(), "dark", "India"),
+		DeviceTokens:      []DeviceToken{deviceToken},
+		LoginHistory:      []LoginHistory{},
+		LastSeen:          primitive.NewDateTimeFromTime(now),
+		CreatedAt:         primitive.NewDateTimeFromTime(now),
+		UpdatedAt:         primitive.NewDateTimeFromTime(now),
+		DeletedAt:         primitive.NewDateTimeFromTime(now),
 	}
 	if err := u.Validate(); err != nil {
 		return nil, err
@@ -78,11 +127,19 @@ func (user *User) GetUserInfo() *UserInfo {
 		}
 	}
 	return &UserInfo{
-		UserId:     user.ID.Hex(),
-		Name:       user.Name,
-		Email:      user.Email,
-		ProfilePic: user.ProfilePicURL,
-		Providers:  providerInfo,
+		Id:                user.Id,
+		UserId:            user.UserId,
+		Email:             user.Email,
+		FirstName:         user.FirstName,
+		LastName:          user.LastName,
+		Bio:               user.Bio,
+		VerifiedEmail:     user.VerifiedEmail,
+		Avatar:            user.Avatar,
+		Synergy:           user.Synergy,
+		JoinedWavelengths: user.JoinedWavelengths,
+		ModeratorOf:       user.ModeratorOf,
+		Follows:           len(user.Follows),
+		Followers:         len(user.Followers),
 	}
 }
 
