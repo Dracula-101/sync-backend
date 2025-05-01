@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"strings"
-	"sync-backend/api/token"
-	"sync-backend/api/user"
+	"sync-backend/api/common/token"
+	"sync-backend/api/common/user"
 	"sync-backend/arch/common"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
@@ -34,13 +34,21 @@ func NewAuthenticationProvider(
 
 func (p *authenticationProvider) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+
 		authHeader := ctx.GetHeader(network.AuthorizationHeader)
 		if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
 			p.Send(ctx).UnauthorizedError("Invalid or missing Authorization header", nil)
-			ctx.Abort()
 			return
 		}
-		tokenString := strings.Split(authHeader, " ")[1]
+
+		tokenSplit := strings.Split(authHeader, " ")
+		if len(tokenSplit) != 2 {
+			p.logger.Error("Invalid Authorization header format: %s", authHeader)
+			p.Send(ctx).UnauthorizedError("Invalid Authorization header format", nil)
+			return
+		}
+
+		tokenString := tokenSplit[len(tokenSplit)-1]
 
 		token, claims, err := p.tokenService.ValidateToken(tokenString)
 		if err != nil {
@@ -55,6 +63,7 @@ func (p *authenticationProvider) Middleware() gin.HandlerFunc {
 		}
 
 		p.SetUserId(ctx, claims.UserID)
+		p.logger.Debug("User ID from token: %s", claims.UserID)
 		ctx.Next()
 	}
 }

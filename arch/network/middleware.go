@@ -23,20 +23,36 @@ func (m *baseMiddleware) Debug() bool {
 
 func NotAllowed() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(405, gin.H{
-			"message": "Method Not Allowed",
-			"status":  405,
-		})
+		c.JSON(405, NewEnvelopeWithErrors(
+			false,
+			405,
+			"Method Not Allowed",
+			[]ErrorDetail{
+				{
+					Code:    "METHOD_NOT_ALLOWED",
+					Message: fmt.Sprintf("%s Method Not Allowed", c.Request.Method),
+					Detail:  fmt.Sprintf("The method %s is not allowed for the requested URL %s", c.Request.Method, c.Request.URL),
+				},
+			},
+		))
 		c.Abort()
 	}
 }
 
 func NotFound() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(404, gin.H{
-			"message": "Url Not Found",
-			"status":  404,
-		})
+		c.JSON(404, NewEnvelopeWithErrors(
+			false,
+			404,
+			"Not Found",
+			[]ErrorDetail{
+				{
+					Code:    "NOT_FOUND",
+					Message: fmt.Sprintf("%s Not Found", c.Request.URL.Path),
+					Detail:  fmt.Sprintf("The requested URL %s was not found on this server", c.Request.URL),
+				},
+			},
+		))
 		c.Abort()
 	}
 }

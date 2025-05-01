@@ -19,31 +19,45 @@ const SessionCollectionName = "sessions"
 type Session struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	SessionID    string             `bson:"sessionId" json:"sessionId"`
-	UserID       string             `bson:"userId" json:"userId"`
 	Token        string             `bson:"token" json:"token"`
-	RefreshToken string             `bson:"refreshToken,omitempty" json:"refreshToken,omitempty"`
-	UserAgent    string             `bson:"userAgent" json:"userAgent"`
-	IPAddress    string             `bson:"ipAddress" json:"ipAddress"`
-	LastActive   time.Time          `bson:"lastActive" json:"lastActive"`
+	RefreshToken string             `bson:"refreshToken" json:"refreshToken"`
 	ExpiresAt    time.Time          `bson:"expiresAt" json:"expiresAt"`
+	UserID       string             `bson:"userId" json:"userId"`
+	UserAgent    string             `bson:"userAgent" json:"userAgent"`
+	Device       DeviceInfo         `bson:"device" json:"device"`
+	IPAddress    string             `bson:"ipAddress" json:"ipAddress"`
+	Location     LocationInfo       `bson:"location" json:"location"`
+	LastActive   time.Time          `bson:"lastActive" json:"lastActive"`
 	IssuedAt     time.Time          `bson:"issuedAt" json:"issuedAt"`
 	IsRevoked    bool               `bson:"isRevoked" json:"isRevoked"`
 	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
 }
 
-func NewSession(userID, token, refreshToken, userAgent, ipAddress string, expiresAt time.Time) (*Session, error) {
+type NewSessionArgs struct {
+	UserId       string
+	Token        string
+	RefreshToken string
+	ExpiresAt    time.Time
+	DeviceInfo   DeviceInfo
+	UserAgent    string
+	IpAddress    string
+	Location     LocationInfo
+}
+
+func NewSession(newSessionArgs NewSessionArgs) (*Session, error) {
 	now := time.Now()
 	session := Session{
-		ID:           primitive.NewObjectID(),
 		SessionID:    utils.GenerateUUID(),
-		UserID:       userID,
-		Token:        token,
-		RefreshToken: refreshToken,
-		UserAgent:    userAgent,
-		IPAddress:    ipAddress,
+		Token:        newSessionArgs.Token,
+		RefreshToken: newSessionArgs.RefreshToken,
+		ExpiresAt:    newSessionArgs.ExpiresAt,
+		UserID:       newSessionArgs.UserId,
+		UserAgent:    newSessionArgs.UserAgent,
+		Device:       newSessionArgs.DeviceInfo,
+		IPAddress:    newSessionArgs.IpAddress,
+		Location:     newSessionArgs.Location,
 		LastActive:   now,
-		ExpiresAt:    expiresAt,
 		IssuedAt:     now,
 		IsRevoked:    false,
 		CreatedAt:    now,

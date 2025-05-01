@@ -1,9 +1,8 @@
 package token
 
 import (
-	"crypto/rsa"
 	"fmt"
-	"sync-backend/api/token/model"
+	"sync-backend/api/common/token/model"
 	"sync-backend/arch/config"
 	"sync-backend/utils"
 	"time"
@@ -19,8 +18,7 @@ type TokenService interface {
 }
 
 type tokenService struct {
-	privateKey         *rsa.PrivateKey
-	publicKey          *rsa.PublicKey
+	secretKey          []byte
 	accessTokenExpiry  int64
 	refreshTokenExpiry int64
 	issuer             string
@@ -28,24 +26,10 @@ type tokenService struct {
 }
 
 func NewTokenService(config *config.Config) TokenService {
-	privateKeyBytes, err := utils.LoadPEMFileInto(config.Auth.JWT.PrivateKeyPath)
-	if err != nil {
-		panic(fmt.Sprintf("failed to load private key: %v", err))
-	}
-
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
-	if err != nil {
-		panic(fmt.Sprintf("failed to parse private key: %v", err))
-	}
-
-	publicKeyBytes, err := utils.LoadPEMFileInto(config.Auth.JWT.PublicKeyPath)
-	if err != nil {
-		panic(fmt.Sprintf("failed to load public key: %v", err))
-	}
-
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicKeyBytes)
-	if err != nil {
-		panic(fmt.Sprintf("failed to parse public key: %v", err))
+	// Load secret key for HMAC-SHA256
+	secretKey := []byte(config.Auth.JWT.SecretKey)
+	if len(secretKey) == 0 {
+		panic("JWT secret key is empty")
 	}
 
 	// Parse token expiry durations
@@ -53,8 +37,7 @@ func NewTokenService(config *config.Config) TokenService {
 	refreshTokenExpiry := int64(utils.ParseSafeDuration(config.Auth.JWT.RefreshTokenExpiry).Seconds())
 
 	return &tokenService{
-		privateKey:         privateKey,
-		publicKey:          publicKey,
+		secretKey:          secretKey,
 		accessTokenExpiry:  accessTokenExpiry,
 		refreshTokenExpiry: refreshTokenExpiry,
 		issuer:             config.Auth.JWT.Issuer,
@@ -76,9 +59,9 @@ func (s *tokenService) generateToken(userId string, tokenType model.TokenType, e
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signedToken, err := token.SignedString(s.privateKey)
+	signedToken, err := token.SignedString(s.secretKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to sign token: %w", err)
 	}
@@ -107,18 +90,18 @@ func (s *tokenService) GenerateTokenPair(userId string) (*model.TokenPair, error
 
 func (s *tokenService) ValidateToken(tokenString string) (*jwt.Token, *model.TokenClaims, error) {
 	token, err := jwt.ParseWithClaims(
-		tokenString, 
-		&model.TokenClaims{}, 
+		tokenString,
+		&model.TokenClaims{},
 		func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return s.publicKey, nil
+			return s.secretKey, nil
 		},
 	)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid token: %w", err)
+		return nil, nil, fmt.Errorf("invalid token: %s - %w", tokenString, err)
 	}
 
 	if !token.Valid {
@@ -147,6 +130,11 @@ func (s *tokenService) RefreshTokens(refreshToken string) (*model.TokenPair, err
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
 
-	// Generate a new token pair
+	// Ensure this is actually a refresh token
+	if claims.Type != model.RefreshToken {
+		return nil, fmt.Errorf("token is not a refresh token")
+	}
+
+	// Generate a new token pair using the same session ID
 	return s.GenerateTokenPair(claims.UserID)
 }

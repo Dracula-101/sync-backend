@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"sync-backend/api/user/model"
+	"sync-backend/api/common/user/model"
 	coredto "sync-backend/arch/dto"
 
 	"github.com/go-playground/validator/v10"
@@ -14,7 +14,7 @@ import (
 type GoogleLoginRequest struct {
 	coredto.BaseRequest
 	GoogleIdToken string `json:"google_id_token" binding:"required" validate:"required"`
-	Bio           string `json:"bio" binding:"omitempty,max=500" validate:"omitempty,max=500"`
+	Username      string `json:"username" binding:"required" validate:"required,min=3,max=50"`
 }
 
 func NewGoogleLoginRequest() *GoogleLoginRequest {

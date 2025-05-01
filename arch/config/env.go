@@ -13,6 +13,8 @@ type Env struct {
 	Env      string `mapstructure:"ENV"`
 	LogLevel string `mapstructure:"LOG_LEVEL"`
 
+	JWTSecret string `mapstructure:"JWT_SECRET"`
+
 	DBUser     string `mapstructure:"DB_USER"`
 	DBPassword string `mapstructure:"DB_PWD"`
 	DBHost     string `mapstructure:"DB_HOST"`
@@ -37,6 +39,7 @@ func NewEnv(file string) Env {
 		Port:          GetIntEnvOrPanic("PORT"),
 		Env:           GetStrEnvOrPanic("ENV"),
 		LogLevel:      GetStrEnvOrPanic("LOG_LEVEL"),
+		JWTSecret:     GetStrEnvOrPanic("JWT_SECRET"),
 		DBUser:        GetStrEnvOrPanic("DB_USER"),
 		DBPassword:    GetStrEnvOrPanic("DB_PASSWORD"),
 		DBHost:        GetStrEnvOrPanic("DB_HOST"),

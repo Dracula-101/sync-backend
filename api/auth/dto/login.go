@@ -2,7 +2,7 @@ package dto
 
 import (
 	"fmt"
-	"sync-backend/api/user/model"
+	"sync-backend/api/common/user/model"
 	coredto "sync-backend/arch/dto"
 
 	"github.com/go-playground/validator/v10"
@@ -14,8 +14,8 @@ import (
 
 type LoginRequest struct {
 	coredto.BaseRequest
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required,email" validate:"email"`
+	Password string `json:"password" binding:"required" validate:"required,min=6,max=100"`
 }
 
 func NewLoginRequest() *LoginRequest {
@@ -26,12 +26,16 @@ func (l *LoginRequest) GetValue() *LoginRequest {
 	return l
 }
 
-func (l *LoginRequest) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
+func (s *LoginRequest) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
 	var msgs []string
 	for _, err := range errs {
 		switch err.Tag() {
 		case "required":
 			msgs = append(msgs, fmt.Sprintf("%s is required", err.Field()))
+		case "min":
+			msgs = append(msgs, fmt.Sprintf("%s must be at least %s characters", err.Field(), err.Param()))
+		case "max":
+			msgs = append(msgs, fmt.Sprintf("%s must be at most %s characters", err.Field(), err.Param()))
 		case "email":
 			msgs = append(msgs, fmt.Sprintf("%s is not a valid email", err.Field()))
 		default:
@@ -47,7 +51,7 @@ func (l *LoginRequest) ValidateErrors(errs validator.ValidationErrors) ([]string
 
 type LoginResponse struct {
 	User        model.UserInfo `json:"user"`
-	AccessToken string   `json:"access_token" validate:"required"`
+	AccessToken string         `json:"access_token" validate:"required"`
 }
 
 func NewLoginResponse(userInfo model.UserInfo, accessToken string) *LoginResponse {

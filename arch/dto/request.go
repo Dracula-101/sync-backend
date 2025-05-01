@@ -7,10 +7,15 @@ import (
 )
 
 type BaseRequest struct {
-	IPAddress  string `json:"ip_address"`
-	UserAgent  string `json:"user_agent"`
-	DeviceId   string `json:"device_id"`
-	DeviceName string `json:"device_name"`
+	IPAddress     string `json:"ip_address"`
+	UserAgent     string `json:"user_agent"`
+	DeviceId      string `json:"device_id"`
+	DeviceName    string `json:"device_name"`
+	DeviceType    string `json:"device_type"`
+	DeviceOS      string `json:"device_os"`
+	DeviceModel   string `json:"device_model"`
+	DeviceVersion string `json:"device_version"`
+	Locale        string `json:"locale"`
 }
 
 func (b *BaseRequest) GetValue() *BaseRequest {

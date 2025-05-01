@@ -5,10 +5,10 @@ import (
 
 	"sync-backend/api/auth"
 	authMW "sync-backend/api/auth/middleware"
-	"sync-backend/api/location"
-	"sync-backend/api/session"
-	"sync-backend/api/token"
-	"sync-backend/api/user"
+	"sync-backend/api/common/location"
+	"sync-backend/api/common/session"
+	"sync-backend/api/common/token"
+	"sync-backend/api/common/user"
 	"sync-backend/arch/config"
 	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/mongo"
@@ -59,9 +59,9 @@ func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 func NewAppModule(context context.Context, env *config.Env, config *config.Config, db mongo.Database, ipDb pg.Database, store redis.Store) Module {
 	locationService := location.NewLocationService(ipDb)
 	tokenService := token.NewTokenService(config)
-	sessionService := session.NewSessionService(db)
+	sessionService := session.NewSessionService(db, locationService)
 	userService := user.NewUserService(db)
-	authService := auth.NewAuthService(userService, sessionService, locationService, tokenService, config)
+	authService := auth.NewAuthService(config, userService, sessionService, locationService, tokenService)
 	return &appModule{
 		Context:         context,
 		Env:             env,

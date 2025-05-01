@@ -1,9 +1,11 @@
 package session
 
 import (
+	"errors"
 	"time"
 
-	"sync-backend/api/session/model"
+	"sync-backend/api/common/location"
+	"sync-backend/api/common/session/model"
 	"sync-backend/arch/mongo"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,7 +13,8 @@ import (
 )
 
 type SessionService interface {
-	CreateSession(userID, token, refreshToken, userAgent, ipAddress string, expiresAt time.Time) (*model.Session, error)
+	CreateSession(userID string, token string, refreshToken string, expiresAt time.Time, deviceInfo model.DeviceInfo, userAgent string, ipAddress string) (*model.Session, error)
+	UpdateSessionInfo(sessionID string, deviceInfo model.DeviceInfo, userAgent string, ipAddress string) error
 	GetUserActiveSession(userID string) (*model.Session, error)
 	GetActiveSessionsByUserID(userID string) ([]*model.Session, error)
 	InvalidateSession(sessionID string) error
@@ -21,17 +24,44 @@ type SessionService interface {
 }
 
 type sessionService struct {
-	queryBuilder mongo.QueryBuilder[model.Session]
+	queryBuilder    mongo.QueryBuilder[model.Session]
+	locationService location.LocationService
 }
 
-func NewSessionService(db mongo.Database) SessionService {
+func NewSessionService(db mongo.Database, locationService location.LocationService) SessionService {
 	return &sessionService{
-		queryBuilder: mongo.NewQueryBuilder[model.Session](db, model.SessionCollectionName),
+		queryBuilder:    mongo.NewQueryBuilder[model.Session](db, model.SessionCollectionName),
+		locationService: locationService,
 	}
 }
 
-func (s *sessionService) CreateSession(userID, token, refresToken, userAgent, ipAddress string, expiresAt time.Time) (*model.Session, error) {
-	session, err := model.NewSession(userID, token, refresToken, userAgent, ipAddress, expiresAt)
+func (s *sessionService) CreateSession(userID string, token string, refreshToken string, expiresAt time.Time, deviceInfo model.DeviceInfo, userAgent string, ipAddress string) (*model.Session, error) {
+	rawLocation, err := s.locationService.GetLocationByIp(ipAddress)
+	if err != nil {
+		return nil, err
+	}
+	var locationInfo *model.LocationInfo
+	if rawLocation != nil {
+		locationInfo = &model.LocationInfo{
+			Country:   rawLocation.Country,
+			City:      rawLocation.City,
+			Latitude:  rawLocation.Lat,
+			Longitude: rawLocation.Lon,
+		}
+	} else {
+		return nil, errors.New("location not found")
+	}
+
+	session, err := model.NewSession(model.NewSessionArgs{
+		UserId:       userID,
+		Token:        token,
+		RefreshToken: refreshToken,
+		ExpiresAt:    expiresAt,
+		DeviceInfo:   deviceInfo,
+		UserAgent:    userAgent,
+		IpAddress:    ipAddress,
+		Location:     *locationInfo,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -43,6 +73,20 @@ func (s *sessionService) CreateSession(userID, token, refresToken, userAgent, ip
 	session.CreatedAt = time.Now()
 	session.UpdatedAt = time.Now()
 	return session, nil
+}
+
+func (s *sessionService) UpdateSessionInfo(sessionID string, deviceInfo model.DeviceInfo, userAgent string, ipAddress string) error {
+	filter := bson.M{"sessionId": sessionID, "isRevoked": false, "expiresAt": bson.M{"$gt": time.Now()}}
+	update := bson.M{
+		"$set": bson.M{
+			"device":    deviceInfo,
+			"userAgent": userAgent,
+			"ipAddress": ipAddress,
+			"updatedAt": time.Now(),
+		},
+	}
+	s.queryBuilder.SingleQuery().UpdateOne(filter, update)
+	return nil
 }
 
 func (s *sessionService) GetUserActiveSession(userID string) (*model.Session, error) {

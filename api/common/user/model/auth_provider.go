@@ -16,6 +16,7 @@ type Provider struct {
 	Id           primitive.ObjectID `bson:"_id,omitempty"`
 	AuthIdToken  string             `bson:"idToken" validate:"required"`
 	AuthProvider string             `bson:"providerName" validate:"required"`
+	Username     string             `bson:"username" validate:"required"`
 	AddedAt      time.Time          `bson:"addedAt" validate:"required"`
 }
 
@@ -32,5 +33,6 @@ func (authProvider *Provider) GetProviderInfo() *ProviderInfo {
 	return &ProviderInfo{
 		ProviderName: authProvider.AuthProvider,
 		AddedAt:      authProvider.AddedAt,
+		Username:     authProvider.Username,
 	}
 }

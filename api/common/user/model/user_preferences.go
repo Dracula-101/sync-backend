@@ -30,17 +30,21 @@ type UserPrivacySettings struct {
 	FollowersVisible           bool `bson:"followersVisible" json:"followersVisible"`
 }
 
+type UserPreferencesArgs struct {
+	Language common.LanguageDetail
+	timezone common.TimeZoneDetail
+	Theme    string
+	Location string
+}
+
 func NewUserPreferences(
-	language common.LanguageDetail,
-	timezone common.TimeZoneDetail,
-	theme string,
-	location string,
+	userPreferencesArgs UserPreferencesArgs,
 ) (up UserPreferences) {
 	return UserPreferences{
-		Language: language,
-		Theme:    theme,
-		Timezone: timezone,
-		Location: location,
+		Language: userPreferencesArgs.Language,
+		Theme:    userPreferencesArgs.Theme,
+		Timezone: userPreferencesArgs.timezone,
+		Location: userPreferencesArgs.Location,
 		Notifications: UserNotificationSettings{
 			Email: true,
 			Push:  false,

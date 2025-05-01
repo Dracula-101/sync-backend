@@ -17,12 +17,11 @@ import (
 const UserCollectionName = "users"
 
 type User struct {
-	Id                primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	UserId            string             `bson:"userId" json:"userId"`
+	Id                primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	UserId            string             `bson:"userId" json:"id"`
+	Username          string             `bson:"username" json:"username"`
 	Email             string             `bson:"email" json:"email"`
-	PasswordHash      string             `bson:"passwordHash" json:"passwordHash"`
-	FirstName         string             `bson:"firstName" json:"firstName"`
-	LastName          string             `bson:"lastName" json:"lastName"`
+	PasswordHash      string             `bson:"passwordHash" json:"-"`
 	Bio               string             `bson:"bio" json:"bio"`
 	VerifiedEmail     bool               `bson:"verifiedEmail" json:"verifiedEmail"`
 	Status            UserStatus         `bson:"status" json:"status"`
@@ -34,12 +33,12 @@ type User struct {
 	Follows           []string           `bson:"follows" json:"follows"`
 	Followers         []string           `bson:"followers" json:"followers"`
 	Preferences       UserPreferences    `bson:"preferences" json:"preferences"`
-	DeviceTokens      []DeviceToken      `bson:"deviceTokens" json:"deviceTokens"`
-	LoginHistory      []LoginHistory     `bson:"loginHistory" json:"loginHistory"`
+	DeviceTokens      []DeviceToken      `bson:"deviceTokens" json:"-"`
+	LoginHistory      []LoginHistory     `bson:"loginHistory" json:"-"`
 	LastSeen          primitive.DateTime `bson:"lastSeen" json:"lastSeen"`
 	CreatedAt         primitive.DateTime `bson:"createdAt" json:"createdAt"`
 	UpdatedAt         primitive.DateTime `bson:"updatedAt" json:"updatedAt"`
-	DeletedAt         primitive.DateTime `bson:"deletedAt" json:"deletedAt"`
+	DeletedAt         primitive.DateTime `bson:"deletedAt" json:"-"`
 }
 
 type UserStatus string
@@ -50,44 +49,53 @@ const (
 	UnAvailable UserStatus = "unavailable"
 )
 
+type NewUserArgs struct {
+	UserName      string
+	Email         string
+	PasswordHash  string
+	AvatarUrl     string
+	BackgroundUrl string
+	Language      common.Language
+	TimeZone      common.TimeZone
+	DeviceToken   DeviceToken
+}
+
 func NewUser(
-	email string,
-	passwordHash string,
-	firstName string,
-	lastName string,
-	bio string,
-	avatarUrl string,
-	backgroundUrl string,
-	language common.Language,
-	timeZone common.TimeZone,
-	deviceToken DeviceToken,
+	newUserArgs NewUserArgs,
 ) (*User, error) {
 
 	now := time.Now()
 	u := User{
-		Id:                primitive.NewObjectID(),
+		Username:          newUserArgs.UserName,
 		UserId:            utils.GenerateUUID(),
-		Email:             email,
-		PasswordHash:      passwordHash,
-		FirstName:         firstName,
-		LastName:          lastName,
+		Email:             newUserArgs.Email,
+		PasswordHash:      newUserArgs.PasswordHash,
 		VerifiedEmail:     false,
-		Bio:               bio,
+		Bio:               "",
 		Status:            Active,
-		Avatar:            NewUserAvatar(avatarUrl, backgroundUrl),
+		Avatar:            NewUserAvatar(newUserArgs.AvatarUrl, newUserArgs.BackgroundUrl),
 		Synergy:           NewUserSynergy(),
 		Providers:         []Provider{},
 		JoinedWavelengths: []string{},
 		ModeratorOf:       []string{},
 		Follows:           []string{},
 		Followers:         []string{},
-		Preferences:       NewUserPreferences(language.ToDetail(), timeZone.ToDetail(), "dark", "India"),
-		DeviceTokens:      []DeviceToken{deviceToken},
-		LoginHistory:      []LoginHistory{},
-		LastSeen:          primitive.NewDateTimeFromTime(now),
-		CreatedAt:         primitive.NewDateTimeFromTime(now),
-		UpdatedAt:         primitive.NewDateTimeFromTime(now),
-		DeletedAt:         primitive.NewDateTimeFromTime(now),
+		Preferences: NewUserPreferences(
+			UserPreferencesArgs{
+				timezone: newUserArgs.TimeZone.ToDetail(),
+				Language: newUserArgs.Language.ToDetail(),
+				Theme:    "light",
+				Location: "India",
+			},
+		),
+		DeviceTokens: []DeviceToken{
+			newUserArgs.DeviceToken,
+		},
+		LoginHistory: []LoginHistory{},
+		LastSeen:     primitive.NewDateTimeFromTime(now),
+		CreatedAt:    primitive.NewDateTimeFromTime(now),
+		UpdatedAt:    primitive.NewDateTimeFromTime(now),
+		DeletedAt:    primitive.NewDateTimeFromTime(now),
 	}
 	if err := u.Validate(); err != nil {
 		return nil, err
@@ -95,11 +103,12 @@ func NewUser(
 	return &u, nil
 }
 
-func NewAuthProvider(authIdToken string, authProvider string) (*Provider, error) {
+func NewAuthProvider(authIdToken string, authProvider string, username string) (*Provider, error) {
 	now := time.Now()
 	p := Provider{
 		AuthIdToken:  authIdToken,
 		AuthProvider: authProvider,
+		Username:     username,
 		AddedAt:      now,
 	}
 	if err := p.Validate(); err != nil {
@@ -124,14 +133,14 @@ func (user *User) GetUserInfo() *UserInfo {
 		providerInfo[i] = ProviderInfo{
 			ProviderName: provider.AuthProvider,
 			AddedAt:      provider.AddedAt,
+			Username:     provider.Username,
 		}
 	}
 	return &UserInfo{
 		Id:                user.Id,
+		Username:          user.Username,
 		UserId:            user.UserId,
 		Email:             user.Email,
-		FirstName:         user.FirstName,
-		LastName:          user.LastName,
 		Bio:               user.Bio,
 		VerifiedEmail:     user.VerifiedEmail,
 		Avatar:            user.Avatar,

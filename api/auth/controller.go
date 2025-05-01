@@ -2,8 +2,8 @@ package auth
 
 import (
 	"sync-backend/api/auth/dto"
-	"sync-backend/api/location"
-	"sync-backend/api/user"
+	"sync-backend/api/common/location"
+	"sync-backend/api/common/user"
 	"sync-backend/arch/common"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
@@ -44,6 +44,7 @@ func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/login", c.Login)
 	group.POST("/google", c.GoogleLogin)
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
+	group.POST("/forgot-password", c.ForgotPassword)
 }
 
 func (c *authController) SignUp(ctx *gin.Context) {
@@ -100,15 +101,26 @@ func (c *authController) GoogleLogin(ctx *gin.Context) {
 }
 
 func (c *authController) Logout(ctx *gin.Context) {
-	body, err := network.ReqBody(ctx, dto.NewLogoutRequest())
-	if err != nil {
-		return
-	}
-	c.SetRequestDetails(ctx, &body.BaseRequest)
-	err = c.authService.Logout(body)
+	userId := *c.MustGetUserId(ctx)
+	err := c.authService.Logout(userId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
 	c.Send(ctx).SuccessMsgResponse("User logged out successfully")
+}
+
+func (c *authController) ForgotPassword(ctx *gin.Context) {
+	body, err := network.ReqBody(ctx, dto.NewForgotPassRequest())
+	if err != nil {
+		return
+	}
+
+	c.SetRequestDetails(ctx, &body.BaseRequest)
+	err = c.authService.ForgotPassword(body)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessMsgResponse("Password reset link sent to your email")
 }

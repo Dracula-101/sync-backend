@@ -42,9 +42,9 @@ func (m *errorCatcher) Handler(ctx *gin.Context) {
 
 			// Return appropriate response to client
 			if err, ok := r.(error); ok {
-				m.Send(ctx).InternalServerError(err.Error(), err)
+				m.Send(ctx).InternalServerError(err.Error(), network.UnknownErrorCode, err)
 			} else {
-				m.Send(ctx).InternalServerError("something went wrong", err)
+				m.Send(ctx).InternalServerError("Something went wrong", network.UnknownErrorCode, nil)
 			}
 
 			ctx.Abort()

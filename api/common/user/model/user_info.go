@@ -9,10 +9,9 @@ import (
 
 type UserInfo struct {
 	Id                primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Username          string             `bson:"username" json:"username"`
 	UserId            string             `bson:"userId" json:"userId"`
 	Email             string             `bson:"email" json:"email"`
-	FirstName         string             `bson:"firstName" json:"firstName"`
-	LastName          string             `bson:"lastName" json:"lastName"`
 	Bio               string             `bson:"bio" json:"bio"`
 	VerifiedEmail     bool               `bson:"verifiedEmail" json:"verifiedEmail"`
 	Avatar            UserAvatar         `bson:"avatar" json:"avatar"`
@@ -43,4 +42,5 @@ func (u *UserInfo) ValidateErrors(errs validator.ValidationErrors) ([]string, er
 type ProviderInfo struct {
 	ProviderName string    `json:"name"`
 	AddedAt      time.Time `json:"addedAt"`
+	Username     string    `json:"username"`
 }

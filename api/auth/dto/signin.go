@@ -3,7 +3,7 @@ package dto
 import (
 	"fmt"
 
-	"sync-backend/api/user/model"
+	"sync-backend/api/common/user/model"
 	coredto "sync-backend/arch/dto"
 
 	"github.com/go-playground/validator/v10"
@@ -15,11 +15,9 @@ import (
 
 type SignUpRequest struct {
 	coredto.BaseRequest
-	FirstName     string `json:"first_name" binding:"required,name" validate:"required,name"`
-	LastName      string `json:"last_name" binding:"required,name" validate:"required,name"`
+	UserName      string `json:"username" binding:"required" validate:"required,min=3,max=50"`
 	Email         string `json:"email" binding:"required,email" validate:"email"`
 	Password      string `json:"password" binding:"required" validate:"required,min=6,max=100"`
-	Bio           string `json:"bio" binding:"omitempty,max=500" validate:"omitempty,max=500"`
 	ProfilePicUrl string `json:"profile_pic_url" binding:"omitempty,max=500" validate:"omitempty,max=500"`
 }
 
@@ -41,8 +39,6 @@ func (s *SignUpRequest) ValidateErrors(errs validator.ValidationErrors) ([]strin
 			msgs = append(msgs, fmt.Sprintf("%s must be at least %s characters", err.Field(), err.Param()))
 		case "max":
 			msgs = append(msgs, fmt.Sprintf("%s must be at most %s characters", err.Field(), err.Param()))
-		case "name":
-			msgs = append(msgs, fmt.Sprintf("%s must be a valid name", err.Field()))
 		case "email":
 			msgs = append(msgs, fmt.Sprintf("%s is not a valid email", err.Field()))
 		default:
