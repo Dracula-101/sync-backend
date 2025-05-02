@@ -49,12 +49,16 @@ func (c *communityController) CreateCommunity(ctx *gin.Context) {
 	}
 
 	userId := c.ContextPayload.MustGetUserId(ctx)
-	_, err = c.communityService.CreateCommunity(body.Name, body.Description, body.TagIds, body.AvatarUrl, body.BackgroundUrl, *userId)
+	community, err := c.communityService.CreateCommunity(body.Name, body.Description, body.TagIds, body.AvatarUrl, body.BackgroundUrl, *userId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
-	c.Send(ctx).SuccessMsgResponse("Community created successfully")
+	c.Send(ctx).SuccessDataResponse("Community created successfully", dto.CreateCommunityResponse{
+		CommunityId: community.CommunityId,
+		Name:        community.Name,
+		Slug:        community.Slug,
+	})
 }
 
 func (c *communityController) GetCommunityById(ctx *gin.Context) {

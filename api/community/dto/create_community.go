@@ -49,11 +49,15 @@ func (c *CreateCommunityRequest) ValidateErrors(errs validator.ValidationErrors)
 
 type CreateCommunityResponse struct {
 	CommunityId string `json:"community_id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
 }
 
-func NewCreateCommunityResponse(communityId string) *CreateCommunityResponse {
+func NewCreateCommunityResponse(communityId string, name string, slug string) *CreateCommunityResponse {
 	return &CreateCommunityResponse{
 		CommunityId: communityId,
+		Name:        name,
+		Slug:        slug,
 	}
 }
 

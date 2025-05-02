@@ -63,6 +63,21 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 		Tags:          convertedTags,
 	})
 
+	//check for duplicate community slug
+	duplicateFilter := bson.M{"slug": community.Slug}
+	duplicateCommunity, err := s.communityQueryBuilder.Query(s.Context()).FindOne(duplicateFilter, nil)
+	if err != nil {
+		if !mongo.IsNoDocumentFoundError(err) {
+			s.logger.Error("Error checking for duplicate community: %v", err)
+			return nil, network.NewInternalServerError("Error checking for duplicate community", network.DB_ERROR, err)
+		}
+	}
+	if duplicateCommunity != nil {
+		if duplicateCommunity.Slug == community.Slug {
+			s.logger.Error("Community with the same slug already exists")
+			community.Slug = utils.GenerateUniqueSlug(community.Name)
+		}
+	}
 	_, err = s.communityQueryBuilder.Query(s.Context()).InsertOne(community)
 	if err != nil {
 		s.logger.Error("Error inserting community: %v", err)
