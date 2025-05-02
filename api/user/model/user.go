@@ -103,6 +103,15 @@ func NewUser(
 	return &u, nil
 }
 
+func (user *User) IsInCommunity(communityId string) bool {
+	for _, id := range user.JoinedWavelengths {
+		if id == communityId {
+			return true
+		}
+	}
+	return false
+}
+
 func NewAuthProvider(authIdToken string, authProvider string, username string) (*Provider, error) {
 	now := time.Now()
 	p := Provider{

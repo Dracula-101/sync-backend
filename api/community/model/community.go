@@ -19,6 +19,7 @@ type Community struct {
 	ShortDesc   string             `bson:"shortDesc" json:"shortDesc"`
 	OwnerId     string             `bson:"ownerId" json:"ownerId"`
 	IsPrivate   bool               `bson:"isPrivate" json:"isPrivate"`
+	Members     []string           `bson:"members" json:"members"`
 	MemberCount int64              `bson:"memberCount" json:"memberCount"`
 	PostCount   int64              `bson:"postCount" json:"postCount"`
 	Media       CommunityMedia     `bson:"media" json:"media"`
@@ -247,6 +248,7 @@ func NewCommunity(args NewCommunityArgs) *Community {
 		ShortDesc:   truncateString(args.Description, 160),
 		OwnerId:     ownerId,
 		IsPrivate:   false,
+		Members:     []string{ownerId},
 		MemberCount: 1,
 		PostCount:   0,
 		Moderators:  []string{ownerId},

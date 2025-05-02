@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"sync-backend/api/community"
 	"sync-backend/api/user/model"
 	"sync-backend/arch/common"
 	"sync-backend/arch/mongo"
@@ -30,6 +31,10 @@ type UserService interface {
 
 	/* USER AUTHENTICATION */
 	ValidateUserPassword(user *model.User, password string) error
+
+	/* USER COMMUNITY */
+	JoinCommunity(userId string, communityId string) error
+	LeaveCommunity(userId string, communityId string) error
 }
 
 type userService struct {
@@ -280,5 +285,93 @@ func (s *userService) ValidateUserPassword(user *model.User, password string) er
 		s.log.Error("Invalid password for user: %s", user.Email)
 		return errors.New("invalid password")
 	}
+	return nil
+}
+
+func (s *userService) JoinCommunity(userId string, communityId string) error {
+	s.log.Debug("Joining community %s for user %s", communityId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
+		"$addToSet": bson.M{
+			"joinedWavelengths": communityId,
+		},
+	})
+	if err != nil {
+		s.log.Error("Error joining community: %v", err)
+		return fmt.Errorf("error joining community: %v", err)
+	}
+	// use transaction builder to update community members count
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	communityCollection := transaction.GetCollection(community.CommunityCollectionName)
+	_, err = communityCollection.UpdateOne(transaction.GetContext(), bson.M{"communityId": communityId}, bson.M{
+		"$addToSet": bson.M{
+			"members": userId,
+		},
+		"$inc": bson.M{
+			"membersCount": 1,
+		},
+	})
+
+	if err != nil {
+		s.log.Error("Error updating community members count: %v", err)
+		return fmt.Errorf("error updating community members count: %v", err)
+	}
+
+	// commit the transaction
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	s.log.Debug("User %s joined community %s successfully", userId, communityId)
+	return nil
+}
+
+func (s *userService) LeaveCommunity(userId string, communityId string) error {
+	s.log.Debug("Leaving community %s for user %s", communityId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
+		"$pull": bson.M{
+			"joinedWavelengths": communityId,
+		},
+	})
+	if err != nil {
+		s.log.Error("Error leaving community: %v", err)
+		return fmt.Errorf("error leaving community: %v", err)
+	}
+	// use transaction builder to update community members count
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	communityCollection := transaction.GetCollection(community.CommunityCollectionName)
+	_, err = communityCollection.UpdateOne(transaction.GetContext(), bson.M{"communityId": communityId}, bson.M{
+		"$pull": bson.M{
+			"members": userId,
+		},
+		"$inc": bson.M{
+			"membersCount": -1,
+		},
+	})
+
+	if err != nil {
+		s.log.Error("Error updating community members count: %v", err)
+		return fmt.Errorf("error updating community members count: %v", err)
+	}
+
+	// commit the transaction
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+
+	s.log.Debug("User %s left community %s successfully", userId, communityId)
 	return nil
 }
