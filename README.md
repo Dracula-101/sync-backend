@@ -1,8 +1,9 @@
 # Sync Backend
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Go Version](https://img.shields.io/badge/go-1.24-blue.svg)
+![Go Version](https://img.shields.io/badge/go-1.24.2-blue.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
+![Last Updated](https://img.shields.io/badge/updated-May%202025-brightgreen.svg)
 
 A robust backend service for the "Sync" social media platform, providing secure authentication, scalable API endpoints, and performance-optimized services.
 
@@ -20,23 +21,20 @@ A robust backend service for the "Sync" social media platform, providing secure 
   - CORS configuration for frontend compatibility
   
 - **Robust Infrastructure**
-  - Dependency injection using Uber's FX
-  - Structured logging with Zap
+  - MongoDB for primary data storage
+  - PostgreSQL for IP geolocation data
+  - Redis for caching and rate limiting
+  - Structured logging system
   - Environment-based configuration management
-  - Command-line interface with Cobra
-
-- **Security-First Approach**
-  - Rate limiting on sensitive endpoints
-  - Password policy enforcement
-  - CSRF protection
-  - Sanitized logging (removing sensitive data)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Go 1.24 or later
-- Docker and Docker Compose (for local development)
+- Go 1.24.2 or later
+- MongoDB
+- PostgreSQL
+- Redis
 
 ### Installation
 
@@ -69,35 +67,41 @@ air
 #### Manual Run
 
 ```bash
-go run main.go app:serve
-```
-
-#### Using Docker
-
-```bash
-docker-compose up -d
+go run main.go
 ```
 
 ## Project Structure
 
 ```
 sync-backend/
-├── cmd/                          # Application entry points
+├── api/                          # API components organized by domain
+│   ├── auth/                     # Authentication API
+│   │   ├── controller.go
+│   │   ├── service.go
+│   │   ├── dto/                  # Data Transfer Objects
+│   │   ├── middleware/           # Auth middlewares
+│   │   └── model/                # Auth domain models
+│   ├── common/                   # Common services (location, sessions, etc)
+│   ├── community/                # Community related functionality
+│   ├── post/                     # Post related functionality
+│   └── user/                     # User related functionality
+├── arch/                         # Core architecture components
+│   ├── application/              # Application bootstrapping
+│   ├── common/                   # Common utilities
+│   ├── config/                   # Configuration management
+│   ├── dto/                      # Common DTOs
+│   ├── middleware/               # Core middlewares
+│   ├── mongo/                    # MongoDB integration
+│   ├── network/                  # HTTP networking components
+│   ├── postgres/                 # PostgreSQL integration
+│   ├── redis/                    # Redis integration
+│   └── utils/                    # Architectural utilities
 ├── configs/                      # Configuration files
-├── internal/                     # Internal application code
-│   ├── api/                     # API handlers and routes
-│   ├── application/             # Application services
-│   ├── domain/                  # Domain models and interfaces
-│   ├── infrastructure/          # Infrastructure implementations
-│   ├── server/                  # Server configuration
-│   └── util/                    # Utility functions
-├── pkg/                          # Reusable packages
-│   ├── console/                 # Command line utilities
-│   └── logger/                  # Logging utilities
-├── migrations/                   # Database migrations
+├── keys/                         # Cryptographic keys
 ├── scripts/                      # Utility scripts
-├── test/                         # Test files
-└── docker/                       # Docker configuration
+├── test/                         # Test helpers
+├── utils/                        # General utility functions
+└── .tools/                       # Development tooling
 ```
 
 ## Configuration
@@ -106,27 +110,23 @@ The application uses a combination of YAML configuration files and environment v
 
 - `configs/app.yaml`: General application settings
 - `configs/auth.yaml`: Authentication settings
-- `configs/log.yaml`: Logging configuration
+- `configs/db.yaml`: Database configuration
 - `.env`: Environment-specific variables
 
 ## Development
 
-### Adding a New API Endpoint
 
-1. Create a new route handler in `internal/api/handlers/`
-2. Add the route definition in `internal/api/route/`
-3. Register the route in the main router
+This creates the boilerplate for a new feature with:
+1. Models (MongoDB schemas)
+2. DTOs (Data Transfer Objects)
+3. Service layer
+4. Controller with basic CRUD endpoints
 
-### Command Line Interface
+### Manual Creation
 
-The application uses Cobra for CLI commands. The main command structure:
-
-```bash
-# Run the server
-go run main.go app:serve
-
-# Additional commands can be added in internal/application/app.go
-```
+1. Create feature folder in `api/{feature_name}`
+2. Implement model, service, and controller
+3. Register the controller in `arch/application/module.go`
 
 ## Testing
 
@@ -135,41 +135,40 @@ go run main.go app:serve
 go test ./...
 
 # Run specific test package
-go test ./internal/application/auth/...
+go test ./api/auth/...
 ```
 
 ## Key Components
 
-### Command-based Architecture
-- The application uses [Cobra](https://github.com/spf13/cobra) for command-line interface
-- Commands are defined in `internal/application/app.go`
-- The main command (`app:serve`) starts the HTTP server
+### Modular Architecture
+- Feature-based organization in the `api/` directory
+- Core components in the `arch/` directory
+- Clear separation of concerns between layers
 
-### Dependency Injection
-- Uses [Uber's fx](https://github.com/uber-go/fx) for dependency management
-- Services are registered in `internal/application/modules.go`
+### Database Integration
+- MongoDB for main application data via `arch/mongo` package
+- PostgreSQL for IP geolocation via `arch/postgres` package
+- Redis for caching and rate-limiting via `arch/redis` package
 
 ### Configuration Management
 - YAML-based configuration with [Viper](https://github.com/spf13/viper)
 - Environment variable interpolation in config files
-- Separate config files for different concerns (app, auth, log)
+- Strongly-typed configuration objects
 
-### Logging
-- Structured logging with [Zap](https://github.com/uber-go/zap)
-- Custom logger implementation in `pkg/logger/logger.go`
-
-### HTTP Server
-- Gin web framework for routing
-- Middleware support (rate limiting, CORS)
-- Route grouping by API version
+### Networking Layer
+- [Gin Web Framework](https://github.com/gin-gonic/gin) for HTTP routing and middleware
+- Consistent error handling and response formatting
+- Content validation with go-playground/validator
 
 ### Authentication
-- Basic authentication routes defined in `internal/api/route/auth_routes.go`
-- JWT-based authentication (configured but not fully implemented)
+- JWT-based authentication via golang-jwt/jwt
+- Session management with device tracking
+- Role-based access control
 
 ### Development Tools
 - Live reloading with [Air](https://github.com/cosmtrek/air)
 - Environment variable support with `.env` files
+- Code generation for new API features
 
 ## Contributing
 
@@ -186,11 +185,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 - [Gin Web Framework](https://github.com/gin-gonic/gin)
-- [Uber's FX](https://github.com/uber-go/fx) for dependency injection
-- [Cobra](https://github.com/spf13/cobra) for CLI commands
+- [MongoDB Go Driver](https://github.com/mongodb/mongo-go-driver)
+- [Redis Go Client](https://github.com/redis/go-redis)
 - [Viper](https://github.com/spf13/viper) for configuration
-- [Zap](https://github.com/uber-go/zap) for structured logging
+- [Validator](https://github.com/go-playground/validator) for data validation
 
 ## Contact
 
 Project Link: [https://github.com/yourusername/sync-backend](https://github.com/yourusername/sync-backend)
+
+*Last updated: May 3, 2025*

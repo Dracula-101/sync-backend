@@ -8,7 +8,6 @@ import (
 	"sync-backend/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const CommunityCollectionName = "community"
@@ -39,16 +38,17 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 	s.logger.Info("Creating community with name: %s", name)
 	// get all community tags with the given tags
 	filter := bson.M{"tag_id": bson.M{"$in": tags}}
-	options := options.Find().SetProjection(bson.M{"tag_id": 1, "tag_name": 1})
-	communityTags, err := s.communityTagQueryBuilder.Query(s.Context()).FindAll(filter, options)
+	communityTags, err := s.communityTagQueryBuilder.Query(s.Context()).FindAll(filter, nil)
 	if err != nil {
 		s.logger.Error("Error fetching community tags: %v", err)
 		return nil, network.NewInternalServerError("Error fetching community tags", network.DB_ERROR, err)
 	}
+
 	if len(communityTags) == 0 {
 		s.logger.Error("No community tags found")
 		return nil, network.NewInternalServerError("No community tags found", network.DB_ERROR, errors.New("no community tags found"))
 	}
+	s.logger.Info("Community tags found: %v", communityTags)
 	convertedTags := make([]model.CommunityTag, len(communityTags))
 	for i, tag := range communityTags {
 		convertedTags[i] = *tag
