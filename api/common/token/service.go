@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // TokenService defines the interface for token operations
@@ -83,8 +84,8 @@ func (s *tokenService) GenerateTokenPair(userId string) (*model.TokenPair, error
 	return &model.TokenPair{
 		AccessToken:           accessToken,
 		RefreshToken:          refreshToken,
-		AccessTokenExpiresIn:  time.Now().Add(time.Duration(s.accessTokenExpiry) * time.Second),
-		RefreshTokenExpiresIn: time.Now().Add(time.Duration(s.refreshTokenExpiry) * time.Second),
+		AccessTokenExpiresIn:  primitive.NewDateTimeFromTime(time.Now().Add(time.Duration(s.accessTokenExpiry) * time.Second)),
+		RefreshTokenExpiresIn: primitive.NewDateTimeFromTime(time.Now().Add(time.Duration(s.refreshTokenExpiry) * time.Second)),
 	}, nil
 }
 

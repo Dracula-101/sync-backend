@@ -64,7 +64,7 @@ func (s *authService) SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpRespo
 
 	deviceInfo := sessionModels.NewDeviceInfo(signUpRequest.DeviceId, signUpRequest.DeviceName, signUpRequest.DeviceType, signUpRequest.DeviceType, signUpRequest.DeviceModel, signUpRequest.DeviceVersion)
 
-	_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn, *deviceInfo, signUpRequest.UserAgent, signUpRequest.IPAddress)
+	_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, signUpRequest.UserAgent, signUpRequest.IPAddress)
 	if err != nil {
 		return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 	}
@@ -119,7 +119,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
 
 		_, err = s.sessionService.CreateSession(
-			user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn, *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
+			user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
@@ -148,7 +148,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		if err != nil {
 			return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 		}
-		_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn, *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
+		_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
@@ -171,7 +171,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 			if err != nil {
 				return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 			}
-			_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn, *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
+			_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
 			if err != nil {
 				return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 			}

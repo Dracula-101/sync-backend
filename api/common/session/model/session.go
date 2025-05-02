@@ -21,17 +21,17 @@ type Session struct {
 	SessionID    string             `bson:"sessionId" json:"sessionId"`
 	Token        string             `bson:"token" json:"token"`
 	RefreshToken string             `bson:"refreshToken" json:"refreshToken"`
-	ExpiresAt    time.Time          `bson:"expiresAt" json:"expiresAt"`
+	ExpiresAt    primitive.DateTime `bson:"expiresAt" json:"expiresAt"`
 	UserID       string             `bson:"userId" json:"userId"`
 	UserAgent    string             `bson:"userAgent" json:"userAgent"`
 	Device       DeviceInfo         `bson:"device" json:"device"`
 	IPAddress    string             `bson:"ipAddress" json:"ipAddress"`
 	Location     LocationInfo       `bson:"location" json:"location"`
-	LastActive   time.Time          `bson:"lastActive" json:"lastActive"`
-	IssuedAt     time.Time          `bson:"issuedAt" json:"issuedAt"`
+	LastActive   primitive.DateTime `bson:"lastActive" json:"lastActive"`
+	IssuedAt     primitive.DateTime `bson:"issuedAt" json:"issuedAt"`
 	IsRevoked    bool               `bson:"isRevoked" json:"isRevoked"`
-	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
+	CreatedAt    primitive.DateTime `bson:"createdAt" json:"createdAt"`
+	UpdatedAt    primitive.DateTime `bson:"updatedAt" json:"updatedAt"`
 }
 
 type NewSessionArgs struct {
@@ -46,12 +46,12 @@ type NewSessionArgs struct {
 }
 
 func NewSession(newSessionArgs NewSessionArgs) (*Session, error) {
-	now := time.Now()
+	now := primitive.NewDateTimeFromTime(time.Now())
 	session := Session{
 		SessionID:    utils.GenerateUUID(),
 		Token:        newSessionArgs.Token,
 		RefreshToken: newSessionArgs.RefreshToken,
-		ExpiresAt:    newSessionArgs.ExpiresAt,
+		ExpiresAt:    primitive.NewDateTimeFromTime(newSessionArgs.ExpiresAt),
 		UserID:       newSessionArgs.UserId,
 		UserAgent:    newSessionArgs.UserAgent,
 		Device:       newSessionArgs.DeviceInfo,

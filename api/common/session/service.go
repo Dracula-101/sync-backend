@@ -9,6 +9,7 @@ import (
 	"sync-backend/arch/mongo"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -70,8 +71,9 @@ func (s *sessionService) CreateSession(userID string, token string, refreshToken
 		return nil, err
 	}
 	session.ID = *id
-	session.CreatedAt = time.Now()
-	session.UpdatedAt = time.Now()
+	timeNow := time.Now()
+	session.CreatedAt = primitive.NewDateTimeFromTime(timeNow)
+	session.UpdatedAt = primitive.NewDateTimeFromTime(timeNow)
 	return session, nil
 }
 

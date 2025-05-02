@@ -1,9 +1,8 @@
 package model
 
 import (
-	"time"
-
 	"github.com/golang-jwt/jwt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // TokenType defines the type of token
@@ -16,10 +15,10 @@ const (
 
 // TokenPair represents both access and refresh tokens
 type TokenPair struct {
-	AccessToken           string    `json:"access_token"`
-	RefreshToken          string    `json:"refresh_token"`
-	AccessTokenExpiresIn  time.Time `json:"access_token_expires_in"`
-	RefreshTokenExpiresIn time.Time `json:"refresh_token_expires_in"`
+	AccessToken           string             `json:"access_token"`
+	RefreshToken          string             `json:"refresh_token"`
+	AccessTokenExpiresIn  primitive.DateTime `json:"access_token_expires_in"`
+	RefreshTokenExpiresIn primitive.DateTime `json:"refresh_token_expires_in"`
 }
 
 // TokenClaims represents the JWT token claims
