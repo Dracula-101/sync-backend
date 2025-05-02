@@ -9,6 +9,7 @@ import (
 	"sync-backend/api/common/session"
 	"sync-backend/api/common/token"
 	"sync-backend/api/common/user"
+	"sync-backend/api/community"
 	"sync-backend/arch/config"
 	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/mongo"
@@ -20,17 +21,22 @@ import (
 type Module network.Module[appModule]
 
 type appModule struct {
-	Context         context.Context
-	Env             *config.Env
-	Config          *config.Config
-	DB              mongo.Database
-	IpDB            pg.Database
-	Store           redis.Store
-	AuthService     auth.AuthService
+	Context context.Context
+	Env     *config.Env
+	Config  *config.Config
+	DB      mongo.Database
+	IpDB    pg.Database
+	Store   redis.Store
+
+	// Common services
 	UserService     user.UserService
 	SessionService  session.SessionService
 	LocationService location.LocationService
 	TokenService    token.TokenService
+
+	// Services
+	AuthService      auth.AuthService
+	CommunityService community.CommunityService
 }
 
 func (m *appModule) GetInstance() *appModule {
@@ -40,6 +46,7 @@ func (m *appModule) GetInstance() *appModule {
 func (m *appModule) Controllers() []network.Controller {
 	return []network.Controller{
 		auth.NewAuthController(m.AuthService, m.AuthenticationProvider(), m.UserService, m.LocationService),
+		community.NewCommunityController(m.CommunityService, m.AuthenticationProvider()),
 	}
 }
 
@@ -61,7 +68,9 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 	tokenService := token.NewTokenService(config)
 	sessionService := session.NewSessionService(db, locationService)
 	userService := user.NewUserService(db)
+
 	authService := auth.NewAuthService(config, userService, sessionService, locationService, tokenService)
+	communityService := community.NewCommunityService(db)
 	return &appModule{
 		Context:         context,
 		Env:             env,
@@ -69,10 +78,13 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 		DB:              db,
 		IpDB:            ipDb,
 		Store:           store,
-		AuthService:     authService,
 		UserService:     userService,
 		LocationService: locationService,
 		SessionService:  sessionService,
 		TokenService:    tokenService,
+
+		// Services
+		AuthService:      authService,
+		CommunityService: communityService,
 	}
 }

@@ -38,6 +38,7 @@ const (
 	HTTPVersionNotSupportedErrorCode = "HTTP_VERSION_NOT_SUPPORTED"
 	ErrorValidationCode              = "VALIDATION_ERROR"
 	ErrorFieldValidationCode         = "FIELD_VALIDATION_ERROR"
+	DB_ERROR                         = "DB_ERROR"
 	UnknownErrorCode                 = "UNKNOWN_ERROR"
 )
 
@@ -83,7 +84,12 @@ func (e *apiError) GetErrors(isDebug bool) []ErrorDetail {
 		errors = append(errors, ErrorDetail{
 			Code:    e.ErrorCode,
 			Message: e.Message,
-			Detail:  "An error occurred. Please try again later.",
+			Detail: func() string {
+				if e.Message == e.Err.Error() {
+					return ""
+				}
+				return "An error occurred"
+			}(),
 		})
 	}
 

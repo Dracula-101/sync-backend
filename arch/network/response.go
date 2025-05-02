@@ -8,22 +8,22 @@ import (
 type Meta struct {
 	Success    bool      `json:"success"`
 	StatusCode int       `json:"status_code"`
-	Message    string    `json:"message"`
 	Timestamp  time.Time `json:"timestamp"`
 }
 
 // ── Envelope (generic over Data) ──────────────────────────────────────────
 type Envelope struct {
-	Meta   Meta          `json:"meta"`
-	Data   *any          `json:"data,omitempty"` // generic data
-	Errors []ErrorDetail `json:"errors,omitempty"`
+	Meta    Meta          `json:"meta"`
+	Message string        `json:"message,omitempty"` // optional: message
+	Data    *any          `json:"data,omitempty"`    // generic data
+	Errors  []ErrorDetail `json:"errors,omitempty"`
 }
 
 // ── ErrorDetail ──────────────────────────────────────────────────────────
 type ErrorDetail struct {
 	Code    string `json:"code"`             // machine‐readable error code
 	Field   string `json:"field,omitempty"`  // optional: which input field
-	Message string `json:"message"`          // user‐friendly message
+	Message string `json:"message"`          // human‐readable error message
 	Detail  string `json:"detail,omitempty"` // optional: developer detail
 }
 
@@ -42,8 +42,8 @@ func (envelope Envelope) GetStatus() bool {
 }
 
 func (envelope Envelope) GetMessage() string {
-	if envelope.Meta.Message != "" {
-		return envelope.Meta.Message
+	if envelope.Message != "" {
+		return envelope.Message
 	}
 	if envelope.Meta.Success {
 		return "Success"
@@ -70,10 +70,10 @@ func NewEnvelopeWithData(success bool, statusCode int, message string, data *any
 		Meta: Meta{
 			Success:    success,
 			StatusCode: statusCode,
-			Message:    message,
 			Timestamp:  time.Now(),
 		},
-		Data: data,
+		Message: message,
+		Data:    data,
 	}
 }
 
@@ -82,10 +82,10 @@ func NewEnvelopeWithErrors(success bool, statusCode int, message string, errors 
 		Meta: Meta{
 			Success:    success,
 			StatusCode: statusCode,
-			Message:    message,
 			Timestamp:  time.Now(),
 		},
-		Errors: errors,
+		Message: message,
+		Errors:  errors,
 	}
 }
 

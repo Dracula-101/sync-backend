@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"regexp"
 	"strings"
+	"sync-backend/utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -11,6 +12,7 @@ import (
 
 type Community struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	CommunityId string             `bson:"communityId" json:"communityId"`
 	Slug        string             `bson:"slug" json:"slug"`
 	Name        string             `bson:"name" json:"name"`
 	Description string             `bson:"description" json:"description"`
@@ -59,17 +61,6 @@ type CommunityRule struct {
 	Metadata     Metadata           `bson:"metadata" json:"metadata"`
 }
 
-type CommunityTag struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Icon        string             `bson:"icon" json:"icon"`
-	Name        string             `bson:"name" json:"name"`
-	Description string             `bson:"description" json:"description"`
-	Color       string             `bson:"color" json:"color"`
-	PostCount   int64              `bson:"postCount" json:"postCount"`
-	IsOfficial  bool               `bson:"isOfficial" json:"isOfficial"`
-	Metadata    Metadata           `bson:"metadata" json:"metadata"`
-}
-
 type CommunitySettings struct {
 	JoinPolicy           string   `bson:"joinPolicy" json:"joinPolicy"`
 	PostApproval         bool     `bson:"postApproval" json:"postApproval"`
@@ -111,8 +102,8 @@ type TagStats struct {
 }
 
 type CommunityMember struct {
-	ID            primitive.ObjectID  `bson:"_id,omitempty" json:"id"`
-	CommunityID   string              `bson:"communityId" json:"communityId"`
+	ID            primitive.ObjectID  `bson:"_id,omitempty" json:"-"`
+	CommunityID   string              `bson:"communityId" json:"id"`
 	UserID        string              `bson:"userId" json:"userId"`
 	Role          string              `bson:"role" json:"role"`
 	JoinDate      primitive.DateTime  `bson:"joinDate" json:"joinDate"`
@@ -139,7 +130,7 @@ type MemberContributions struct {
 }
 
 type CommunityInvite struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
 	CommunityID string             `bson:"communityId" json:"communityId"`
 	InviterID   string             `bson:"inviterId" json:"inviterId"`
 	InviteeID   string             `bson:"inviteeId,omitempty" json:"inviteeId,omitempty"`
@@ -152,7 +143,7 @@ type CommunityInvite struct {
 }
 
 type CommunityJoinRequest struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
 	CommunityID string             `bson:"communityId" json:"communityId"`
 	UserID      string             `bson:"userId" json:"userId"`
 	Message     string             `bson:"message" json:"message"`
@@ -162,7 +153,7 @@ type CommunityJoinRequest struct {
 }
 
 type CommunityBan struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
 	CommunityID string             `bson:"communityId" json:"communityId"`
 	UserID      string             `bson:"userId" json:"userId"`
 	ModeratorID string             `bson:"moderatorId" json:"moderatorId"`
@@ -174,7 +165,7 @@ type CommunityBan struct {
 }
 
 type ModAction struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
 	CommunityID string             `bson:"communityId" json:"communityId"`
 	ModeratorID string             `bson:"moderatorId" json:"moderatorId"`
 	ActionType  string             `bson:"actionType" json:"actionType"`
@@ -184,7 +175,7 @@ type ModAction struct {
 }
 
 type CommunityEvent struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"-"`
 	CommunityID    string             `bson:"communityId" json:"communityId"`
 	CreatorID      string             `bson:"creatorId" json:"creatorId"`
 	Title          string             `bson:"title" json:"title"`
@@ -225,24 +216,35 @@ type Metadata struct {
 	CustomData map[string]any     `bson:"customData,omitempty" json:"customData,omitempty"`
 }
 
-func NewCommunity(name, description, ownerId string, avatarUrl *string, backgroundUrl *string, tags []CommunityTag) *Community {
+type NewCommunityArgs struct {
+	Name          string
+	Description   string
+	OwnerId       string
+	AvatarUrl     *string
+	BackgroundUrl *string
+	Tags          []CommunityTag
+}
+
+func NewCommunity(args NewCommunityArgs) *Community {
 	now := primitive.NewDateTimeFromTime(time.Now())
-	slug := generateSlug(name)
+	slug := generateSlug(args.Name)
 	communityAvatarUrl := getDefaultAvatarUrl()
-	if avatarUrl != nil {
+	if avatarUrl := args.AvatarUrl; avatarUrl != nil {
 		communityAvatarUrl = *avatarUrl
 	}
+	ownerId := args.OwnerId
 	communityBackgroundUrl := getDefaultBackgroundUrl()
-	if backgroundUrl != nil {
+	if backgroundUrl := args.BackgroundUrl; backgroundUrl != nil {
 		communityBackgroundUrl = *backgroundUrl
 	}
 
 	return &Community{
 		ID:          primitive.NewObjectID(),
+		CommunityId: utils.GenerateUUID(),
 		Slug:        slug,
-		Name:        name,
-		Description: description,
-		ShortDesc:   truncateString(description, 160),
+		Name:        args.Name,
+		Description: args.Description,
+		ShortDesc:   truncateString(args.Description, 160),
 		OwnerId:     ownerId,
 		IsPrivate:   false,
 		MemberCount: 1,
@@ -254,7 +256,7 @@ func NewCommunity(name, description, ownerId string, avatarUrl *string, backgrou
 				Url:      communityAvatarUrl,
 				Width:    512,
 				Height:   512,
-				AltText:  name + " community avatar",
+				AltText:  args.Name + " community avatar",
 				MimeType: "image/png",
 			},
 			Background: Image{
@@ -262,7 +264,7 @@ func NewCommunity(name, description, ownerId string, avatarUrl *string, backgrou
 				Url:      communityBackgroundUrl,
 				Width:    1920,
 				Height:   1080,
-				AltText:  name + " community background",
+				AltText:  args.Name + " community background",
 				MimeType: "image/jpeg",
 			},
 			Gallery:      []Image{},
@@ -284,7 +286,7 @@ func NewCommunity(name, description, ownerId string, avatarUrl *string, backgrou
 				},
 			},
 		},
-		Tags:   tags,
+		Tags:   args.Tags,
 		Status: "active",
 		Settings: CommunitySettings{
 			JoinPolicy:           "open",

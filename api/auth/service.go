@@ -59,14 +59,14 @@ func (s *authService) SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpRespo
 
 	token, err := s.tokenService.GenerateTokenPair(user.UserId)
 	if err != nil {
-		return nil, network.NewInternalServerError("error generating token", ERR_TOKEN, err)
+		return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 	}
 
 	deviceInfo := sessionModels.NewDeviceInfo(signUpRequest.DeviceId, signUpRequest.DeviceName, signUpRequest.DeviceType, signUpRequest.DeviceType, signUpRequest.DeviceModel, signUpRequest.DeviceVersion)
 
 	_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn, *deviceInfo, signUpRequest.UserAgent, signUpRequest.IPAddress)
 	if err != nil {
-		return nil, network.NewInternalServerError("error creating session", ERR_SESSION, err)
+		return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 	}
 
 	// send welcome email
@@ -81,25 +81,25 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 	s.logger.Info("Logging in user with email: %s", loginRequest.Email)
 	user, err := s.userService.FindUserByEmail(loginRequest.Email)
 	if err != nil {
-		return nil, network.NewInternalServerError("error finding user", ERR_USER, err)
+		return nil, network.NewInternalServerError("Error finding user", ERR_USER, err)
 	}
 	if user == nil {
-		return nil, network.NewNotFoundError("user not found", nil)
+		return nil, network.NewNotFoundError("User not found", nil)
 	}
 
 	// check if user hasnt set password
 	if user.PasswordHash == EMPTY_PASSWORD_HASH {
-		return nil, network.NewBadRequestError("user has not set password", nil)
+		return nil, network.NewBadRequestError("User has not set password", nil)
 	}
 
 	err = s.userService.ValidateUserPassword(user, loginRequest.Password)
 	if err != nil {
-		return nil, network.NewUnauthorizedError("invalid password", err)
+		return nil, network.NewUnauthorizedError("Entered Password is incorrect", err)
 	}
 
 	session, err := s.sessionService.GetUserActiveSession(user.UserId)
 	if err != nil {
-		return nil, network.NewInternalServerError("error getting user session", ERR_SESSION, err)
+		return nil, network.NewInternalServerError("Error getting user session", ERR_SESSION, err)
 	}
 	if session != nil {
 		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
@@ -113,7 +113,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		// Create a new session
 		token, err := s.tokenService.GenerateTokenPair(user.UserId)
 		if err != nil {
-			return nil, network.NewInternalServerError("error generating token", ERR_TOKEN, err)
+			return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 		}
 
 		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
@@ -121,7 +121,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		_, err = s.sessionService.CreateSession(
 			user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn, *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
 		if err != nil {
-			return nil, network.NewInternalServerError("error creating session", ERR_SESSION, err)
+			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
 		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), token.AccessToken)
 		s.logger.Success("User logged in successfully: %s", loginRequest.Email)
@@ -133,7 +133,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 	s.logger.Info("Logging in user with Google")
 	user, err := s.userService.FindUserAuthProvider(googleLoginRequest.GoogleIdToken, userModels.GoogleProviderName)
 	if err != nil {
-		return nil, network.NewInternalServerError("error finding user", ERR_USER, err)
+		return nil, network.NewInternalServerError("Error finding user", ERR_USER, err)
 	}
 
 	deviceInfo := sessionModels.NewDeviceInfo(googleLoginRequest.DeviceId, googleLoginRequest.DeviceName, googleLoginRequest.DeviceType, googleLoginRequest.DeviceType, googleLoginRequest.DeviceModel, googleLoginRequest.DeviceVersion)
@@ -142,15 +142,15 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		s.logger.Debug("User not found, creating new user")
 		user, err := s.userService.CreateUserWithGoogleId(googleLoginRequest.Username, googleLoginRequest.GoogleIdToken)
 		if err != nil {
-			return nil, network.NewInternalServerError("error creating user", ERR_USER, err)
+			return nil, network.NewInternalServerError("Error creating user", ERR_USER, err)
 		}
 		token, err := s.tokenService.GenerateTokenPair(user.UserId)
 		if err != nil {
-			return nil, network.NewInternalServerError("error generating token", ERR_TOKEN, err)
+			return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 		}
 		_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn, *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
 		if err != nil {
-			return nil, network.NewInternalServerError("error creating session", ERR_SESSION, err)
+			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
 		loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 		s.logger.Success("User logged in with Google successfully: %s", user.Email)
@@ -159,7 +159,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		s.logger.Debug("User found, updating session")
 		session, err := s.sessionService.GetUserActiveSession(user.UserId)
 		if err != nil {
-			return nil, network.NewInternalServerError("error getting user session", ERR_USER, err)
+			return nil, network.NewInternalServerError("Error getting user session", ERR_USER, err)
 		}
 		if session != nil {
 			s.sessionService.UpdateSessionInfo(session.SessionID, *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
@@ -169,11 +169,11 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		} else {
 			token, err := s.tokenService.GenerateTokenPair(user.UserId)
 			if err != nil {
-				return nil, network.NewInternalServerError("error generating token", ERR_TOKEN, err)
+				return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 			}
 			_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn, *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
 			if err != nil {
-				return nil, network.NewInternalServerError("error creating session", ERR_SESSION, err)
+				return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 			}
 			loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 			s.logger.Success("User logged in with Google successfully: %s", user.Email)
@@ -186,14 +186,14 @@ func (s *authService) Logout(userId string) network.ApiError {
 	s.logger.Info("Logging out user with ID: %s", userId)
 	session, err := s.sessionService.GetUserActiveSession(userId)
 	if err != nil {
-		return network.NewInternalServerError("error getting session", ERR_SESSION, err)
+		return network.NewInternalServerError("Error getting session", ERR_SESSION, err)
 	}
 	if session == nil {
-		return network.NewInternalServerError("session not found", ERR_SESSION_NOT_FOUND, nil)
+		return network.NewInternalServerError("Session not found", ERR_SESSION_NOT_FOUND, nil)
 	}
 	err = s.sessionService.InvalidateSession(session.SessionID)
 	if err != nil {
-		return network.NewInternalServerError("error invalidating session", ERR_SESSION_INVALID, err)
+		return network.NewInternalServerError("Error invalidating session", ERR_SESSION_INVALID, err)
 	}
 	s.logger.Success("User logged out successfully: %s", userId)
 	return nil
@@ -206,7 +206,7 @@ func (s *authService) ForgotPassword(forgotPasswordRequest *dto.ForgotPassReques
 		return network.NewInternalServerError("error finding user", ERR_USER, err)
 	}
 	if user == nil {
-		return network.NewNotFoundError("user not found", nil)
+		return network.NewNotFoundError("User not found", nil)
 	}
 	s.logger.Success("Password reset email sent successfully to: %s", forgotPasswordRequest.Email)
 	return nil

@@ -44,11 +44,11 @@ func NotFound() gin.HandlerFunc {
 		c.JSON(404, NewEnvelopeWithErrors(
 			false,
 			404,
-			"Not Found",
+			"Method Not Found",
 			[]ErrorDetail{
 				{
 					Code:    "NOT_FOUND",
-					Message: fmt.Sprintf("%s Not Found", c.Request.URL.Path),
+					Message: fmt.Sprintf("%s Not Found", c.Request.Method),
 					Detail:  fmt.Sprintf("The requested URL %s was not found on this server", c.Request.URL),
 				},
 			},

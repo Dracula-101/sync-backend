@@ -13,7 +13,6 @@ import (
 type CreateCommunityRequest struct {
 	Name          string   `json:"name" binding:"required" validate:"required,min=3,max=50"`
 	Description   string   `json:"description" binding:"required" validate:"required,min=15,max=500"`
-	Category      string   `json:"category" binding:"required" validate:"required,min=3,max=50"`
 	TagIds        []string `json:"tag_ids" binding:"required" validate:"required"`
 	AvatarUrl     string   `json:"avatar_url" binding:"omitempty" validate:"omitempty"`
 	BackgroundUrl string   `json:"background_url" binding:"omitempty" validate:"omitempty"`
