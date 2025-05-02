@@ -105,7 +105,6 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		return nil, network.NewInternalServerError("Error getting user session", ERR_SESSION, err)
 	}
 	loginHistory := userModels.LoginHistory{
-		SessionId: session.SessionID,
 		LoginTime: primitive.NewDateTimeFromTime(time.Now()),
 		IpAddress: loginRequest.IPAddress,
 		UserAgent: loginRequest.UserAgent,
@@ -120,6 +119,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
 
 		s.sessionService.UpdateSessionInfo(session.SessionID, *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
+		loginHistory.SessionId = session.SessionID
 		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
 
 		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), session.Token)
@@ -137,9 +137,9 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 
 		session, err = s.sessionService.CreateSession(
 			user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
-
 		loginHistory.SessionId = session.SessionID
 		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
+
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
