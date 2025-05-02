@@ -104,9 +104,8 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 	if err != nil {
 		return nil, network.NewInternalServerError("Error getting user session", ERR_SESSION, err)
 	}
-
-	// update the login history
 	loginHistory := userModels.LoginHistory{
+		SessionId: session.SessionID,
 		LoginTime: primitive.NewDateTimeFromTime(time.Now()),
 		IpAddress: loginRequest.IPAddress,
 		UserAgent: loginRequest.UserAgent,
@@ -117,15 +116,15 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 			Model: loginRequest.DeviceModel,
 		},
 	}
-	err = s.userService.UpdateLoginHistory(user.UserId, loginHistory)
-
 	if session != nil {
 		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
 
 		s.sessionService.UpdateSessionInfo(session.SessionID, *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
+		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
 
 		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), session.Token)
 		s.logger.Success("User logged in successfully: %s", loginRequest.Email)
+		// update the login history
 		return loginResponse, nil
 	} else {
 		// Create a new session
@@ -136,8 +135,11 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 
 		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
 
-		_, err = s.sessionService.CreateSession(
+		session, err = s.sessionService.CreateSession(
 			user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
+
+		loginHistory.SessionId = session.SessionID
+		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}

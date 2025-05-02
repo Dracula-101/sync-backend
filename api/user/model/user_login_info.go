@@ -3,6 +3,7 @@ package model
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type LoginHistory struct {
+	SessionId string             `bson:"sessionId" json:"sessionId"`
 	LoginTime primitive.DateTime `bson:"loginTime" json:"loginTime"`
 	IpAddress string             `bson:"ipAddress" json:"ipAddress"`
 	UserAgent string             `bson:"userAgent" json:"userAgent"`
