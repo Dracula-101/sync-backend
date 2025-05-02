@@ -8,8 +8,8 @@ import (
 	"sync-backend/api/common/location"
 	"sync-backend/api/common/session"
 	"sync-backend/api/common/token"
-	"sync-backend/api/common/user"
 	"sync-backend/api/community"
+	"sync-backend/api/user"
 	"sync-backend/arch/config"
 	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/mongo"
@@ -47,6 +47,7 @@ func (m *appModule) Controllers() []network.Controller {
 	return []network.Controller{
 		auth.NewAuthController(m.AuthService, m.AuthenticationProvider(), m.UserService, m.LocationService),
 		community.NewCommunityController(m.CommunityService, m.AuthenticationProvider()),
+		user.NewUserController(m.AuthenticationProvider(), m.UserService, m.LocationService),
 	}
 }
 
@@ -67,8 +68,8 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 	locationService := location.NewLocationService(ipDb)
 	tokenService := token.NewTokenService(config)
 	sessionService := session.NewSessionService(db, locationService)
-	userService := user.NewUserService(db)
 
+	userService := user.NewUserService(db)
 	authService := auth.NewAuthService(config, userService, sessionService, locationService, tokenService)
 	communityService := community.NewCommunityService(db)
 	return &appModule{

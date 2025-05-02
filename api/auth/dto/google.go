@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"sync-backend/api/common/user/model"
+	"sync-backend/api/user/model"
 	coredto "sync-backend/arch/dto"
 
 	"github.com/go-playground/validator/v10"

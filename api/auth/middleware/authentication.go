@@ -3,7 +3,7 @@ package middleware
 import (
 	"strings"
 	"sync-backend/api/common/token"
-	"sync-backend/api/common/user"
+	"sync-backend/api/user"
 	"sync-backend/arch/common"
 	"sync-backend/arch/network"
 	"sync-backend/utils"

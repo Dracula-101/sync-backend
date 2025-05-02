@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"sync-backend/api/common/user/model"
+	"sync-backend/api/user/model"
 	"sync-backend/arch/common"
 	"sync-backend/arch/mongo"
 	"sync-backend/utils"
@@ -24,6 +24,9 @@ type UserService interface {
 	FindUserByEmail(email string) (*model.User, error)
 	FindUserByUsername(username string) (*model.User, error)
 	FindUserAuthProvider(userId string, providerName string) (*model.User, error)
+
+	/* USER INFO UPDATE */
+	UpdateLoginHistory(userId string, loginHistory model.LoginHistory) error
 
 	/* USER AUTHENTICATION */
 	ValidateUserPassword(user *model.User, password string) error
@@ -239,6 +242,30 @@ func (s *userService) FindUserAuthProvider(userId string, providerName string) (
 	}
 	s.log.Debug("No auth provider found for user ID: %s and provider name: %s", userId, providerName)
 	return nil, nil
+}
+
+func (s *userService) UpdateLoginHistory(userId string, loginHistory model.LoginHistory) error {
+	s.log.Debug("Updating login history for user ID: %s", userId)
+
+	result, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
+		"$push": bson.M{
+			"loginHistory": bson.M{
+				"$each":     []model.LoginHistory{loginHistory},
+				"$slice":    -10,
+				"$position": 0,
+			},
+		},
+		"$set": bson.M{
+			"lastLogin": loginHistory.LoginTime,
+		},
+	})
+	if err != nil {
+		s.log.Error("Error updating login history: %v", err)
+		return fmt.Errorf("error updating login history: %v", err)
+	}
+
+	s.log.Debug("Login history updated successfully for user ID: %s - Modified count: %d", userId, result.ModifiedCount)
+	return nil
 }
 
 func (s *userService) ValidateUserPassword(user *model.User, password string) error {

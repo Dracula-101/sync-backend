@@ -3,7 +3,7 @@ package auth
 import (
 	"sync-backend/api/auth/dto"
 	"sync-backend/api/common/location"
-	"sync-backend/api/common/user"
+	"sync-backend/api/user"
 	"sync-backend/arch/common"
 	"sync-backend/arch/network"
 	"sync-backend/utils"

@@ -6,11 +6,14 @@ import (
 	"sync-backend/api/common/session"
 	sessionModels "sync-backend/api/common/session/model"
 	"sync-backend/api/common/token"
-	"sync-backend/api/common/user"
-	userModels "sync-backend/api/common/user/model"
+	"sync-backend/api/user"
+	userModels "sync-backend/api/user/model"
 	"sync-backend/arch/config"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var EMPTY_PASSWORD_HASH = "$2a$10$Cv/Xb2ykZ9FLmWyB6vaPEueAzA51kkU2GDZj8C4hwgAH3gQhwIo.q"
@@ -101,6 +104,21 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 	if err != nil {
 		return nil, network.NewInternalServerError("Error getting user session", ERR_SESSION, err)
 	}
+
+	// update the login history
+	loginHistory := userModels.LoginHistory{
+		LoginTime: primitive.NewDateTimeFromTime(time.Now()),
+		IpAddress: loginRequest.IPAddress,
+		UserAgent: loginRequest.UserAgent,
+		Device: userModels.UserDeviceInfo{
+			Os:    loginRequest.DeviceType,
+			Type:  loginRequest.DeviceType,
+			Name:  loginRequest.DeviceName,
+			Model: loginRequest.DeviceModel,
+		},
+	}
+	err = s.userService.UpdateLoginHistory(user.UserId, loginHistory)
+
 	if session != nil {
 		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
 
