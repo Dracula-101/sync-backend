@@ -1,6 +1,9 @@
 package utils
 
-import "strings"
+import (
+	"math/rand"
+	"strings"
+)
 
 func GenerateUniqueSlug(name string) string {
 	slug := Slugify(name, true)
@@ -30,9 +33,11 @@ func GenerateRandomString(length int) string {
 }
 
 func GenerateRandomInt(max int) int {
-	return int(GenerateRandomFloat64() * float64(max))
+	rand.Seed(rand.Int63())
+	return rand.Intn(max)
 }
 
 func GenerateRandomFloat64() float64 {
-	return float64(GenerateRandomInt(1000000)) / 1000000.0
+	rand.Seed(rand.Int63())
+	return rand.Float64()
 }
