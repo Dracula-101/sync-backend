@@ -26,7 +26,7 @@ func Server() {
 	router, _, shutdown := create(&env, &config)
 	defer shutdown()
 	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGTERM, os.Interrupt, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGKILL)
+	signal.Notify(stop, syscall.SIGTERM, os.Interrupt, syscall.SIGQUIT, syscall.SIGINT)
 	go func() {
 		router.Start(env.Host, uint16(env.Port))
 	}()
@@ -76,7 +76,6 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 		Host: env.RedisHost,
 		Port: uint16(env.RedisPort),
 		Pwd:  env.RedisPassword,
-		DB:   env.RedisDB,
 	}
 
 	store := redis.NewStore(context, redisLogger, &redisConfig)

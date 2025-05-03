@@ -8,12 +8,39 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 )
 
 // ReqBody handles JSON request body binding and validation
 func ReqBody[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 	if err := ctx.ShouldBindJSON(dto); err != nil {
+		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest)
+	}
+
+	v := validator.New()
+	v.RegisterTagNameFunc(CustomTagNameFunc())
+	if err := v.Struct(dto); err != nil {
+		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity)
+	}
+
+	return dto.GetValue(), nil
+}
+
+// ReqForm handles form data binding and validation
+func ReqForm[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
+	contentType := ctx.ContentType()
+
+	var err error
+	if strings.Contains(contentType, "multipart/form-data") {
+		err = ctx.ShouldBindWith(dto, binding.FormMultipart)
+	} else if strings.Contains(contentType, "application/x-www-form-urlencoded") {
+		err = ctx.ShouldBindWith(dto, binding.Form)
+	} else {
+		err = ctx.ShouldBind(dto)
+	}
+
+	if err != nil {
 		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest)
 	}
 

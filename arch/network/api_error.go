@@ -39,6 +39,8 @@ const (
 	ErrorValidationCode              = "VALIDATION_ERROR"
 	ErrorFieldValidationCode         = "FIELD_VALIDATION_ERROR"
 	DB_ERROR                         = "DB_ERROR"
+	CACHE_ERROR                     = "CACHE_ERROR"
+	FORBIDDEN_ERROR                  = "FORBIDDEN_ERROR"
 	UnknownErrorCode                 = "UNKNOWN_ERROR"
 )
 

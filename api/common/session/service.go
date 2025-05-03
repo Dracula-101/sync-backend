@@ -15,6 +15,7 @@ import (
 
 type SessionService interface {
 	CreateSession(userID string, token string, refreshToken string, expiresAt time.Time, deviceInfo model.DeviceInfo, userAgent string, ipAddress string) (*model.Session, error)
+	GetSessionByToken(token string) (*model.Session, error)
 	GetSessionByRefreshToken(refreshToken string) (*model.Session, error)
 	UpdateSession(sessionID string, accessToken string, refreshToken string, expiresAt time.Time) (*model.Session, error)
 	UpdateSessionInfo(sessionID string, deviceInfo model.DeviceInfo, userAgent string, ipAddress string) error
@@ -76,6 +77,19 @@ func (s *sessionService) CreateSession(userID string, token string, refreshToken
 	timeNow := time.Now()
 	session.CreatedAt = primitive.NewDateTimeFromTime(timeNow)
 	session.UpdatedAt = primitive.NewDateTimeFromTime(timeNow)
+	return session, nil
+}
+
+func (s *sessionService) GetSessionByToken(token string) (*model.Session, error) {
+	filter := bson.M{"token": token, "isRevoked": false, "expiresAt": bson.M{"$gt": time.Now()}}
+	options := options.FindOne().SetSort(bson.M{"expiresAt": 1})
+	session, err := s.queryBuilder.SingleQuery().FilterOne(filter, options)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
 	return session, nil
 }
 

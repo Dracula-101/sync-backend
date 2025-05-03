@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const PostCollectionName = "post"
+const PostCollectionName = "posts"
 
 // Post represents a user post in the system, similar to a Reddit post
 type Post struct {
@@ -21,7 +21,6 @@ type Post struct {
 	Status         PostStatus          `bson:"status" json:"status"`
 	Media          []Media             `bson:"media,omitempty" json:"media,omitempty"`
 	Tags           []string            `bson:"tags,omitempty" json:"tags,omitempty"`
-	URL            string              `bson:"url,omitempty" json:"url,omitempty"`
 	Synergy        int                 `bson:"synergy" json:"synergy"`
 	CommentCount   int                 `bson:"commentCount" json:"commentCount"`
 	ViewCount      int                 `bson:"viewCount" json:"viewCount"`
@@ -38,7 +37,6 @@ type Post struct {
 	UpdatedAt      primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
 	DeletedAt      *primitive.DateTime `bson:"deletedAt,omitempty" json:"deletedAt,omitempty"`
 	LastActivityAt primitive.DateTime  `bson:"lastActivityAt" json:"lastActivityAt"`
-	OriginalPostId string              `bson:"originalPostId,omitempty" json:"originalPostId,omitempty"`
 }
 
 // Metadata represents common metadata fields used across models
@@ -56,12 +54,10 @@ type Metadata struct {
 type PostType string
 
 const (
-	TextPost    PostType = "text"
-	ImagePost   PostType = "image"
-	VideoPost   PostType = "video"
-	LinkPost    PostType = "link"
-	PollPost    PostType = "poll"
-	GalleryPost PostType = "gallery"
+	TextPost  PostType = "text"
+	ImagePost PostType = "image"
+	VideoPost PostType = "video"
+	LinkPost  PostType = "link"
 )
 
 // PostStatus defines the current status of a post
@@ -111,7 +107,7 @@ const (
 )
 
 // NewPost creates a new post with default values
-func NewPost(authorId string, communityId string, title string, content string, postType PostType) *Post {
+func NewPost(authorId string, communityId string, title string, content string, tags []string, media []string, postType PostType, isNSFW bool, isSpoiler bool) *Post {
 	now := primitive.NewDateTimeFromTime(time.Now())
 
 	return &Post{
@@ -123,6 +119,7 @@ func NewPost(authorId string, communityId string, title string, content string, 
 		CommunityId:  communityId,
 		Type:         postType,
 		Status:       PostStatusActive,
+		Tags:         tags,
 		Synergy:      0,
 		CommentCount: 0,
 		ViewCount:    0,

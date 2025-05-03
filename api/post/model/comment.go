@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const CommentCollectionName = "comment"
+const CommentCollectionName = "comments"
 
 // Comment represents a user comment on a post or another comment
 type Comment struct {

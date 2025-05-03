@@ -2,10 +2,13 @@ package community
 
 import (
 	"errors"
+	"fmt"
 	"sync-backend/api/community/model"
 	"sync-backend/arch/mongo"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
+
+	"slices"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -13,6 +16,7 @@ import (
 type CommunityService interface {
 	CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError)
 	GetCommunityById(id string) (*model.Community, network.ApiError)
+	CheckUserInCommunity(userId string, communityId string) network.ApiError
 }
 
 type communityService struct {
@@ -88,13 +92,33 @@ func (s *communityService) GetCommunityById(id string) (*model.Community, networ
 	s.logger.Info("Fetching community with id: %s", id)
 	filter := bson.M{"communityId": id}
 	community, err := s.communityQueryBuilder.Query(s.Context()).FindOne(filter, nil)
-	if err != nil {
+	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		s.logger.Error("Error fetching community: %v", err)
 		return nil, network.NewInternalServerError("Error fetching community", network.DB_ERROR, err)
 	}
 	if community == nil {
 		s.logger.Error("Community not found")
-		return nil, network.NewNotFoundError("Community not found", errors.New("community not found"))
+		return nil, network.NewNotFoundError("Community not found", fmt.Errorf("community with id %s not found", id))
 	}
 	return community, nil
+}
+
+func (s *communityService) CheckUserInCommunity(userId string, communityId string) network.ApiError {
+	s.logger.Info("Checking if user %s is in community %s", userId, communityId)
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOne(bson.M{"communityId": communityId}, nil)
+	if err != nil {
+		s.logger.Error("Error fetching community: %v", err)
+		return network.NewInternalServerError("Error fetching community", network.DB_ERROR, err)
+	}
+
+	if community == nil {
+		s.logger.Error("Community not found")
+		return network.NewNotFoundError("Community not found", errors.New("community not found"))
+	}
+
+	if slices.Contains(community.Members, userId) {
+		return nil
+	}
+	s.logger.Error("User is not a member of the community")
+	return network.NewForbiddenError("User is not a member of the community", errors.New("user is not a member of the community"))
 }
