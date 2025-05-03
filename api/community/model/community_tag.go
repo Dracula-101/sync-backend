@@ -1,5 +1,7 @@
 package model
 
+const CommunityTagCollectionName = "community_tags"
+
 type CommunityTag struct {
 	Id          string `json:"id" bson:"_id,omitempty"`
 	TagId       string `json:"tag_id" bson:"tag_id"`

@@ -26,7 +26,7 @@ func Server() {
 	router, _, shutdown := create(&env, &config)
 	defer shutdown()
 	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGTERM, os.Interrupt)
+	signal.Notify(stop, syscall.SIGTERM, os.Interrupt, syscall.SIGQUIT, syscall.SIGINT, syscall.SIGKILL)
 	go func() {
 		router.Start(env.Host, uint16(env.Port))
 	}()

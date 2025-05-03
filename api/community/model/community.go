@@ -10,6 +10,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+
+const CommunityCollectionName = "communities"
+
 type Community struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	CommunityId string             `bson:"communityId" json:"communityId"`

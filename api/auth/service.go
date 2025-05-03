@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var EMPTY_PASSWORD_HASH = "$2a$10$Cv/Xb2ykZ9FLmWyB6vaPEueAzA51kkU2GDZj8C4hwgAH3gQhwIo.q"
+const EMPTY_PASSWORD_HASH = "$2a$10$Cv/Xb2ykZ9FLmWyB6vaPEueAzA51kkU2GDZj8C4hwgAH3gQhwIo.q"
 
 type AuthService interface {
 	SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpResponse, network.ApiError)
@@ -72,9 +72,6 @@ func (s *authService) SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpRespo
 	if err != nil {
 		return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 	}
-
-	// send welcome email
-	// s.emailService.SendWelcomeEmail(signUpRequest.Email, fmt.Sprintf("%s %s", signUpRequest.FirstName, signUpRequest.LastName))
 
 	signUpResponse := dto.NewSignUpResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 	s.logger.Success("User signed up successfully: %s", signUpRequest.Email)

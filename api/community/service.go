@@ -10,9 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-const CommunityCollectionName = "community"
-const CommunityTagCollectionName = "community_tags"
-
 type CommunityService interface {
 	CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError)
 	GetCommunityById(id string) (*model.Community, network.ApiError)
@@ -29,8 +26,8 @@ func NewCommunityService(db mongo.Database) CommunityService {
 	return &communityService{
 		BaseService:              network.NewBaseService(),
 		logger:                   utils.NewServiceLogger("CommunityService"),
-		communityQueryBuilder:    mongo.NewQueryBuilder[model.Community](db, CommunityCollectionName),
-		communityTagQueryBuilder: mongo.NewQueryBuilder[model.CommunityTag](db, CommunityTagCollectionName),
+		communityQueryBuilder:    mongo.NewQueryBuilder[model.Community](db, model.CommunityCollectionName),
+		communityTagQueryBuilder: mongo.NewQueryBuilder[model.CommunityTag](db, model.CommunityTagCollectionName),
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"sync-backend/api/community"
+	communityModels "sync-backend/api/community/model"
 	"sync-backend/api/user/model"
 	"sync-backend/arch/common"
 	"sync-backend/arch/mongo"
@@ -307,7 +307,7 @@ func (s *userService) JoinCommunity(userId string, communityId string) error {
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
-	communityCollection := transaction.GetCollection(community.CommunityCollectionName)
+	communityCollection := transaction.GetCollection(communityModels.CommunityCollectionName)
 	_, err = communityCollection.UpdateOne(transaction.GetContext(), bson.M{"communityId": communityId}, bson.M{
 		"$addToSet": bson.M{
 			"members": userId,
@@ -351,7 +351,7 @@ func (s *userService) LeaveCommunity(userId string, communityId string) error {
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
-	communityCollection := transaction.GetCollection(community.CommunityCollectionName)
+	communityCollection := transaction.GetCollection(communityModels.CommunityCollectionName)
 	_, err = communityCollection.UpdateOne(transaction.GetContext(), bson.M{"communityId": communityId}, bson.M{
 		"$pull": bson.M{
 			"members": userId,
