@@ -4,14 +4,22 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserInfo struct {
-	UserId     string         `json:"id" validate:"required"`
-	Email      string         `json:"email"`
-	Name       string         `json:"name"`
-	ProfilePic string         `json:"profile_pic"`
-	Providers  []ProviderInfo `json:"provider,omitempty"`
+	Id                primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Username          string             `bson:"username" json:"username"`
+	UserId            string             `bson:"userId" json:"userId"`
+	Email             string             `bson:"email" json:"email"`
+	Bio               string             `bson:"bio" json:"bio"`
+	VerifiedEmail     bool               `bson:"verifiedEmail" json:"verifiedEmail"`
+	Avatar            UserAvatar         `bson:"avatar" json:"avatar"`
+	Synergy           UserSynergy        `bson:"synergy" json:"synergy"`
+	JoinedWavelengths []string           `bson:"joinedWavelengths" json:"joinedWavelengths"`
+	ModeratorOf       []string           `bson:"moderatorOf" json:"moderatorOf"`
+	Follows           int                `bson:"follows" json:"follows"`
+	Followers         int                `bson:"followers" json:"followers"`
 }
 
 func (u *UserInfo) GetValue() *UserInfo {
@@ -34,4 +42,5 @@ func (u *UserInfo) ValidateErrors(errs validator.ValidationErrors) ([]string, er
 type ProviderInfo struct {
 	ProviderName string    `json:"name"`
 	AddedAt      time.Time `json:"addedAt"`
+	Username     string    `json:"username"`
 }

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"sync-backend/api/auth/dto"
+	"sync-backend/api/common/location"
 	"sync-backend/api/user"
 	"sync-backend/arch/common"
 	"sync-backend/arch/network"
@@ -14,23 +15,26 @@ type authController struct {
 	logger utils.AppLogger
 	network.BaseController
 	common.ContextPayload
-	authProvider network.AuthenticationProvider
-	authService  AuthService
-	userService  user.UserService
+	authProvider    network.AuthenticationProvider
+	authService     AuthService
+	userService     user.UserService
+	locationService location.LocationService
 }
 
 func NewAuthController(
 	authService AuthService,
-	userService user.UserService,
 	authProvider network.AuthenticationProvider,
+	userService user.UserService,
+	locationService location.LocationService,
 ) network.Controller {
 	return &authController{
-		logger:         utils.NewServiceLogger("AuthController"),
-		BaseController: network.NewBaseController("/api/v1/auth", authProvider),
-		ContextPayload: common.NewContextPayload(),
-		authProvider:   authProvider,
-		authService:    authService,
-		userService:    userService,
+		logger:          utils.NewServiceLogger("AuthController"),
+		BaseController:  network.NewBaseController("/api/v1/auth", authProvider),
+		ContextPayload:  common.NewContextPayload(),
+		authProvider:    authProvider,
+		authService:     authService,
+		userService:     userService,
+		locationService: locationService,
 	}
 }
 
@@ -40,6 +44,8 @@ func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/login", c.Login)
 	group.POST("/google", c.GoogleLogin)
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
+	group.POST("/forgot-password", c.ForgotPassword)
+	group.POST("/refresh-token", c.RefreshToken)
 }
 
 func (c *authController) SignUp(ctx *gin.Context) {
@@ -96,15 +102,39 @@ func (c *authController) GoogleLogin(ctx *gin.Context) {
 }
 
 func (c *authController) Logout(ctx *gin.Context) {
-	body, err := network.ReqBody(ctx, dto.NewLogoutRequest())
-	if err != nil {
-		return
-	}
-	c.SetRequestDetails(ctx, &body.BaseRequest)
-	err = c.authService.Logout(body)
+	userId := *c.MustGetUserId(ctx)
+	err := c.authService.Logout(userId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
 	c.Send(ctx).SuccessMsgResponse("User logged out successfully")
+}
+
+func (c *authController) ForgotPassword(ctx *gin.Context) {
+	body, err := network.ReqBody(ctx, dto.NewForgotPassRequest())
+	if err != nil {
+		return
+	}
+
+	c.SetRequestDetails(ctx, &body.BaseRequest)
+	err = c.authService.ForgotPassword(body)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessMsgResponse("Password reset link sent to your email")
+}
+
+func (c *authController) RefreshToken(ctx *gin.Context) {
+	body, err := network.ReqBody(ctx, dto.NewRefreshTokenRequest())
+	if err != nil {
+		return
+	}
+	data, err := c.authService.RefreshToken(body)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("Token refreshed successfully", data)
 }

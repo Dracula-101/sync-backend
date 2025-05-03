@@ -2,7 +2,6 @@ package network
 
 import (
 	"errors"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,15 +29,13 @@ type send struct {
 }
 
 func (s *send) SuccessMsgResponse(message string) {
-	s.sendResponse(NewSuccessMsgResponse(message))
+	res := NewEnvelopeWithData(true, 200, message, nil)
+	s.sendResponse(res)
 }
 
 func (s *send) SuccessDataResponse(message string, data any) {
-	s.sendResponse(NewSuccessDataResponse(message, data))
-}
-
-func (s *send) SendResourceCreatedResponse(message string) {
-	s.sendResponse(NewResourceCreatedResponse(message))
+	res := NewEnvelopeWithData(true, 200, message, &data)
+	s.sendResponse(res)
 }
 
 // 400 Bad Request - Malformed request, invalid input
@@ -117,8 +114,8 @@ func (s *send) TooManyRequestsError(message string, err error) {
 }
 
 // 500 Internal Server Error - Unexpected server error
-func (s *send) InternalServerError(message string, err error) {
-	s.sendError(NewInternalServerError(message, err))
+func (s *send) InternalServerError(message string, errCode string, err error) {
+	s.sendError(NewInternalServerError(message, errCode, err))
 }
 
 // 501 Not Implemented - Feature not supported by server
@@ -148,7 +145,7 @@ func (s *send) HTTPVersionNotSupportedError(message string, err error) {
 
 func (s *send) MixedError(err error) {
 	if err == nil {
-		s.InternalServerError("something went wrong", err)
+		s.InternalServerError("Something went wrong", UnknownErrorCode, nil)
 		return
 	}
 
@@ -158,77 +155,17 @@ func (s *send) MixedError(err error) {
 		return
 	}
 
-	s.InternalServerError(err.Error(), err)
+	s.InternalServerError(err.Error(), UnknownErrorCode, err)
 }
 
 func (s *send) sendResponse(response Response) {
-	s.context.JSON(int(response.GetStatus()), response)
+	s.context.JSON(response.GetStatusCode(), response)
 	// this is needed since gin calls ctx.Next() inside the resposne handeling
 	// ref: https://github.com/gin-gonic/gin/issues/2221
 	s.context.Abort()
 }
 
 func (s *send) sendError(err ApiError) {
-	var res Response
-
-	switch err.GetCode() {
-	case http.StatusBadRequest:
-		res = NewBadRequestResponse(err.GetMessage())
-	case http.StatusUnauthorized:
-		res = NewUnauthorizedResponse(err.GetMessage())
-	case http.StatusForbidden:
-		res = NewForbiddenResponse(err.GetMessage())
-	case http.StatusNotFound:
-		res = NewNotFoundResponse(err.GetMessage())
-	case http.StatusMethodNotAllowed:
-		res = NewMethodNotAllowedResponse(err.GetMessage())
-	case http.StatusNotAcceptable:
-		res = NewNotAcceptableResponse(err.GetMessage())
-	case http.StatusRequestTimeout:
-		res = NewRequestTimeoutResponse(err.GetMessage())
-	case http.StatusConflict:
-		res = NewConflictResponse(err.GetMessage())
-	case http.StatusGone:
-		res = NewGoneResponse(err.GetMessage())
-	case http.StatusRequestEntityTooLarge:
-		res = NewPayloadTooLargeResponse(err.GetMessage())
-	case http.StatusRequestURITooLong:
-		res = NewURITooLongResponse(err.GetMessage())
-	case http.StatusUnsupportedMediaType:
-		res = NewUnsupportedMediaTypeResponse(err.GetMessage())
-	case 419: // Custom status for session expiry
-		res = NewSessionExpiredResponse(err.GetMessage())
-	case http.StatusUnprocessableEntity:
-		res = NewUnprocessableEntityResponse(err.GetMessage())
-	case http.StatusTooManyRequests:
-		res = NewTooManyRequestsResponse(err.GetMessage())
-	case http.StatusInternalServerError:
-		if s.debug {
-			res = NewInternalServerErrorResponse(err.Unwrap().Error())
-		} else {
-			res = NewInternalServerErrorResponse(err.GetMessage())
-		}
-	case http.StatusNotImplemented:
-		res = NewNotImplementedResponse(err.GetMessage())
-	case http.StatusBadGateway:
-		res = NewBadGatewayResponse(err.GetMessage())
-	case http.StatusServiceUnavailable:
-		res = NewServiceUnavailableResponse(err.GetMessage())
-	case http.StatusGatewayTimeout:
-		res = NewGatewayTimeoutResponse(err.GetMessage())
-	case http.StatusHTTPVersionNotSupported:
-		res = NewHTTPVersionNotSupportedResponse(err.GetMessage())
-	default:
-		if s.debug {
-			res = NewInternalServerErrorResponse(err.Unwrap().Error())
-		} else {
-			res = NewInternalServerErrorResponse(err.GetMessage())
-		}
-	}
-
-	if res == nil {
-		res = NewInternalServerErrorResponse("something went wrong")
-	}
-
+	res := NewEnvelopeWithErrors(false, err.GetStatusCode(), err.GetMessage(), err.GetErrors(s.debug))
 	s.sendResponse(res)
 }

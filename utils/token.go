@@ -14,7 +14,6 @@ type GoogleToken struct {
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	Picture       string `json:"picture"`
-	Name          string `json:"name"`
 	FamilyName    string `json:"family_name"`
 	GivenName     string `json:"given_name"`
 }

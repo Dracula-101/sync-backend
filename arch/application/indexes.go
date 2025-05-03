@@ -1,7 +1,7 @@
 package application
 
 import (
-	session "sync-backend/api/session/model"
+	session "sync-backend/api/common/session/model"
 	user "sync-backend/api/user/model"
 	"sync-backend/arch/mongo"
 )

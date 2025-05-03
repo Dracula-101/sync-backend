@@ -119,8 +119,7 @@ type JWTConfig struct {
 	Algorithm          string `mapstructure:"algorithm"`
 	AccessTokenExpiry  string `mapstructure:"access_token_expiry"`
 	RefreshTokenExpiry string `mapstructure:"refresh_token_expiry"`
-	PrivateKeyPath     string `mapstructure:"private_key_path"`
-	PublicKeyPath      string `mapstructure:"public_key_path"`
+	SecretKey          string `mapstructure:"secret_key"`
 }
 
 // SessionConfig holds session configuration

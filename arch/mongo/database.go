@@ -31,6 +31,8 @@ type Document[T any] interface {
 type Database interface {
 	GetLogger() utils.AppLogger
 	GetInstance() *database
+	GetClient() *mongo.Client
+	GetDatabaseName() string
 	Connect()
 	Disconnect()
 }
@@ -53,6 +55,18 @@ func NewDatabase(ctx context.Context, logger utils.AppLogger, config DbConfig) D
 
 func (db *database) GetInstance() *database {
 	return db
+}
+
+func (db *database) GetClient() *mongo.Client {
+	client := db.Database.Client()
+	if client == nil {
+		db.logger.Fatal("Mongo client is nil")
+	}
+	return client
+}
+
+func (db *database) GetDatabaseName() string {
+	return db.config.Name
 }
 
 func (db *database) GetLogger() utils.AppLogger {

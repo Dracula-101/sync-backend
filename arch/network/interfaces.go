@@ -8,16 +8,20 @@ import (
 )
 
 type ApiError interface {
-	GetCode() int
+	GetStatusCode() int
+	GetErrorCode() string
 	GetMessage() string
 	Error() string
 	Unwrap() error
+	GetErrors(isDebug bool) []ErrorDetail
 }
 
 type Response interface {
-	GetStatus() int
+	GetStatusCode() int
+	GetStatus() bool
 	GetMessage() string
-	GetData() any
+	GetData() *any
+	GetErrors() *[]ErrorDetail
 }
 
 type SendResponse interface {
@@ -31,7 +35,7 @@ type SendResponse interface {
 	UnauthorizedError(message string, err error)
 	NotFoundError(message string, err error)
 	MethodNotAllowedError(message string, err error)
-	InternalServerError(message string, err error)
+	InternalServerError(message string, errCode string, err error)
 	MixedError(err error)
 }
 

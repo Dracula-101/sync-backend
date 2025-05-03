@@ -44,3 +44,40 @@ func NewQueryBuilder[T any](db Database, collectionName string) QueryBuilder[T] 
 		logger:     db.GetLogger(),
 	}
 }
+
+type TransactionBuilder interface {
+	GetLogger() utils.AppLogger
+	GetDatabase() string
+	GetClient() *mongo.Client
+	GetTransaction(timeout time.Duration) Transaction
+}
+
+type transactionBuilder struct {
+	logger   utils.AppLogger
+	client   *mongo.Client
+	database string
+}
+
+func (t *transactionBuilder) GetLogger() utils.AppLogger {
+	return t.logger
+}
+
+func (t *transactionBuilder) GetDatabase() string {
+	return t.database
+}
+
+func (t *transactionBuilder) GetClient() *mongo.Client {
+	return t.client
+}
+
+func (t *transactionBuilder) GetTransaction(timeout time.Duration) Transaction {
+	return newTransaction(t.logger, t.client, t.database, timeout)
+}
+
+func NewTransactionBuilder(db Database) TransactionBuilder {
+	return &transactionBuilder{
+		logger:   db.GetLogger(),
+		client:   db.GetClient(),
+		database: db.GetDatabaseName(),
+	}
+}

@@ -23,6 +23,7 @@ type Query[T any] interface {
 	InsertMany(doc []*T) ([]primitive.ObjectID, error)
 	InsertAndRetrieveMany(doc []*T) ([]*T, error)
 	FilterOne(filter bson.M, opts *options.FindOneOptions) (*T, error)
+	FilterOneAndUpdate(filter bson.M, update bson.M, opts *options.FindOneAndUpdateOptions) (*T, error)
 	FilterMany(filter bson.M, opts *options.FindOptions) ([]*T, error)
 	FilterPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
 	FilterCount(filter bson.M) (int64, error)
@@ -247,6 +248,19 @@ func (q *query[T]) FilterOne(filter bson.M, opts *options.FindOneOptions) (*T, e
 		return nil, err
 	}
 	q.logger.Info("[ MONGO ] - FilterOne query executed successfully")
+	return &doc, nil
+}
+
+func (q *query[T]) FilterOneAndUpdate(filter bson.M, update bson.M, opts *options.FindOneAndUpdateOptions) (*T, error) {
+	defer q.Close()
+	q.logger.Info("[ MONGO ] - Executing FilterOneAndUpdate query with filter: %v, update: %v", filter, update)
+	var doc T
+	err := q.collection.FindOneAndUpdate(q.context, filter, update, opts).Decode(&doc)
+	if err != nil {
+		q.logger.Error("[ MONGO ] - Error executing FilterOneAndUpdate query: %v", err)
+		return nil, err
+	}
+	q.logger.Info("[ MONGO ] - FilterOneAndUpdate query executed successfully")
 	return &doc, nil
 }
 

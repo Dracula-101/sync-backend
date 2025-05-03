@@ -14,6 +14,7 @@ import (
 type GoogleLoginRequest struct {
 	coredto.BaseRequest
 	GoogleIdToken string `json:"google_id_token" binding:"required" validate:"required"`
+	Username      string `json:"username" binding:"required" validate:"required,min=3,max=50"`
 }
 
 func NewGoogleLoginRequest() *GoogleLoginRequest {
@@ -43,8 +44,8 @@ func (l *GoogleLoginRequest) ValidateErrors(errs validator.ValidationErrors) ([]
 
 type GoogleLoginResponse struct {
 	User         model.UserInfo `json:"user"`
-	AccessToken  string   `json:"access_token"`
-	RefreshToken string   `json:"refresh_token"`
+	AccessToken  string         `json:"access_token"`
+	RefreshToken string         `json:"refresh_token"`
 }
 
 func NewGoogleLoginResponse(userInfo model.UserInfo, accessToken string, refreshToken string) *GoogleLoginResponse {
