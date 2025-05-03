@@ -24,6 +24,7 @@ type AuthService interface {
 	GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*dto.GoogleLoginResponse, network.ApiError)
 	Logout(userId string) network.ApiError
 	ForgotPassword(forgotPasswordRequest *dto.ForgotPassRequest) network.ApiError
+	RefreshToken(refreshTokenRequest *dto.RefreshTokenRequest) (*dto.RefreshTokenResponse, network.ApiError)
 }
 
 type authService struct {
@@ -122,7 +123,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		loginHistory.SessionId = session.SessionID
 		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
 
-		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), session.Token)
+		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), session.Token, session.RefreshToken)
 		s.logger.Success("User logged in successfully: %s", loginRequest.Email)
 		// update the login history
 		return loginResponse, nil
@@ -143,7 +144,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
-		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), token.AccessToken)
+		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 		s.logger.Success("User logged in successfully: %s", loginRequest.Email)
 		return loginResponse, nil
 	}
@@ -230,4 +231,29 @@ func (s *authService) ForgotPassword(forgotPasswordRequest *dto.ForgotPassReques
 	}
 	s.logger.Success("Password reset email sent successfully to: %s", forgotPasswordRequest.Email)
 	return nil
+}
+
+func (s *authService) RefreshToken(refreshTokenRequest *dto.RefreshTokenRequest) (*dto.RefreshTokenResponse, network.ApiError) {
+	s.logger.Info("Refreshing token")
+	session, err := s.sessionService.GetSessionByRefreshToken(refreshTokenRequest.RefreshToken)
+	if err != nil {
+		return nil, network.NewInternalServerError("Error getting session", ERR_SESSION, err)
+	}
+	if session == nil {
+		return nil, network.NewNotFoundError("Session not found", nil)
+	}
+	if session.IsExpired() {
+		return nil, network.NewUnauthorizedError("Session expired", nil)
+	}
+	token, err := s.tokenService.GenerateTokenPair(session.UserID)
+	if err != nil {
+		return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
+	}
+	_, err = s.sessionService.UpdateSession(session.SessionID, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time())
+	if err != nil {
+		return nil, network.NewInternalServerError("Error updating session", ERR_SESSION_INVALID, err)
+	}
+	refreshTokenResponse := dto.NewRefreshTokenResponse(token.AccessToken, token.RefreshToken)
+	s.logger.Success("Tokens refreshed successfully")
+	return refreshTokenResponse, nil
 }

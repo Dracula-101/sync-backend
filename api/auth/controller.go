@@ -45,6 +45,7 @@ func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/google", c.GoogleLogin)
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
 	group.POST("/forgot-password", c.ForgotPassword)
+	group.POST("/refresh-token", c.RefreshToken)
 }
 
 func (c *authController) SignUp(ctx *gin.Context) {
@@ -123,4 +124,17 @@ func (c *authController) ForgotPassword(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessMsgResponse("Password reset link sent to your email")
+}
+
+func (c *authController) RefreshToken(ctx *gin.Context) {
+	body, err := network.ReqBody(ctx, dto.NewRefreshTokenRequest())
+	if err != nil {
+		return
+	}
+	data, err := c.authService.RefreshToken(body)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("Token refreshed successfully", data)
 }

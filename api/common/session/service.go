@@ -15,6 +15,8 @@ import (
 
 type SessionService interface {
 	CreateSession(userID string, token string, refreshToken string, expiresAt time.Time, deviceInfo model.DeviceInfo, userAgent string, ipAddress string) (*model.Session, error)
+	GetSessionByRefreshToken(refreshToken string) (*model.Session, error)
+	UpdateSession(sessionID string, accessToken string, refreshToken string, expiresAt time.Time) (*model.Session, error)
 	UpdateSessionInfo(sessionID string, deviceInfo model.DeviceInfo, userAgent string, ipAddress string) error
 	GetUserActiveSession(userID string) (*model.Session, error)
 	GetActiveSessionsByUserID(userID string) ([]*model.Session, error)
@@ -74,6 +76,40 @@ func (s *sessionService) CreateSession(userID string, token string, refreshToken
 	timeNow := time.Now()
 	session.CreatedAt = primitive.NewDateTimeFromTime(timeNow)
 	session.UpdatedAt = primitive.NewDateTimeFromTime(timeNow)
+	return session, nil
+}
+
+func (s *sessionService) GetSessionByRefreshToken(refreshToken string) (*model.Session, error) {
+	filter := bson.M{"refreshToken": refreshToken, "isRevoked": false, "expiresAt": bson.M{"$gt": time.Now()}}
+	options := options.FindOne().SetSort(bson.M{"expiresAt": 1})
+	session, err := s.queryBuilder.SingleQuery().FilterOne(filter, options)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return session, nil
+}
+
+func (s *sessionService) UpdateSession(sessionID string, accessToken string, refreshToken string, expiresAt time.Time) (*model.Session, error) {
+	filter := bson.M{"sessionId": sessionID, "isRevoked": false, "expiresAt": bson.M{"$gt": time.Now()}}
+	update := bson.M{
+		"$set": bson.M{
+			"token":        accessToken,
+			"refreshToken": refreshToken,
+			"expiresAt":    expiresAt,
+			"updatedAt":    time.Now(),
+		},
+	}
+	session, err := s.queryBuilder.SingleQuery().FilterOneAndUpdate(filter, update, options.FindOneAndUpdate().SetReturnDocument(options.After))
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	session.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 	return session, nil
 }
 

@@ -118,7 +118,7 @@ func (l *AppLogger) log(level LogLevel, prefix, levelStr, color, format string, 
 		return
 	}
 
-	timestamp := time.Now().Format("2006:01:02 15:04:05")
+	timestamp := time.Now().Format("2006:01:02 15:04:05.000")
 	message := fmt.Sprintf(format, v...)
 
 	termWidth := getTerminalWidth()

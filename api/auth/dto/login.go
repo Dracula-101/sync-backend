@@ -52,12 +52,14 @@ func (s *LoginRequest) ValidateErrors(errs validator.ValidationErrors) ([]string
 type LoginResponse struct {
 	User        model.UserInfo `json:"user"`
 	AccessToken string         `json:"access_token" validate:"required"`
+	RefreshToken string         `json:"refresh_token" validate:"required"`
 }
 
-func NewLoginResponse(userInfo model.UserInfo, accessToken string) *LoginResponse {
+func NewLoginResponse(userInfo model.UserInfo, accessToken string, refreshToken string) *LoginResponse {
 	return &LoginResponse{
 		User:        userInfo,
 		AccessToken: accessToken,
+		RefreshToken: refreshToken,
 	}
 }
 

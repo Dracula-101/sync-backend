@@ -34,6 +34,10 @@ type Session struct {
 	UpdatedAt    primitive.DateTime `bson:"updatedAt" json:"updatedAt"`
 }
 
+func (session *Session) IsExpired() bool {
+	return session.ExpiresAt.Time().Before(time.Now())
+}
+
 type NewSessionArgs struct {
 	UserId       string
 	Token        string
