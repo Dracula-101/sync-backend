@@ -8,5 +8,5 @@ type CommunityTag struct {
 	Name        string `json:"name" bson:"name"`
 	Description string `json:"description" bson:"description"`
 	Icon        string `json:"icon" bson:"icon"`
-	CreatedAt   string `json:"created_at" bson:"created_at"`
+	CreatedAt   string `json:"created_at,omitempty" bson:"created_at"`
 }
