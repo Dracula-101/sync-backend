@@ -50,12 +50,16 @@ func (m *appModule) Controllers() []network.Controller {
 		auth.NewAuthController(m.AuthService, m.AuthenticationProvider(), m.UserService, m.LocationService),
 		community.NewCommunityController(m.CommunityService, m.AuthenticationProvider()),
 		user.NewUserController(m.AuthenticationProvider(), m.UserService, m.LocationService),
-		post.NewPostController(m.PostService, m.AuthenticationProvider()),
+		post.NewPostController(m.PostService, m.AuthenticationProvider(), m.UploadProvider()),
 	}
 }
 
 func (m *appModule) AuthenticationProvider() network.AuthenticationProvider {
 	return authMW.NewAuthenticationProvider(m.TokenService, m.UserService, m.SessionService, m.Store)
+}
+
+func (m *appModule) UploadProvider() coreMW.UploadProvider {
+	return coreMW.NewUploadProvider()
 }
 
 func (m *appModule) RootMiddlewares() []network.RootMiddleware {
@@ -67,6 +71,7 @@ func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 
 	return middlewares
 }
+
 func NewAppModule(context context.Context, env *config.Env, config *config.Config, db mongo.Database, ipDb pg.Database, store redis.Store) Module {
 	locationService := location.NewLocationService(ipDb)
 	tokenService := token.NewTokenService(config)

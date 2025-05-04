@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/base64"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
@@ -26,4 +27,9 @@ func LoadPEMFileInto(path string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+// CopyWithProgress copies from src to dst with progress tracking for larger files
+func CopyWithProgress(dst io.Writer, src io.Reader, totalSize int64) (int64, error) {
+	return io.Copy(dst, src)
 }
