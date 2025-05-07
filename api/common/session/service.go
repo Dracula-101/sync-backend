@@ -137,7 +137,7 @@ func (s *sessionService) UpdateSessionInfo(sessionID string, deviceInfo model.De
 			"updatedAt": time.Now(),
 		},
 	}
-	s.queryBuilder.SingleQuery().UpdateOne(filter, update)
+	s.queryBuilder.SingleQuery().UpdateOne(filter, update, options.Update().SetUpsert(true))
 	return nil
 }
 
@@ -168,7 +168,7 @@ func (s *sessionService) InvalidateSession(sessionID string) error {
 	filter := bson.M{"sessionId": sessionID}
 	update := bson.M{"$set": bson.M{"isRevoked": true, "updatedAt": time.Now()}}
 
-	_, err := s.queryBuilder.SingleQuery().UpdateOne(filter, update)
+	_, err := s.queryBuilder.SingleQuery().UpdateOne(filter, update, options.Update().SetUpsert(true))
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func (s *sessionService) InvalidateSession(sessionID string) error {
 func (s *sessionService) RefreshSession(sessionID string, newToken string, newExpiresAt time.Time) error {
 	filter := bson.M{"sessionId": sessionID, "isRevoked": false, "expiresAt": bson.M{"$gt": time.Now()}}
 	update := bson.M{"$set": bson.M{"token": newToken, "expiresAt": newExpiresAt, "updatedAt": time.Now()}}
-	_, err := s.queryBuilder.SingleQuery().UpdateOne(filter, update)
+	_, err := s.queryBuilder.SingleQuery().UpdateOne(filter, update, options.Update().SetUpsert(true))
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func (s *sessionService) RefreshSession(sessionID string, newToken string, newEx
 func (s *sessionService) TouchSession(sessionID string) error {
 	filter := bson.M{"sessionId": sessionID, "isRevoked": false, "expiresAt": bson.M{"$gt": time.Now()}}
 	update := bson.M{"$set": bson.M{"updatedAt": time.Now()}}
-	_, err := s.queryBuilder.SingleQuery().UpdateOne(filter, update)
+	_, err := s.queryBuilder.SingleQuery().UpdateOne(filter, update, options.Update().SetUpsert(true))
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,9 @@ func (s *sessionService) TouchSession(sessionID string) error {
 
 func (s *sessionService) CleanupExpiredSessions() (int64, error) {
 	filter := bson.M{"expiresAt": bson.M{"$lt": time.Now()}}
-	result, err := s.queryBuilder.SingleQuery().DeleteMany(filter)
+	result, err := s.queryBuilder.SingleQuery().DeleteMany(filter, options.Delete().SetCollation(&options.Collation{
+		Locale: "en",
+	}))
 	if err != nil {
 		return 0, err
 	}

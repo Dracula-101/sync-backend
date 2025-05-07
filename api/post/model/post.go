@@ -140,3 +140,11 @@ func NewPost(authorId string, communityId string, title string, content string, 
 		LastActivityAt: now,
 	}
 }
+
+func (p *Post) IsActive() bool {
+	return p.Status == PostStatusActive
+}
+
+func (p *Post) IsDeleted() bool {
+	return p.Status == PostStatusDeleted
+}

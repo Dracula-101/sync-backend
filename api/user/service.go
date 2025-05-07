@@ -138,7 +138,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		existingUser.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": existingUser.UserId}, bson.M{
 			"$set": existingUser.GetValue(),
-		})
+		}, nil)
 		if err != nil {
 			s.log.Error("Error updating existing user: %v", err)
 			return nil, fmt.Errorf("error updating existing user: %v", err)
@@ -263,7 +263,7 @@ func (s *userService) UpdateLoginHistory(userId string, loginHistory model.Login
 		"$set": bson.M{
 			"lastLogin": loginHistory.LoginTime,
 		},
-	})
+	}, nil)
 	if err != nil {
 		s.log.Error("Error updating login history: %v", err)
 		return fmt.Errorf("error updating login history: %v", err)
@@ -294,7 +294,7 @@ func (s *userService) JoinCommunity(userId string, communityId string) error {
 		"$addToSet": bson.M{
 			"joinedWavelengths": communityId,
 		},
-	})
+	}, nil)
 	if err != nil {
 		s.log.Error("Error joining community: %v", err)
 		return fmt.Errorf("error joining community: %v", err)
@@ -338,7 +338,7 @@ func (s *userService) LeaveCommunity(userId string, communityId string) error {
 		"$pull": bson.M{
 			"joinedWavelengths": communityId,
 		},
-	})
+	}, nil)
 	if err != nil {
 		s.log.Error("Error leaving community: %v", err)
 		return fmt.Errorf("error leaving community: %v", err)
