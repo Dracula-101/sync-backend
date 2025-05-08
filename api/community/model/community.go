@@ -1,15 +1,20 @@
 package model
 
 import (
+	"context"
 	"math/rand"
 	"regexp"
 	"strings"
+	"sync-backend/arch/mongo"
 	"sync-backend/utils"
 	"time"
 
+	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	mongod "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
 
 const CommunityCollectionName = "communities"
 
@@ -379,4 +384,83 @@ func randomString(length int) string {
 		result[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(result)
+}
+
+func (c *Community) Validate() error {
+	validate := validator.New()
+	return validate.Struct(c)
+}
+
+func (c *Community) EnsureIndexes(db mongo.Database) {
+	indexes := []mongod.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "communityId", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{
+				{Key: "slug", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{
+				{Key: "name", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{
+				{Key: "ownerId", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "members", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "moderators", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "isPrivate", Value: 1},
+				{Key: "status", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "tags.name", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "settings.showInDiscovery", Value: 1},
+				{Key: "isPrivate", Value: 1},
+				{Key: "status", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "stats.popularityScore", Value: -1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "metadata.createdAt", Value: -1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "metadata.deletedAt", Value: 1},
+			},
+			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60),
+		},
+	}
+
+	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CreateIndexes(indexes)
 }

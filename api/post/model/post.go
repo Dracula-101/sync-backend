@@ -32,10 +32,10 @@ type Post struct {
 	IsStickied     bool                `bson:"isStickied" json:"isStickied"`
 	IsLocked       bool                `bson:"isLocked" json:"isLocked"`
 	IsArchived     bool                `bson:"isArchived" json:"isArchived"`
-	Metadata       Metadata            `bson:"metadata" json:"metadata"`
+	Metadata       Metadata            `bson:"metadata" json:"-"`
 	CreatedAt      primitive.DateTime  `bson:"createdAt" json:"createdAt"`
 	UpdatedAt      primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
-	DeletedAt      *primitive.DateTime `bson:"deletedAt,omitempty" json:"deletedAt,omitempty"`
+	DeletedAt      *primitive.DateTime `bson:"deletedAt,omitempty" json:"-"`
 	LastActivityAt primitive.DateTime  `bson:"lastActivityAt" json:"lastActivityAt"`
 }
 

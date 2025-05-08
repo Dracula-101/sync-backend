@@ -89,7 +89,6 @@ func (*Session) EnsureIndexes(db mongo.Database) {
 				{Key: "userId", Value: 1},
 				{Key: "expiresAt", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
 		},
 		{
 			Keys: bson.D{
@@ -97,6 +96,42 @@ func (*Session) EnsureIndexes(db mongo.Database) {
 			},
 			Options: options.Index().SetUnique(true),
 		},
+		{
+			Keys: bson.D{
+				{Key: "sessionId", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{
+				{Key: "refreshToken", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys: bson.D{
+				{Key: "userId", Value: 1},
+				{Key: "isRevoked", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "expiresAt", Value: 1},
+			},
+			Options: options.Index().SetExpireAfterSeconds(0),
+		},
+		{
+			Keys: bson.D{
+				{Key: "userId", Value: 1},
+				{Key: "device.deviceId", Value: 1},
+			},
+		},
+		{
+			Keys: bson.D{
+				{Key: "lastActive", Value: -1},
+			},
+		},
 	}
+
 	mongo.NewQueryBuilder[Session](db, SessionCollectionName).Query(context.Background()).CreateIndexes(indexes)
 }

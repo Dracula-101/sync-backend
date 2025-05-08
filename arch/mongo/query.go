@@ -15,6 +15,7 @@ import (
 type Query[T any] interface {
 	Close()
 	CreateIndexes(indexes []mongo.IndexModel) error
+	CreateSearchIndexes(indexes []mongo.IndexModel) error
 	FindOne(filter bson.M, opts *options.FindOneOptions) (*T, error)
 	FindAll(filter bson.M, opts *options.FindOptions) ([]*T, error)
 	FindPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
@@ -80,6 +81,17 @@ func (q *query[T]) FindOne(filter bson.M, opts *options.FindOneOptions) (*T, err
 	}
 	q.logger.Info("[ MONGO ] - FindOne query executed successfully")
 	return &doc, nil
+}
+
+func (q *query[T]) CreateSearchIndexes(indexes []mongo.IndexModel) error {
+	defer q.Close()
+	_, err := q.collection.Indexes().CreateMany(q.context, indexes)
+	if err != nil {
+		q.logger.Error("[ MONGO ] - Error creating search indexes: %v", err)
+		return fmt.Errorf("error creating search indexes: %w", err)
+	}
+	q.logger.Info("[ MONGO ] - Search indexes created successfully")
+	return nil
 }
 
 func (q *query[T]) FindAll(filter bson.M, opts *options.FindOptions) ([]*T, error) {

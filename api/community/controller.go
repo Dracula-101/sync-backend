@@ -13,6 +13,8 @@ import (
 type CommunityController interface {
 	CreateCommunity(request *dto.CreateCommunityRequest) (*dto.CreateCommunityResponse, error)
 	GetCommunityById(id string) (*model.Community, error)
+	SearchCommunities(query string) ([]model.Community, error)
+	GetMyCommunities(userId string) ([]model.Community, error)
 }
 
 type communityController struct {
@@ -40,6 +42,8 @@ func (c *communityController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting community routes")
 	group.POST("/create", c.authProvider.Middleware(), c.CreateCommunity)
 	group.GET("/:communityId", c.GetCommunityById)
+	group.GET("/search", c.authProvider.Middleware(), c.SearchCommunities)
+	group.GET("/my-communities", c.authProvider.Middleware(), c.GetMyCommunities)
 }
 
 func (c *communityController) CreateCommunity(ctx *gin.Context) {
@@ -74,4 +78,10 @@ func (c *communityController) GetCommunityById(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessDataResponse("Community fetched successfully", community)
+}
+
+func (c *communityController) SearchCommunities(ctx *gin.Context) {
+}
+
+func (c *communityController) GetMyCommunities(ctx *gin.Context) {
 }
