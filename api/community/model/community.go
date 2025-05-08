@@ -19,8 +19,8 @@ import (
 const CommunityCollectionName = "communities"
 
 type Community struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	CommunityId string             `bson:"communityId" json:"communityId"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	CommunityId string             `bson:"communityId" json:"id"`
 	Slug        string             `bson:"slug" json:"slug"`
 	Name        string             `bson:"name" json:"name"`
 	Description string             `bson:"description" json:"description"`
@@ -32,7 +32,7 @@ type Community struct {
 	PostCount   int64              `bson:"postCount" json:"postCount"`
 	Media       CommunityMedia     `bson:"media" json:"media"`
 	Rules       []CommunityRule    `bson:"rules" json:"rules"`
-	Tags        []CommunityTag     `bson:"tags" json:"tags"`
+	Tags        []CommunityTagInfo `bson:"tags" json:"tags"`
 	Moderators  []string           `bson:"moderators" json:"moderators"`
 	Settings    CommunitySettings  `bson:"settings" json:"settings"`
 	Stats       CommunityStats     `bson:"stats" json:"stats"`
@@ -231,7 +231,7 @@ type NewCommunityArgs struct {
 	OwnerId       string
 	AvatarUrl     *string
 	BackgroundUrl *string
-	Tags          []CommunityTag
+	Tags          []CommunityTagInfo
 }
 
 func NewCommunity(args NewCommunityArgs) *Community {
@@ -386,6 +386,14 @@ func randomString(length int) string {
 	return string(result)
 }
 
+func (c *Community) GetCollectionName() string {
+	return CommunityCollectionName
+}
+
+func (c *Community) GetValue() *Community {
+	return c
+}
+
 func (c *Community) Validate() error {
 	validate := validator.New()
 	return validate.Struct(c)
@@ -397,45 +405,25 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 			Keys: bson.D{
 				{Key: "communityId", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
+			Options: options.Index().SetUnique(true).SetName("idx_community_id_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "slug", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
+			Options: options.Index().SetUnique(true).SetName("idx_community_slug_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "name", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
-		},
-		{
-			Keys: bson.D{
-				{Key: "ownerId", Value: 1},
-			},
+			Options: options.Index().SetUnique(true).SetName("idx_community_name_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "members", Value: 1},
 			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "moderators", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "isPrivate", Value: 1},
-				{Key: "status", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "tags.name", Value: 1},
-			},
+			Options: options.Index().SetName("idx_community_members"),
 		},
 		{
 			Keys: bson.D{
@@ -443,22 +431,20 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 				{Key: "isPrivate", Value: 1},
 				{Key: "status", Value: 1},
 			},
+			Options: options.Index().SetName("idx_community_discovery"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "stats.popularityScore", Value: -1},
 			},
+			Options: options.Index().SetName("idx_community_popularity"),
 		},
-		{
-			Keys: bson.D{
-				{Key: "metadata.createdAt", Value: -1},
-			},
-		},
+		// TTL index for deleted communities - 30 days (1 month)
 		{
 			Keys: bson.D{
 				{Key: "metadata.deletedAt", Value: 1},
 			},
-			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60),
+			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60).SetName("ttl_community_deleted"),
 		},
 	}
 

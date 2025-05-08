@@ -23,6 +23,7 @@ type DbConfig struct {
 }
 
 type Document[T any] interface {
+	GetCollectionName() string
 	EnsureIndexes(Database)
 	GetValue() *T
 	Validate() error

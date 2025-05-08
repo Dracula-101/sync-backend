@@ -50,9 +50,9 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 		return nil, network.NewInternalServerError("No community tags found", network.DB_ERROR, errors.New("no community tags found"))
 	}
 	s.logger.Info("Community tags found: %v", communityTags)
-	convertedTags := make([]model.CommunityTag, len(communityTags))
+	convertedTags := make([]model.CommunityTagInfo, len(communityTags))
 	for i, tag := range communityTags {
-		convertedTags[i] = *tag
+		convertedTags[i] = tag.ToCommunityTagInfo()
 	}
 
 	community := model.NewCommunity(model.NewCommunityArgs{

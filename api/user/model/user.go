@@ -131,6 +131,10 @@ func (user *User) GetValue() *User {
 	return user
 }
 
+func (user *User) GetCollectionName() string {
+	return UserCollectionName
+}
+
 func (user *User) Validate() error {
 	validate := validator.New()
 	return validate.Struct(user)
@@ -165,84 +169,44 @@ func (*User) EnsureIndexes(db mongo.Database) {
 	indexes := []mongod.IndexModel{
 		{
 			Keys: bson.D{
-				{Key: "_id", Value: 1},
-				{Key: "status", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "email", Value: 1},
-				{Key: "status", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
 				{Key: "email", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
+			Options: options.Index().SetUnique(true).SetName("idx_user_email_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "userId", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
+			Options: options.Index().SetUnique(true).SetName("idx_user_id_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "username", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
-		},
-		{
-			Keys: bson.D{
-				{Key: "username", Value: 1},
-				{Key: "status", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "joinedWavelengths", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "moderatorOf", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "follows", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "followers", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "lastSeen", Value: -1},
-				{Key: "status", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "createdAt", Value: -1},
-				{Key: "status", Value: 1},
-			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "deletedAt", Value: 1},
-			},
-			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60),
+			Options: options.Index().SetUnique(true).SetName("idx_user_username_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "providers.authProvider", Value: 1},
 				{Key: "providers.authIdToken", Value: 1},
 			},
+			Options: options.Index().SetName("idx_user_auth_providers"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "lastSeen", Value: -1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_user_activity"),
+		},
+		// TTL index for deleted users - 30 days
+		{
+			Keys: bson.D{
+				{Key: "deletedAt", Value: 1},
+			},
+			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60).SetName("ttl_user_deleted"),
 		},
 	}
 	mongo.NewQueryBuilder[User](db, UserCollectionName).Query(context.Background()).CreateIndexes(indexes)
+	
 }

@@ -11,6 +11,9 @@ import (
 // ============================================
 
 type SearchCommunityRequest struct {
+	Query string `json:"query" validate:"required"`
+	Page  int    `json:"page" validate:"required"`
+	Limit int    `json:"limit" validate:"required"`
 }
 
 func NewSearchCommunityRequest() *SearchCommunityRequest {

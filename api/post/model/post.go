@@ -1,10 +1,16 @@
 package model
 
 import (
+	"context"
+	"sync-backend/arch/mongo"
 	"sync-backend/utils"
 	"time"
 
+	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	mongod "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const PostCollectionName = "posts"
@@ -147,4 +153,79 @@ func (p *Post) IsActive() bool {
 
 func (p *Post) IsDeleted() bool {
 	return p.Status == PostStatusDeleted
+}
+
+func (p *Post) IsRemoved() bool {
+	return p.Status == PostStatusRemoved
+}
+
+func (p *Post) GetValue() *Post {
+	return p
+}
+
+func (p *Post) Validate() error {
+	validate := validator.New()
+	return validate.Struct(p)
+}
+
+func (p *Post) GetCollectionName() string {
+	return PostCollectionName
+}
+
+// EnsureIndexes creates all necessary indexes for the Post model
+func (*Post) EnsureIndexes(db mongo.Database) {
+	indexes := []mongod.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "postId", Value: 1},
+			},
+			Options: options.Index().SetUnique(true).SetName("idx_post_id_unique"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "communityId", Value: 1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_post_community"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "synergy", Value: -1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_post_synergy"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "createdAt", Value: -1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_post_recent"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "isNSFW", Value: 1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_post_nsfw"),
+		},
+		// TTL index for deleted posts - 7 days
+		{
+			Keys: bson.D{
+				{Key: "deletedAt", Value: 1},
+			},
+			Options: options.Index().SetExpireAfterSeconds(7 * 24 * 60 * 60).SetName("ttl_post_deleted"),
+		},
+		// Compound index for community + sorting by creation date (new posts)
+		{
+			Keys: bson.D{
+				{Key: "communityId", Value: 1},
+				{Key: "createdAt", Value: -1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_post_community_new"),
+		},
+	}
+
+	mongo.NewQueryBuilder[Post](db, PostCollectionName).Query(context.Background()).CreateIndexes(indexes)
 }

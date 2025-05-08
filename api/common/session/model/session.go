@@ -73,6 +73,10 @@ func NewSession(newSessionArgs NewSessionArgs) (*Session, error) {
 	return &session, nil
 }
 
+func (session *Session) GetCollectionName() string {
+	return SessionCollectionName
+}
+
 func (session *Session) GetValue() *Session {
 	return session
 }
@@ -84,52 +88,46 @@ func (session *Session) Validate() error {
 
 func (*Session) EnsureIndexes(db mongo.Database) {
 	indexes := []mongod.IndexModel{
-		{
-			Keys: bson.D{
-				{Key: "userId", Value: 1},
-				{Key: "expiresAt", Value: 1},
-			},
-		},
+		// Most critical unique indexes
 		{
 			Keys: bson.D{
 				{Key: "token", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
+			Options: options.Index().SetUnique(true).SetName("idx_session_token_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "sessionId", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
+			Options: options.Index().SetUnique(true).SetName("idx_session_id_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "refreshToken", Value: 1},
 			},
-			Options: options.Index().SetUnique(true),
+			Options: options.Index().SetUnique(true).SetName("idx_session_refresh_token_unique"),
 		},
+		// Essential compound index for user session management
 		{
 			Keys: bson.D{
 				{Key: "userId", Value: 1},
 				{Key: "isRevoked", Value: 1},
 			},
+			Options: options.Index().SetName("idx_session_user_revocation"),
 		},
+		// TTL index for session expiry - critical for security
 		{
 			Keys: bson.D{
 				{Key: "expiresAt", Value: 1},
 			},
-			Options: options.Index().SetExpireAfterSeconds(0),
+			Options: options.Index().SetExpireAfterSeconds(0).SetName("ttl_session_expiry"),
 		},
+		// TTL index for deleted sessions - 12 hours
 		{
 			Keys: bson.D{
-				{Key: "userId", Value: 1},
-				{Key: "device.deviceId", Value: 1},
+				{Key: "deletedAt", Value: 1},
 			},
-		},
-		{
-			Keys: bson.D{
-				{Key: "lastActive", Value: -1},
-			},
+			Options: options.Index().SetExpireAfterSeconds(12 * 60 * 60).SetName("ttl_session_deleted"),
 		},
 	}
 

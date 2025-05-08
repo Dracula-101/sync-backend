@@ -81,6 +81,7 @@ func (c *communityController) GetCommunityById(ctx *gin.Context) {
 }
 
 func (c *communityController) SearchCommunities(ctx *gin.Context) {
+	
 }
 
 func (c *communityController) GetMyCommunities(ctx *gin.Context) {
