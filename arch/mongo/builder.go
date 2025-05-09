@@ -15,7 +15,20 @@ type QueryBuilder[T any] interface {
 	Query(context context.Context) Query[T]
 }
 
+type AggregateBuilder[T any, R any] interface {
+	GetLogger() utils.AppLogger
+	GetCollection() *mongo.Collection
+	SingleAggregate() Aggregator[T, R]
+	Aggregate(context context.Context) Aggregator[T, R]
+}
+
 type queryBuilder[T any] struct {
+	logger     utils.AppLogger
+	collection *mongo.Collection
+	timeout    time.Duration
+}
+
+type aggregateBuilder[T any, R any] struct {
 	logger     utils.AppLogger
 	collection *mongo.Collection
 	timeout    time.Duration
@@ -37,8 +50,32 @@ func (c *queryBuilder[T]) Query(context context.Context) Query[T] {
 	return newQuery[T](c.logger, context, c.collection)
 }
 
+func (a *aggregateBuilder[T, R]) GetCollection() *mongo.Collection {
+	return a.collection
+}
+
+func (a *aggregateBuilder[T, R]) GetLogger() utils.AppLogger {
+	return a.logger
+}
+
+func (a *aggregateBuilder[T, R]) SingleAggregate() Aggregator[T, R] {
+	return newSingleAggregator[T, R](a.logger, a.collection, a.timeout)
+}
+
+func (a *aggregateBuilder[T, R]) Aggregate(context context.Context) Aggregator[T, R] {
+	return newAggregator[T, R](a.logger, context, a.collection)
+}
+
 func NewQueryBuilder[T any](db Database, collectionName string) QueryBuilder[T] {
 	return &queryBuilder[T]{
+		collection: db.GetInstance().Collection(collectionName),
+		timeout:    time.Minute * 5,
+		logger:     db.GetLogger(),
+	}
+}
+
+func NewAggregateBuilder[T any, R any](db Database, collectionName string) AggregateBuilder[T, R] {
+	return &aggregateBuilder[T, R]{
 		collection: db.GetInstance().Collection(collectionName),
 		timeout:    time.Minute * 5,
 		logger:     db.GetLogger(),

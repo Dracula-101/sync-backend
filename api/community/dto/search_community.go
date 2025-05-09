@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+	"sync-backend/api/community/model"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -11,13 +12,16 @@ import (
 // ============================================
 
 type SearchCommunityRequest struct {
-	Query string `json:"query" validate:"required"`
-	Page  int    `json:"page" validate:"required"`
-	Limit int    `json:"limit" validate:"required"`
+	Query string `form:"query" query:"query" validate:"required"`
+	Page  int    `form:"page" query:"page" validate:"min=1"`
+	Limit int    `form:"limit" query:"limit" validate:"min=1,max=100"`
 }
 
 func NewSearchCommunityRequest() *SearchCommunityRequest {
-	return &SearchCommunityRequest{}
+	return &SearchCommunityRequest{
+		Page:  1,
+		Limit: 10,
+	}
 }
 
 func (l *SearchCommunityRequest) GetValue() *SearchCommunityRequest {
@@ -28,6 +32,8 @@ func (s *SearchCommunityRequest) ValidateErrors(errs validator.ValidationErrors)
 	var msgs []string
 	for _, err := range errs {
 		switch err.Tag() {
+		case "required":
+			msgs = append(msgs, fmt.Sprintf("%s is required", err.Field()))
 		default:
 			msgs = append(msgs, fmt.Sprintf("%s is invalid", err.Field()))
 		}
@@ -40,23 +46,13 @@ func (s *SearchCommunityRequest) ValidateErrors(errs validator.ValidationErrors)
 // ============================================
 
 type SearchCommunityResponse struct {
-}
-
-func NewSearchCommunityResponse() *SearchCommunityResponse {
-	return &SearchCommunityResponse{}
-}
-
-func (l *SearchCommunityResponse) GetValue() *SearchCommunityResponse {
-	return l
-}
-
-func (l *SearchCommunityResponse) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	var msgs []string
-	for _, err := range errs {
-		switch err.Tag() {
-		default:
-			msgs = append(msgs, err.Field()+" is invalid")
-		}
-	}
-	return msgs, nil
+	Communities []model.Community `json:"communities"`
+	Total       int               `json:"total"`
+	NextPage    int               `json:"next_page"`
+	PrevPage    int               `json:"prev_page"`
+	HasNext     bool              `json:"has_next"`
+	HasPrev     bool              `json:"has_prev"`
+	CurrentPage int               `json:"current_page"`
+	Limit       int               `json:"limit"`
+	TotalCount  int               `json:"total_count"`
 }

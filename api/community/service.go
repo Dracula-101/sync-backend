@@ -17,21 +17,24 @@ type CommunityService interface {
 	CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError)
 	GetCommunityById(id string) (*model.Community, network.ApiError)
 	CheckUserInCommunity(userId string, communityId string) network.ApiError
+	SearchCommunities(query string, page int, limit int) ([]*model.Community, network.ApiError)
 }
 
 type communityService struct {
 	network.BaseService
-	logger                   utils.AppLogger
-	communityQueryBuilder    mongo.QueryBuilder[model.Community]
-	communityTagQueryBuilder mongo.QueryBuilder[model.CommunityTag]
+	logger                    utils.AppLogger
+	communityQueryBuilder     mongo.QueryBuilder[model.Community]
+	communityTagQueryBuilder  mongo.QueryBuilder[model.CommunityTag]
+	communityAggregateBuilder mongo.AggregateBuilder[model.Community, model.Community]
 }
 
 func NewCommunityService(db mongo.Database) CommunityService {
 	return &communityService{
-		BaseService:              network.NewBaseService(),
-		logger:                   utils.NewServiceLogger("CommunityService"),
-		communityQueryBuilder:    mongo.NewQueryBuilder[model.Community](db, model.CommunityCollectionName),
-		communityTagQueryBuilder: mongo.NewQueryBuilder[model.CommunityTag](db, model.CommunityTagCollectionName),
+		BaseService:               network.NewBaseService(),
+		logger:                    utils.NewServiceLogger("CommunityService"),
+		communityQueryBuilder:     mongo.NewQueryBuilder[model.Community](db, model.CommunityCollectionName),
+		communityTagQueryBuilder:  mongo.NewQueryBuilder[model.CommunityTag](db, model.CommunityTagCollectionName),
+		communityAggregateBuilder: mongo.NewAggregateBuilder[model.Community, model.Community](db, model.CommunityCollectionName),
 	}
 }
 
@@ -121,4 +124,157 @@ func (s *communityService) CheckUserInCommunity(userId string, communityId strin
 	}
 	s.logger.Error("User is not a member of the community")
 	return network.NewForbiddenError("User is not a member of the community", errors.New("user is not a member of the community"))
+}
+
+func (s *communityService) SearchCommunities(query string, page int, limit int) ([]*model.Community, network.ApiError) {
+	s.logger.Info("Searching communities with query: %s, page: %d, limit: %d", query, page, limit)
+
+	aggregator := s.communityAggregateBuilder.
+		Aggregate(s.Context()).
+		AllowDiskUse(true)
+
+	matchStage := bson.M{
+		"$and": []bson.M{
+			{"status": "active"},
+			{"$or": []bson.M{
+				{"isPrivate": false},
+				{"settings.showInDiscovery": true},
+			}},
+		},
+	}
+
+	if query != "" {
+		searchQuery := bson.M{
+			"index": "community_search",
+			"compound": bson.M{
+				"should": []bson.M{
+					{
+						"text": bson.M{
+							"query":         query,
+							"path":          "name",
+							"score":         bson.M{"boost": bson.M{"value": 5}},
+							"fuzzy":         bson.M{"maxEdits": 1, "prefixLength": 2},
+							"matchCriteria": "any",
+						},
+					},
+					{
+						"text": bson.M{
+							"query": query,
+							"path":  "slug",
+							"score": bson.M{"boost": bson.M{"value": 3}},
+							"fuzzy": bson.M{"maxEdits": 1, "prefixLength": 2},
+						},
+					},
+					{
+						"text": bson.M{
+							"query": query,
+							"path":  "shortDesc",
+							"score": bson.M{"boost": bson.M{"value": 2}},
+						},
+					},
+					{
+						"text": bson.M{
+							"query": query,
+							"path":  "description",
+							"score": bson.M{"boost": bson.M{"value": 1}},
+						},
+					},
+					{
+						"text": bson.M{
+							"query": query,
+							"path":  "tags.name",
+							"score": bson.M{"boost": bson.M{"value": 4}},
+							"fuzzy": bson.M{"maxEdits": 2, "prefixLength": 1},
+						},
+					},
+				},
+				"minimumShouldMatch": 1,
+			},
+			"highlight": bson.M{
+				"path": []string{"name", "description", "shortDesc", "tags.name", "slug"},
+			},
+		}
+
+		aggregator.Search("community_search", searchQuery)
+	}
+
+	aggregator.Match(matchStage)
+	addFields := bson.M{
+		"relevanceScore": bson.M{
+			"$cond": bson.M{
+				"if":   bson.M{"$gt": []any{"$memberCount", 0}},
+				"then": bson.M{"$multiply": []any{bson.M{"$ifNull": []any{"$stats.popularityScore", 1}}, 1.5}},
+				"else": 1,
+			},
+		},
+	}
+	aggregator.AddFields(addFields)
+
+	var sortStage bson.M
+	if query != "" {
+		sortStage = bson.M{
+			"score":          -1,
+			"relevanceScore": -1,
+			"memberCount":    -1,
+		}
+	} else {
+		sortStage = bson.M{
+			"relevanceScore": -1,
+			"memberCount":    -1,
+			"createdAt":      -1,
+		}
+	}
+
+	communitiesResults, err := aggregator.
+		Sort(sortStage).
+		Skip(int64((page - 1) * limit)).
+		Limit(int64(limit)).
+		Exec()
+
+	if err != nil {
+		s.logger.Error("Error executing community search: %v", err)
+		return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, err)
+	}
+
+	for _, result := range communitiesResults {
+		s.logger.Debug("Community found: %s", result.Name)
+	}
+
+	if len(communitiesResults) == 0 && query != "" {
+		s.logger.Info("No communities found for query: %s, trying fuzzy search", query)
+
+		backupAggregator := s.communityAggregateBuilder.
+			Aggregate(s.Context()).
+			AllowDiskUse(true)
+
+		backupSearchQuery := bson.M{
+			"index": "community_search",
+			"text": bson.M{
+				"query": query,
+				"path":  []string{"name", "slug", "shortDesc", "tags.name"},
+				"fuzzy": bson.M{"maxEdits": 2},
+			},
+			"highlight": bson.M{
+				"path": []string{"name", "description", "shortDesc", "tags.name", "slug"},
+			},
+		}
+
+		backupResults, backupErr := backupAggregator.
+			Search("community_search", backupSearchQuery).
+			Match(bson.M{"status": "active"}).
+			Sort(bson.M{"score": -1, "memberCount": -1}).
+			Skip(int64((page - 1) * limit)).
+			Limit(int64(limit)).
+			Exec()
+
+		if backupErr == nil {
+			communitiesResults = backupResults
+		} else {
+			s.logger.Error("Error executing backup community search: %v", backupErr)
+			return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, backupErr)
+		}
+	}
+
+	aggregator.Close()
+	return communitiesResults, nil
 }

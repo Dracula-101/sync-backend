@@ -89,7 +89,7 @@ type CommunitySettings struct {
 	Language             string   `bson:"language" json:"language"`
 	ContentFilters       []string `bson:"contentFilters" json:"contentFilters"`
 	MinAccountAgeToPost  int      `bson:"minAccountAgeToPost" json:"minAccountAgeToPost"`
-	MinKarmaToPost       int      `bson:"minKarmaToPost" json:"minKarmaToPost"`
+	MinSynergyToPost     int      `bson:"minSynergyToPost" json:"minSynergyToPost"`
 }
 
 type CommunityStats struct {
@@ -134,7 +134,7 @@ type MemberContributions struct {
 	PostCount         int64   `bson:"postCount" json:"postCount"`
 	CommentCount      int64   `bson:"commentCount" json:"commentCount"`
 	ReactionCount     int64   `bson:"reactionCount" json:"reactionCount"`
-	KarmaPoints       int64   `bson:"karmaPoints" json:"karmaPoints"`
+	SynergyPoints     int64   `bson:"synergyPoints" json:"synergyPoints"`
 	ContributionScore float64 `bson:"contributionScore" json:"contributionScore"`
 }
 
@@ -317,7 +317,7 @@ func NewCommunity(args NewCommunityArgs) *Community {
 			Language:             "en",
 			ContentFilters:       []string{},
 			MinAccountAgeToPost:  0,
-			MinKarmaToPost:       0,
+			MinSynergyToPost:     0,
 		},
 		Stats: CommunityStats{
 			DailyActiveUsers:   1,

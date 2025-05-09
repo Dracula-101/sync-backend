@@ -43,6 +43,7 @@ func (c *communityController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/create", c.authProvider.Middleware(), c.CreateCommunity)
 	group.GET("/:communityId", c.GetCommunityById)
 	group.GET("/search", c.authProvider.Middleware(), c.SearchCommunities)
+	group.GET("/autocomplete", c.authProvider.Middleware(), c.SearchCommunities)
 	group.GET("/my-communities", c.authProvider.Middleware(), c.GetMyCommunities)
 }
 
@@ -81,7 +82,33 @@ func (c *communityController) GetCommunityById(ctx *gin.Context) {
 }
 
 func (c *communityController) SearchCommunities(ctx *gin.Context) {
-	
+	body, err := network.ReqQuery(ctx, dto.NewSearchCommunityRequest())
+	if err != nil {
+		return
+	}
+
+	communitiesResults, err := c.communityService.SearchCommunities(body.Query, body.Page, body.Limit)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	var communities []model.Community
+	for _, community := range communitiesResults {
+		communities = append(communities, *community.GetValue())
+	}
+
+	c.Send(ctx).SuccessDataResponse("Communities fetched successfully", dto.SearchCommunityResponse{
+		Communities: communities,
+		Total:       len(communitiesResults),
+		NextPage:    body.Page + 1,
+		PrevPage:    body.Page - 1,
+		HasNext:     len(communitiesResults) > body.Limit,
+		HasPrev:     body.Page > 1,
+		CurrentPage: body.Page,
+		Limit:       body.Limit,
+		TotalCount:  len(communitiesResults),
+	})
 }
 
 func (c *communityController) GetMyCommunities(ctx *gin.Context) {
