@@ -120,7 +120,7 @@ func (*Session) EnsureIndexes(db mongo.Database) {
 			Keys: bson.D{
 				{Key: "expiresAt", Value: 1},
 			},
-			Options: options.Index().SetExpireAfterSeconds(0).SetName("ttl_session_expiry"),
+			Options: options.Index().SetName("ttl_session_expiry"),
 		},
 		// TTL index for deleted sessions - 12 hours
 		{

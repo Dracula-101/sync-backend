@@ -17,7 +17,7 @@ type CommunityService interface {
 	CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError)
 	GetCommunityById(id string) (*model.Community, network.ApiError)
 	CheckUserInCommunity(userId string, communityId string) network.ApiError
-	SearchCommunities(query string, page int, limit int) ([]*model.Community, network.ApiError)
+	SearchCommunities(query string, page int, limit int) ([]*model.CommunitySearchResult, network.ApiError)
 }
 
 type communityService struct {
@@ -25,7 +25,7 @@ type communityService struct {
 	logger                    utils.AppLogger
 	communityQueryBuilder     mongo.QueryBuilder[model.Community]
 	communityTagQueryBuilder  mongo.QueryBuilder[model.CommunityTag]
-	communityAggregateBuilder mongo.AggregateBuilder[model.Community, model.Community]
+	communityAggregateBuilder mongo.AggregateBuilder[model.Community, model.CommunitySearchResult]
 }
 
 func NewCommunityService(db mongo.Database) CommunityService {
@@ -34,7 +34,7 @@ func NewCommunityService(db mongo.Database) CommunityService {
 		logger:                    utils.NewServiceLogger("CommunityService"),
 		communityQueryBuilder:     mongo.NewQueryBuilder[model.Community](db, model.CommunityCollectionName),
 		communityTagQueryBuilder:  mongo.NewQueryBuilder[model.CommunityTag](db, model.CommunityTagCollectionName),
-		communityAggregateBuilder: mongo.NewAggregateBuilder[model.Community, model.Community](db, model.CommunityCollectionName),
+		communityAggregateBuilder: mongo.NewAggregateBuilder[model.Community, model.CommunitySearchResult](db, model.CommunityCollectionName),
 	}
 }
 
@@ -126,7 +126,7 @@ func (s *communityService) CheckUserInCommunity(userId string, communityId strin
 	return network.NewForbiddenError("User is not a member of the community", errors.New("user is not a member of the community"))
 }
 
-func (s *communityService) SearchCommunities(query string, page int, limit int) ([]*model.Community, network.ApiError) {
+func (s *communityService) SearchCommunities(query string, page int, limit int) ([]*model.CommunitySearchResult, network.ApiError) {
 	s.logger.Info("Searching communities with query: %s, page: %d, limit: %d", query, page, limit)
 
 	aggregator := s.communityAggregateBuilder.
@@ -153,7 +153,6 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 							"query":         query,
 							"path":          "name",
 							"score":         bson.M{"boost": bson.M{"value": 5}},
-							"fuzzy":         bson.M{"maxEdits": 1, "prefixLength": 2},
 							"matchCriteria": "any",
 						},
 					},
@@ -162,7 +161,6 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 							"query": query,
 							"path":  "slug",
 							"score": bson.M{"boost": bson.M{"value": 3}},
-							"fuzzy": bson.M{"maxEdits": 1, "prefixLength": 2},
 						},
 					},
 					{
@@ -184,7 +182,6 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 							"query": query,
 							"path":  "tags.name",
 							"score": bson.M{"boost": bson.M{"value": 4}},
-							"fuzzy": bson.M{"maxEdits": 2, "prefixLength": 1},
 						},
 					},
 				},
@@ -205,6 +202,16 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 				"if":   bson.M{"$gt": []any{"$memberCount", 0}},
 				"then": bson.M{"$multiply": []any{bson.M{"$ifNull": []any{"$stats.popularityScore", 1}}, 1.5}},
 				"else": 1,
+			},
+		},
+		"score": bson.M{
+			"$meta": "searchScore",
+		},
+		"matched": bson.M{
+			"$map": bson.M{
+				"input": bson.M{"$meta": "searchHighlights"},
+				"as":    "highlight",
+				"in":    "$$highlight.path",
 			},
 		},
 	}
@@ -236,10 +243,6 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 		return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, err)
 	}
 
-	for _, result := range communitiesResults {
-		s.logger.Debug("Community found: %s", result.Name)
-	}
-
 	if len(communitiesResults) == 0 && query != "" {
 		s.logger.Info("No communities found for query: %s, trying fuzzy search", query)
 
@@ -267,6 +270,7 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 			Limit(int64(limit)).
 			Exec()
 
+		backupAggregator.Close()
 		if backupErr == nil {
 			communitiesResults = backupResults
 		} else {

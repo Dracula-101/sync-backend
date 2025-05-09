@@ -93,9 +93,11 @@ func (c *communityController) SearchCommunities(ctx *gin.Context) {
 		return
 	}
 
-	var communities []model.Community
+	var communities []model.CommunitySearchResult
 	for _, community := range communitiesResults {
-		communities = append(communities, *community.GetValue())
+		if community != nil {
+			communities = append(communities, *community)
+		}
 	}
 
 	c.Send(ctx).SuccessDataResponse("Communities fetched successfully", dto.SearchCommunityResponse{

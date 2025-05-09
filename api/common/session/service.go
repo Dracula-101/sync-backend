@@ -166,7 +166,7 @@ func (s *sessionService) GetActiveSessionsByUserID(userID string) ([]*model.Sess
 
 func (s *sessionService) InvalidateSession(sessionID string) error {
 	filter := bson.M{"sessionId": sessionID}
-	update := bson.M{"$set": bson.M{"isRevoked": true, "updatedAt": time.Now()}}
+	update := bson.M{"$set": bson.M{"isRevoked": true, "updatedAt": time.Now(), "deletedAt": time.Now()}}
 
 	_, err := s.queryBuilder.SingleQuery().UpdateOne(filter, update, options.Update().SetUpsert(true))
 	if err != nil {

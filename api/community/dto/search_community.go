@@ -46,13 +46,13 @@ func (s *SearchCommunityRequest) ValidateErrors(errs validator.ValidationErrors)
 // ============================================
 
 type SearchCommunityResponse struct {
-	Communities []model.Community `json:"communities"`
-	Total       int               `json:"total"`
-	NextPage    int               `json:"next_page"`
-	PrevPage    int               `json:"prev_page"`
-	HasNext     bool              `json:"has_next"`
-	HasPrev     bool              `json:"has_prev"`
-	CurrentPage int               `json:"current_page"`
-	Limit       int               `json:"limit"`
-	TotalCount  int               `json:"total_count"`
+	Communities []model.CommunitySearchResult `json:"communities"`
+	Total       int                           `json:"total"`
+	NextPage    int                           `json:"next_page"`
+	PrevPage    int                           `json:"prev_page"`
+	HasNext     bool                          `json:"has_next"`
+	HasPrev     bool                          `json:"has_prev"`
+	CurrentPage int                           `json:"current_page"`
+	Limit       int                           `json:"limit"`
+	TotalCount  int                           `json:"total_count"`
 }
