@@ -1,0 +1,513 @@
+[
+  {
+    "tag_id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Technology",
+    "description": "Communities focused on tech news, gadgets, programming, and digital innovation",
+    "icon": "💻",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "name": "Gaming",
+    "description": "Video games, board games, game development, and gaming culture discussions",
+    "icon": "🎮",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "38d63b3a-7e2c-4e5b-9035-8d42f5e77777",
+    "name": "Science",
+    "description": "Scientific research, discoveries, theories, and academic discussions",
+    "icon": "🔬",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "5c2f7e9a-844a-4d3c-94e0-b61a6a81fb34",
+    "name": "Entertainment",
+    "description": "TV shows, movies, music, celebrities, and pop culture content",
+    "icon": "🎭",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "7d9fea31-d6c6-4ec4-a52b-f7395a3836e0",
+    "name": "Sports",
+    "description": "Sports news, teams, events, fantasy leagues, and athletic discussions",
+    "icon": "⚽",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "cb0bd7a0-4bfb-4a0c-a68d-c26c9dced908",
+    "name": "Food",
+    "description": "Recipes, cooking tips, restaurants, culinary arts, and food culture",
+    "icon": "🍳",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "e7c7b0da-a8c2-4e15-9f19-9c6c3e4e6a32",
+    "name": "Art",
+    "description": "Visual arts, painting, photography, sculpture, and creative expression",
+    "icon": "🎨",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "1f3b2d1a-8c0e-4f7d-9e6b-5a4c3b2d1e0f",
+    "name": "Finance",
+    "description": "Personal finance, investing, stocks, cryptocurrency, and economic discussions",
+    "icon": "💰",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "9a8b7c6d-5e4f-3g2h-1i0j-9k8l7m6n5o4p",
+    "name": "Fitness",
+    "description": "Exercise routines, health tips, workout plans, and physical wellbeing",
+    "icon": "💪",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "3f2e1d0c-9b8a-7c6d-5e4f-3g2h1i0j9k8l",
+    "name": "Education",
+    "description": "Learning resources, academic support, educational content, and study tips",
+    "icon": "📚",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
+    "name": "Politics",
+    "description": "Political news, discussions, debates, and civic engagement topics",
+    "icon": "🏛️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "p6o5n4m3-l2k1-j0i9-h8g7-f6e5d4c3b2a1",
+    "name": "Travel",
+    "description": "Travel destinations, tips, experiences, and global exploration",
+    "icon": "✈️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "2a3b4c5d-6e7f-8g9h-0i1j-2k3l4m5n6o7p",
+    "name": "Books",
+    "description": "Literature, reading recommendations, author discussions, and book reviews",
+    "icon": "📖",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "7p6o5n4m-3l2k-1j0i-9h8g-7f6e5d4c3b2a",
+    "name": "Environment",
+    "description": "Environmental issues, sustainability, conservation, and eco-friendly living",
+    "icon": "🌱",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "b2a1c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
+    "name": "Career",
+    "description": "Job hunting, career advice, professional development, and workplace discussions",
+    "icon": "💼",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "6p5o4n3m-2l1k-0j9i-8h7g-6f5e4d3c2b1a",
+    "name": "Humor",
+    "description": "Jokes, memes, funny stories, and comedy-related content",
+    "icon": "😂",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "name": "News",
+    "description": "Current events, breaking news, and journalistic content from around the world",
+    "icon": "📰",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "5p4o3n2m-1l0k-9j8i-7h6g-5f4e3d2c1b0a",
+    "name": "Fashion",
+    "description": "Clothing, style, fashion trends, design, and beauty discussions",
+    "icon": "👗",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "0a9b8c7d-6e5f-4g3h-2i1j-0k9l8m7n6o5p",
+    "name": "DIY",
+    "description": "Do-it-yourself projects, crafts, home improvement, and maker culture",
+    "icon": "🔨",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "4p3o2n1m-0l9k-8j7i-6h5g-4f3e2d1c0b9a",
+    "name": "History",
+    "description": "Historical events, figures, artifacts, and discussions about the past",
+    "icon": "🏺",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "9a0b1c2d-3e4f-5g6h-7i8j-9k0l1m2n3o4p",
+    "name": "Pets",
+    "description": "Pet care, animal companions, wildlife, and animal welfare discussions",
+    "icon": "🐾",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "3p2o1n0m-9l8k-7j6i-5h4g-3f2e1d0c9b8a",
+    "name": "Philosophy",
+    "description": "Philosophical theories, ethical questions, and intellectual discussions",
+    "icon": "🧠",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "8a7b6c5d-4e3f-2g1h-0i9j-8k7l6m5n4o3p",
+    "name": "Photography",
+    "description": "Photography techniques, camera gear, visual storytelling, and image sharing",
+    "icon": "📷",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "2p1o0n9m-8l7k-6j5i-4h3g-2f1e0d9c8b7a",
+    "name": "Relationships",
+    "description": "Dating advice, family dynamics, friendships, and interpersonal connections",
+    "icon": "❤️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "7a6b5c4d-3e2f-1g0h-9i8j-7k6l5m4n3o2p",
+    "name": "Mental Health",
+    "description": "Mental wellbeing resources, support, awareness, and psychological discussions",
+    "icon": "🧘",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "1p0o9n8m-7l6k-5j4i-3h2g-1f0e9d8c7b6a",
+    "name": "Crypto",
+    "description": "Cryptocurrency discussions, blockchain technology, NFTs, and digital assets",
+    "icon": "₿",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "6a5b4c3d-2e1f-0g9h-8i7j-6k5l4m3n2o1p",
+    "name": "Music",
+    "description": "Music discovery, artists, instruments, production, and audio content",
+    "icon": "🎵",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "0p9o8n7m-6l5k-4j3i-2h1g-0f9e8d7c6b5a",
+    "name": "Gardening",
+    "description": "Plant care, gardening tips, landscaping, and growing your own food",
+    "icon": "🌿",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "5a4b3c2d-1e0f-9g8h-7i6j-5k4l3m2n1o0p",
+    "name": "Startups",
+    "description": "Entrepreneurship, business development, innovation, and startup culture",
+    "icon": "🚀",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "d4c3b2a1-0f9e-8d7c-6b5a-4p3o2n1m0l9",
+    "name": "Cooking",
+    "description": "Culinary techniques, recipes, cooking equipment, and food preparation",
+    "icon": "👨‍🍳",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "k2j3h4g5-f6e7-d8c9-b0a1-z2y3x4w5v6u",
+    "name": "Health",
+    "description": "General health advice, medical information, wellness tips, and healthcare discussions",
+    "icon": "🩺",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "u6v5w4x3-y2z1-a0b9-c8d7-e6f5g4h3j2k",
+    "name": "Movies",
+    "description": "Film discussions, reviews, recommendations, and cinema culture",
+    "icon": "🎬",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "q1w2e3r4-t5y6-u7i8-o9p0-a1s2d3f4g5h",
+    "name": "Television",
+    "description": "TV shows, series discussions, streaming content, and television culture",
+    "icon": "📺",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "h5g4f3d2-s1a0-p9o8-i7u6-y5t4r3e2w1q",
+    "name": "Anime",
+    "description": "Japanese animation, manga, light novels, and related discussions",
+    "icon": "🇯🇵",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "z9x8c7v6-b5n4-m3k2-j1h0-g9f8d7s6a5",
+    "name": "Parenting",
+    "description": "Child-rearing advice, family activities, and parenting support",
+    "icon": "👨‍👩‍👧‍👦",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "a5s6d7f8-g9h0-j1k2-l3z4-x5c6v7b8n9m",
+    "name": "Writing",
+    "description": "Creative writing, storytelling, poetry, and author discussions",
+    "icon": "✍️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "m9n8b7v6-c5x4-z3l2-k1j0-h9g8f7d6s5a",
+    "name": "Marketing",
+    "description": "Marketing strategies, advertising, brand building, and promotional discussions",
+    "icon": "📈",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "q9w8e7r6-t5y4-u3i2-o1p0-a9s8d7f6g5h",
+    "name": "Home",
+    "description": "Home decor, interior design, furniture, and living spaces",
+    "icon": "🏠",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "h5g4f3d2-s1a0-p9o8-i7u6-y5t4r3e2w1q",
+    "name": "Language",
+    "description": "Language learning, linguistics, translation, and multilingual content",
+    "icon": "🗣️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "z1x2c3v4-b5n6-m7k8-j9h0-g1f2d3s4a5",
+    "name": "Space",
+    "description": "Astronomy, space exploration, celestial events, and cosmic discussions",
+    "icon": "🚀",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "a9s8d7f6-g5h4-j3k2-l1z0-x9c8v7b6n5m",
+    "name": "Beauty",
+    "description": "Skincare, makeup, cosmetics, beauty routines, and personal care",
+    "icon": "💄",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "m5n4b3v2-c1x0-z9l8-k7j6-h5g4f3d2s1a",
+    "name": "Comics",
+    "description": "Comic books, graphic novels, webcomics, and sequential art",
+    "icon": "💬",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "q1w2e3r4-t5y6-u7i8-o9p0-q1w2e3r4t5y",
+    "name": "Crafts",
+    "description": "Handmade projects, crafting techniques, materials, and creative hobbies",
+    "icon": "🧶",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "y5t4r3e2-w1q0-p9o8-i7u6-y5t4r3e2w1q",
+    "name": "Automotive",
+    "description": "Cars, motorcycles, vehicle maintenance, and automotive culture",
+    "icon": "🚗",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "u6i5o4p3-a2s1-d0f9-g8h7-j6k5l4z3x2c",
+    "name": "Outdoors",
+    "description": "Outdoor activities, hiking, camping, nature exploration, and adventure",
+    "icon": "🏕️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "v1b2n3m4-k5j6-h7g8-f9d0-s1a2p3o4i5u",
+    "name": "Architecture",
+    "description": "Building design, architectural styles, urban planning, and construction",
+    "icon": "🏛️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "y6t5r4e3-w2q1-p0o9-i8u7-y6t5r4e3w2q",
+    "name": "Psychology",
+    "description": "Human behavior, psychological theories, cognitive sciences, and mental processes",
+    "icon": "🧠",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "i9u8y7t6-r5e4-w3q2-p1o0-i9u8y7t6r5e",
+    "name": "Paranormal",
+    "description": "Supernatural phenomena, ghost stories, unexplained events, and mysteries",
+    "icon": "👻",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "o9p0i8u7-y6t5-r4e3-w2q1-o9p0i8u7y6t",
+    "name": "Weather",
+    "description": "Meteorology, climate patterns, weather phenomena, and forecasting",
+    "icon": "🌤️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "a1s2d3f4-g5h6-j7k8-l9z0-a1s2d3f4g5h",
+    "name": "Dance",
+    "description": "Dance styles, choreography, performances, and movement arts",
+    "icon": "💃",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "p0o9i8u7-y6t5-r4e3-w2q1-p0o9i8u7y6t",
+    "name": "Celebrities",
+    "description": "Famous personalities, celebrity news, fan discussions, and public figures",
+    "icon": "🌟",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "z0x9c8v7-b6n5-m4k3-j2h1-g0f9d8s7a6",
+    "name": "Virtual Reality",
+    "description": "VR technology, experiences, applications, and immersive content",
+    "icon": "🥽",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "m1n2b3v4-c5x6-z7l8-k9j0-h1g2f3d4s5a",
+    "name": "Podcasts",
+    "description": "Podcast recommendations, audio content, shows, and creators",
+    "icon": "🎙️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "q9w8e7r6-t5y4-u3i2-o1p0-q9w8e7r6t5y",
+    "name": "Law",
+    "description": "Legal discussions, justice system, legislation, and legal advice",
+    "icon": "⚖️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "y1t2r3e4-w5q6-p7o8-i9u0-y1t2r3e4w5q",
+    "name": "Religion",
+    "description": "Religious practices, spirituality, faith discussions, and belief systems",
+    "icon": "🙏",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "u9i8o7p6-a5s4-d3f2-g1h0-j9k8l7z6x5c",
+    "name": "Sustainability",
+    "description": "Sustainable living, eco-friendly practices, and environmental consciousness",
+    "icon": "♻️",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "v9b8n7m6-k5j4-h3g2-f1d0-s9a8p7o6i5u",
+    "name": "Design",
+    "description": "Graphic design, UI/UX, product design, and visual aesthetics",
+    "icon": "🎨",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "e1r2t3y4-u5i6-o7p8-a9s0-d1f2g3h4j5k",
+    "name": "Comedy",
+    "description": "Stand-up comedy, humorous content, comedians, and comedy shows",
+    "icon": "🎭",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "l9z0x1c2-v3b4-n5m6-k7j8-h9g0f1d2s3a",
+    "name": "Business",
+    "description": "Business strategies, corporate news, entrepreneurship, and commerce",
+    "icon": "💼",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "p4o3i2u1-y0t9-r8e7-w6q5-p4o3i2u1y0t",
+    "name": "Economy",
+    "description": "Economic trends, financial markets, monetary policy, and global economy",
+    "icon": "📊",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "s5a4p3o2-i1u0-y9t8-r7e6-w5q4p3o2i1u",
+    "name": "Coffee",
+    "description": "Coffee brewing, beans, cafes, equipment, and coffee culture",
+    "icon": "☕",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "d6f5g4h3-j2k1-l0z9-x8c7-v6b5n4m3k2j",
+    "name": "Tea",
+    "description": "Tea varieties, brewing methods, tea culture, and herbal infusions",
+    "icon": "🍵",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "h8g7f6d5-s4a3-p2o1-i0u9-y8t7r6e5w4q",
+    "name": "Wine",
+    "description": "Wine tasting, vineyards, varieties, pairings, and wine culture",
+    "icon": "🍷",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "q3w2e1r0-t9y8-u7i6-o5p4-a3s2d1f0g9h",
+    "name": "Beer",
+    "description": "Craft beer, brewing, beer styles, breweries, and beer culture",
+    "icon": "🍺",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "j7k6l5z4-x3c2-v1b0-n9m8-k7j6h5g4f3d",
+    "name": "Cocktails",
+    "description": "Mixed drinks, bartending, spirits, cocktail recipes, and mixology",
+    "icon": "🍸",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "s9a8p7o6-i5u4-y3t2-r1e0-w9q8p7o6i5u",
+    "name": "Desserts",
+    "description": "Sweet treats, baking, pastries, confections, and dessert recipes",
+    "icon": "🍰",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "g4h3j2k1-l0z9-x8c7-v6b5-n4m3k2j1h0g",
+    "name": "Vegan",
+    "description": "Plant-based lifestyle, vegan recipes, animal welfare, and vegan products",
+    "icon": "🌱",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "f6d5s4a3-p2o1-i0u9-y8t7-r6e5w4q3p2o",
+    "name": "Keto",
+    "description": "Ketogenic diet, recipes, meal plans, and low-carb lifestyle",
+    "icon": "🥑",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "i5u4y3t2-r1e0-w9q8-p7o6-i5u4y3t2r1e",
+    "name": "Vegetarian",
+    "description": "Meat-free diet, vegetarian recipes, and plant-focused nutrition",
+    "icon": "🥗",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "o1p0a9s8-d7f6-g5h4-j3k2-l1z0x9c8v7b",
+    "name": "Nutrition",
+    "description": "Dietary advice, nutritional science, healthy eating, and food education",
+    "icon": "🍎",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "n6m5k4j3-h2g1-f0d9-s8a7-p6o5i4u3y2t",
+    "name": "Basketball",
+    "description": "Basketball news, teams, players, games, and basketball culture",
+    "icon": "🏀",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "r9e8w7q6-p5o4-i3u2-y1t0-r9e8w7q6p5o",
+    "name": "Football",
+    "description": "American football news, NFL, college football, teams, and games",
+    "icon": "🏈",
+    "date_created": "2025-05-02T00:00:00Z"
+  },
+  {
+    "tag_id": "w3q2p1o0-i9u8-y7t6-r5e4-w3q2p1o0i9u",
+    "name": "Soccer",
+    "description": "Soccer/football news, leagues, teams, players, and matches",
+    "icon": "⚽",
+    "date_created": "2025-05-02T00:00:00Z"
+  }
+]

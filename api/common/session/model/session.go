@@ -2,15 +2,16 @@ package model
 
 import (
 	"context"
-	"sync-backend/arch/mongo"
-	"sync-backend/utils"
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongod "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"sync-backend/arch/mongo"
 )
 
 const SessionCollectionName = "sessions"
@@ -52,7 +53,7 @@ type NewSessionArgs struct {
 func NewSession(newSessionArgs NewSessionArgs) (*Session, error) {
 	now := primitive.NewDateTimeFromTime(time.Now())
 	session := Session{
-		SessionID:    utils.GenerateUUID(),
+		SessionID:    uuid.New().String(),
 		Token:        newSessionArgs.Token,
 		RefreshToken: newSessionArgs.RefreshToken,
 		ExpiresAt:    primitive.NewDateTimeFromTime(newSessionArgs.ExpiresAt),

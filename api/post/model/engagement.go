@@ -1,9 +1,9 @@
 package model
 
 import (
-	"sync-backend/utils"
 	"time"
 
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -99,7 +99,7 @@ func NewEngagement(userId string, type_ EngagementType, source EngagementSource,
 
 	return &Engagement{
 		Id:           primitive.NewObjectID(),
-		EngagementId: utils.GenerateUUID(),
+		EngagementId: uuid.New().String(),
 		UserId:       userId,
 		Type:         type_,
 		Source:       source,
@@ -114,7 +114,7 @@ func NewPostAnalytics(postId string) *PostAnalytics {
 
 	return &PostAnalytics{
 		Id:                primitive.NewObjectID(),
-		AnalyticsId:       utils.GenerateUUID(),
+		AnalyticsId:       uuid.New().String(),
 		PostId:            postId,
 		ViewCount:         0,
 		UniqueViewerCount: 0,

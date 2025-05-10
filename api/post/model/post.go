@@ -3,10 +3,10 @@ package model
 import (
 	"context"
 	"sync-backend/arch/mongo"
-	"sync-backend/utils"
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongod "go.mongodb.org/mongo-driver/mongo"
@@ -118,7 +118,7 @@ func NewPost(authorId string, communityId string, title string, content string, 
 
 	return &Post{
 		Id:           primitive.NewObjectID(),
-		PostId:       utils.GenerateUUID(),
+		PostId:       uuid.New().String(),
 		Title:        title,
 		Content:      content,
 		AuthorId:     authorId,

@@ -5,15 +5,16 @@ import (
 	"math/rand"
 	"regexp"
 	"strings"
-	"sync-backend/arch/mongo"
-	"sync-backend/utils"
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongod "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"sync-backend/arch/mongo"
 )
 
 const CommunityCollectionName = "communities"
@@ -249,7 +250,7 @@ func NewCommunity(args NewCommunityArgs) *Community {
 
 	return &Community{
 		ID:          primitive.NewObjectID(),
-		CommunityId: utils.GenerateUUID(),
+		CommunityId: uuid.New().String(),
 		Slug:        slug,
 		Name:        args.Name,
 		Description: args.Description,

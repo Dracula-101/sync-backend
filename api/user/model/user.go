@@ -4,10 +4,10 @@ import (
 	"context"
 	"sync-backend/arch/common"
 	"sync-backend/arch/mongo"
-	"sync-backend/utils"
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongod "go.mongodb.org/mongo-driver/mongo"
@@ -67,7 +67,7 @@ func NewUser(
 	now := time.Now()
 	u := User{
 		Username:          newUserArgs.UserName,
-		UserId:            utils.GenerateUUID(),
+		UserId:            uuid.New().String(),
 		Email:             newUserArgs.Email,
 		PasswordHash:      newUserArgs.PasswordHash,
 		VerifiedEmail:     false,
@@ -208,5 +208,5 @@ func (*User) EnsureIndexes(db mongo.Database) {
 		},
 	}
 	mongo.NewQueryBuilder[User](db, UserCollectionName).Query(context.Background()).CreateIndexes(indexes)
-	
+
 }
