@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
+	"sync-backend/api/community/model"
 	coredto "sync-backend/arch/dto"
 )
 
@@ -17,7 +18,9 @@ type JoinedCommunitiesRequest struct {
 }
 
 func NewJoinedCommunitiesRequest() *JoinedCommunitiesRequest {
-	return &JoinedCommunitiesRequest{}
+	return &JoinedCommunitiesRequest{
+		Pagination: *coredto.EmptyPagination(),
+	}
 }
 
 func (l *JoinedCommunitiesRequest) GetValue() *JoinedCommunitiesRequest {
@@ -40,23 +43,13 @@ func (s *JoinedCommunitiesRequest) ValidateErrors(errs validator.ValidationError
 // ==============================================
 
 type JoinedCommunitiesResponse struct {
+	Communities []model.Community `json:"communities"`
+	Total       int      `json:"total"`
 }
 
-func NewJoinedCommunitiesResponse() *JoinedCommunitiesResponse {
-	return &JoinedCommunitiesResponse{}
-}
-
-func (l *JoinedCommunitiesResponse) GetValue() *JoinedCommunitiesResponse {
-	return l
-}
-
-func (l *JoinedCommunitiesResponse) ValidateErrors(errs validator.ValidationErrors) ([]string, error) {
-	var msgs []string
-	for _, err := range errs {
-		switch err.Tag() {
-		default:
-			msgs = append(msgs, err.Field()+" is invalid")
-		}
+func NewJoinedCommunitiesResponse(communities []model.Community, total int) *JoinedCommunitiesResponse {
+	return &JoinedCommunitiesResponse{
+		Communities: communities,
+		Total:       total,
 	}
-	return msgs, nil
 }

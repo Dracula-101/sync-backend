@@ -17,7 +17,9 @@ type GetMyCommunitiesRequest struct {
 }
 
 func NewGetMyCommunitiesRequest() *GetMyCommunitiesRequest {
-	return &GetMyCommunitiesRequest{}
+	return &GetMyCommunitiesRequest{
+		Pagination: *coredto.EmptyPagination(),
+	}
 }
 
 func (l *GetMyCommunitiesRequest) GetValue() *GetMyCommunitiesRequest {
@@ -42,16 +44,12 @@ func (s *GetMyCommunitiesRequest) ValidateErrors(errs validator.ValidationErrors
 type GetMyCommunitiesResponse struct {
 	Communities []model.Community `json:"communities"`
 	Total       int               `json:"total"`
-	NextPage    int               `json:"next_page"`
-	PrevPage    int               `json:"prev_page"`
 }
 
-func NewGetMyCommunitiesResponse(communities []model.Community, total int, nextPage int, prevPage int) *GetMyCommunitiesResponse {
+func NewGetMyCommunitiesResponse(communities []model.Community, total int) *GetMyCommunitiesResponse {
 	return &GetMyCommunitiesResponse{
 		Communities: communities,
 		Total:       total,
-		NextPage:    nextPage,
-		PrevPage:    prevPage,
 	}
 }
 

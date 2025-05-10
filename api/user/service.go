@@ -34,6 +34,7 @@ type UserService interface {
 
 	/* USER COMMUNITY */
 	GetMyCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
+	GetJoinedCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
 	JoinCommunity(userId string, communityId string) error
 	LeaveCommunity(userId string, communityId string) error
 }
@@ -388,6 +389,38 @@ func (s *userService) GetMyCommunities(userId string, page int, limit int) ([]co
 		nil,
 	)
 
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, nil
+		}
+		s.log.Error("Error getting community by ownerId: %v", err)
+		return nil, err
+	}
+
+	if len(communities) == 0 {
+		s.log.Debug("No communities found for user %s", userId)
+		return nil, nil
+	}
+
+	var communites []communityModels.Community
+	for _, community := range communities {
+		if community != nil {
+			communites = append(communites, *community)
+		}
+	}
+
+	s.log.Debug("Found %d communities for user %s", len(communites), userId)
+	return communites, nil
+}
+
+func (s *userService) GetJoinedCommunities(userId string, page int, limit int) ([]communityModels.Community, error) {
+	s.log.Debug("Getting joined communities for user %s", userId)
+
+	// get community from ownerId
+	communities, err := s.communityQueryBuilder.SingleQuery().FilterMany(
+		bson.M{"members": userId},
+		nil,
+	)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			return nil, nil

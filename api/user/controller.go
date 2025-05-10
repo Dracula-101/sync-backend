@@ -42,6 +42,7 @@ func (c *userController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/join/:communityId", c.authProvider.Middleware(), c.JoinCommunity)
 	group.POST("/leave/:communityId", c.authProvider.Middleware(), c.LeaveCommunity)
 	group.GET("/communities/owner", c.authProvider.Middleware(), c.GetMyCommunities)
+	group.GET("/communities/joined", c.authProvider.Middleware(), c.GetJoinedCommunities)
 }
 
 func (c *userController) GetMe(ctx *gin.Context) {
@@ -142,10 +143,45 @@ func (c *userController) GetMyCommunities(ctx *gin.Context) {
 		c.Send(ctx).MixedError(err)
 		return
 	}
+	c.logger.Debug("Communities: %+v", communities)
 
-	if len(communities) == 0 {
+	if communities == nil {
 		c.Send(ctx).NotFoundError("No communities found", nil)
 		return
 	}
-	c.Send(ctx).SuccessDataResponse("Communities fetched successfully", nil)
+	c.Send(ctx).SuccessDataResponse(
+		"Communities fetched successfully",
+		dto.NewGetMyCommunitiesResponse(
+			communities,
+			len(communities),
+		),
+	)
+
+}
+
+func (c *userController) GetJoinedCommunities(ctx *gin.Context) {
+	body, err := network.ReqQuery(ctx, dto.NewJoinedCommunitiesRequest())
+	if err != nil {
+		return
+	}
+
+	userId := c.ContextPayload.MustGetUserId(ctx)
+	communities, err := c.userService.GetJoinedCommunities(*userId, body.Page, body.Limit)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	if communities == nil {
+		c.Send(ctx).NotFoundError("No communities found", nil)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse(
+		"Communities fetched successfully",
+		dto.NewJoinedCommunitiesResponse(
+			communities,
+			len(communities),
+		),
+	)
 }
