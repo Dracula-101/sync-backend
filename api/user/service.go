@@ -33,21 +33,24 @@ type UserService interface {
 	ValidateUserPassword(user *model.User, password string) error
 
 	/* USER COMMUNITY */
+	GetMyCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
 	JoinCommunity(userId string, communityId string) error
 	LeaveCommunity(userId string, communityId string) error
 }
 
 type userService struct {
-	log                utils.AppLogger
-	userQueryBuilder   mongo.QueryBuilder[model.User]
-	transactionBuilder mongo.TransactionBuilder
+	log                   utils.AppLogger
+	userQueryBuilder      mongo.QueryBuilder[model.User]
+	communityQueryBuilder mongo.QueryBuilder[communityModels.Community]
+	transactionBuilder    mongo.TransactionBuilder
 }
 
 func NewUserService(db mongo.Database) UserService {
 	return &userService{
-		userQueryBuilder:   mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
-		transactionBuilder: mongo.NewTransactionBuilder(db),
-		log:                utils.NewServiceLogger("UserService"),
+		userQueryBuilder:      mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
+		communityQueryBuilder: mongo.NewQueryBuilder[communityModels.Community](db, communityModels.CommunityCollectionName),
+		transactionBuilder:    mongo.NewTransactionBuilder(db),
+		log:                   utils.NewServiceLogger("UserService"),
 	}
 }
 
@@ -374,4 +377,37 @@ func (s *userService) LeaveCommunity(userId string, communityId string) error {
 
 	s.log.Debug("User %s left community %s successfully", userId, communityId)
 	return nil
+}
+
+func (s *userService) GetMyCommunities(userId string, page int, limit int) ([]communityModels.Community, error) {
+	s.log.Debug("Getting communities for user %s", userId)
+
+	// get community from ownerId
+	communities, err := s.communityQueryBuilder.SingleQuery().FilterMany(
+		bson.M{"ownerId": userId},
+		nil,
+	)
+
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, nil
+		}
+		s.log.Error("Error getting community by ownerId: %v", err)
+		return nil, err
+	}
+
+	if len(communities) == 0 {
+		s.log.Debug("No communities found for user %s", userId)
+		return nil, nil
+	}
+
+	var communites []communityModels.Community
+	for _, community := range communities {
+		if community != nil {
+			communites = append(communites, *community)
+		}
+	}
+
+	s.log.Debug("Found %d communities for user %s", len(communites), userId)
+	return communites, nil
 }

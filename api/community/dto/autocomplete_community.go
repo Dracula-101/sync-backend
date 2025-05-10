@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+	"sync-backend/api/community/model"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -11,9 +12,9 @@ import (
 // ==================================================
 
 type AutocompleteCommunityRequest struct {
-	Query string `json:"query" validate:"required"`
-	Page  int    `json:"page" validate:"required,min=1"`
-	Limit int    `json:"limit" validate:"required,min=1,max=100"`
+	Query string `form:"query" validate:"required"`
+	Page  int    `form:"page" validate:"required,min=1"`
+	Limit int    `form:"limit" validate:"required,min=1,max=100"`
 }
 
 func NewAutocompleteCommunityRequest() *AutocompleteCommunityRequest {
@@ -49,18 +50,18 @@ func (s *AutocompleteCommunityRequest) ValidateErrors(errs validator.ValidationE
 // ==================================================
 
 type AutocompleteCommunityResponse struct {
-	Communities []string `json:"communities"`
-	Total       int      `json:"total"`
-	NextPage    int      `json:"next_page"`
-	PrevPage    int      `json:"prev_page"`
-	HasNext     bool     `json:"has_next"`
-	HasPrev     bool     `json:"has_prev"`
-	CurrentPage int      `json:"current_page"`
-	Limit       int      `json:"limit"`
-	TotalCount  int      `json:"total_count"`
+	Communities []model.CommunityAutocomplete `json:"communities"`
+	Total       int                           `json:"total"`
+	NextPage    int                           `json:"next_page"`
+	PrevPage    int                           `json:"prev_page"`
+	HasNext     bool                          `json:"has_next"`
+	HasPrev     bool                          `json:"has_prev"`
+	CurrentPage int                           `json:"current_page"`
+	Limit       int                           `json:"limit"`
+	TotalCount  int                           `json:"total_count"`
 }
 
-func NewAutocompleteCommunityResponse(communities []string, total int, nextPage int, prevPage int, hasNext bool, hasPrev bool, currentPage int, limit int, totalCount int) *AutocompleteCommunityResponse {
+func NewAutocompleteCommunityResponse(communities []model.CommunityAutocomplete, total int, nextPage int, prevPage int, hasNext bool, hasPrev bool, currentPage int, limit int, totalCount int) *AutocompleteCommunityResponse {
 	return &AutocompleteCommunityResponse{
 		Communities: communities,
 		Total:       total,

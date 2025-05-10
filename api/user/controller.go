@@ -37,9 +37,11 @@ func NewUserController(
 func (c *userController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting user routes")
 	group.GET("/me", c.authProvider.Middleware(), c.GetMe)
-	// join community
+
+	// User community routes
 	group.POST("/join/:communityId", c.authProvider.Middleware(), c.JoinCommunity)
 	group.POST("/leave/:communityId", c.authProvider.Middleware(), c.LeaveCommunity)
+	group.GET("/communities/owner", c.authProvider.Middleware(), c.GetMyCommunities)
 }
 
 func (c *userController) GetMe(ctx *gin.Context) {
@@ -126,4 +128,24 @@ func (c *userController) LeaveCommunity(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessMsgResponse("Left community successfully")
+}
+
+func (c *userController) GetMyCommunities(ctx *gin.Context) {
+	body, err := network.ReqQuery(ctx, dto.NewGetMyCommunitiesRequest())
+	if err != nil {
+		return
+	}
+
+	userId := c.ContextPayload.MustGetUserId(ctx)
+	communities, err := c.userService.GetMyCommunities(*userId, body.Page, body.Limit)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	if len(communities) == 0 {
+		c.Send(ctx).NotFoundError("No communities found", nil)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("Communities fetched successfully", nil)
 }

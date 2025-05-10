@@ -17,24 +17,27 @@ type CommunityService interface {
 	CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError)
 	GetCommunityById(id string) (*model.Community, network.ApiError)
 	CheckUserInCommunity(userId string, communityId string) network.ApiError
-	SearchCommunities(query string, page int, limit int) ([]*model.CommunitySearchResult, network.ApiError)
+	SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError)
+	AutocompleteCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunityAutocomplete, network.ApiError)
 }
 
 type communityService struct {
 	network.BaseService
-	logger                    utils.AppLogger
-	communityQueryBuilder     mongo.QueryBuilder[model.Community]
-	communityTagQueryBuilder  mongo.QueryBuilder[model.CommunityTag]
-	communityAggregateBuilder mongo.AggregateBuilder[model.Community, model.CommunitySearchResult]
+	logger                        utils.AppLogger
+	communityQueryBuilder         mongo.QueryBuilder[model.Community]
+	communityTagQueryBuilder      mongo.QueryBuilder[model.CommunityTag]
+	communitySearchPipeline       mongo.AggregateBuilder[model.Community, model.CommunitySearchResult]
+	communityAutocompletePipeline mongo.AggregateBuilder[model.Community, model.CommunityAutocomplete]
 }
 
 func NewCommunityService(db mongo.Database) CommunityService {
 	return &communityService{
-		BaseService:               network.NewBaseService(),
-		logger:                    utils.NewServiceLogger("CommunityService"),
-		communityQueryBuilder:     mongo.NewQueryBuilder[model.Community](db, model.CommunityCollectionName),
-		communityTagQueryBuilder:  mongo.NewQueryBuilder[model.CommunityTag](db, model.CommunityTagCollectionName),
-		communityAggregateBuilder: mongo.NewAggregateBuilder[model.Community, model.CommunitySearchResult](db, model.CommunityCollectionName),
+		BaseService:                   network.NewBaseService(),
+		logger:                        utils.NewServiceLogger("CommunityService"),
+		communityQueryBuilder:         mongo.NewQueryBuilder[model.Community](db, model.CommunityCollectionName),
+		communityTagQueryBuilder:      mongo.NewQueryBuilder[model.CommunityTag](db, model.CommunityTagCollectionName),
+		communitySearchPipeline:       mongo.NewAggregateBuilder[model.Community, model.CommunitySearchResult](db, model.CommunityCollectionName),
+		communityAutocompletePipeline: mongo.NewAggregateBuilder[model.Community, model.CommunityAutocomplete](db, model.CommunityCollectionName),
 	}
 }
 
@@ -126,10 +129,10 @@ func (s *communityService) CheckUserInCommunity(userId string, communityId strin
 	return network.NewForbiddenError("User is not a member of the community", errors.New("user is not a member of the community"))
 }
 
-func (s *communityService) SearchCommunities(query string, page int, limit int) ([]*model.CommunitySearchResult, network.ApiError) {
+func (s *communityService) SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError) {
 	s.logger.Info("Searching communities with query: %s, page: %d, limit: %d", query, page, limit)
 
-	aggregator := s.communityAggregateBuilder.
+	aggregator := s.communitySearchPipeline.
 		Aggregate(s.Context()).
 		AllowDiskUse(true)
 
@@ -137,7 +140,7 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 		"$and": []bson.M{
 			{"status": "active"},
 			{"$or": []bson.M{
-				{"isPrivate": false},
+				{"isPrivate": showPrivate},
 				{"settings.showInDiscovery": true},
 			}},
 		},
@@ -217,6 +220,28 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 	}
 	aggregator.AddFields(addFields)
 
+	projectStage := bson.M{
+		"communityId":    1,
+		"slug":           1,
+		"name":           1,
+		"description":    1,
+		"shortDesc":      1,
+		"ownerId":        1,
+		"isPrivate":      1,
+		"members":        1,
+		"memberCount":    1,
+		"postCount":      1,
+		"stats":          1,
+		"status":         1,
+		"score":          1,
+		"relevanceScore": 1,
+		"matched":        1,
+		"highlight": bson.M{
+			"path": []string{"name", "description", "shortDesc", "tags.name", "slug"},
+		},
+	}
+	aggregator.Project(projectStage)
+
 	var sortStage bson.M
 	if query != "" {
 		sortStage = bson.M{
@@ -246,7 +271,7 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 	if len(communitiesResults) == 0 && query != "" {
 		s.logger.Info("No communities found for query: %s, trying fuzzy search", query)
 
-		backupAggregator := s.communityAggregateBuilder.
+		backupAggregator := s.communitySearchPipeline.
 			Aggregate(s.Context()).
 			AllowDiskUse(true)
 
@@ -277,6 +302,102 @@ func (s *communityService) SearchCommunities(query string, page int, limit int) 
 			s.logger.Error("Error executing backup community search: %v", backupErr)
 			return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, backupErr)
 		}
+	}
+
+	aggregator.Close()
+	return communitiesResults, nil
+}
+
+func (s *communityService) AutocompleteCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunityAutocomplete, network.ApiError) {
+	s.logger.Info("Autocomplete communities with query: %s, page: %d, limit: %d", query, page, limit)
+
+	aggregator := s.communityAutocompletePipeline.
+		Aggregate(s.Context()).
+		AllowDiskUse(true)
+
+	if query != "" {
+		searchQuery := bson.M{
+			"compound": bson.M{
+				"should": []bson.M{
+					{
+						"autocomplete": bson.M{
+							"query": query,
+							"path":  "name",
+							"score": bson.M{"boost": bson.M{"value": 5}},
+						},
+					},
+					{
+						"autocomplete": bson.M{
+							"query": query,
+							"path":  "tags.name",
+							"score": bson.M{"boost": bson.M{"value": 3}},
+						},
+					},
+					{
+						"text": bson.M{
+							"query": query,
+							"path":  []string{"description", "shortDesc"},
+							"fuzzy": bson.M{"maxEdits": 1},
+							"score": bson.M{"boost": bson.M{"value": 2}},
+						},
+					},
+				},
+				"minimumShouldMatch": 1,
+				"filter": []bson.M{
+					{"text": bson.M{"query": "active", "path": "status"}},
+					{"equals": bson.M{"path": "isPrivate", "value": showPrivate}},
+				},
+			},
+			"highlight": bson.M{
+				"path": []string{"name", "description", "shortDesc", "tags.name"},
+			},
+		}
+
+		aggregator.Search("community_autocomplete", searchQuery)
+	}
+
+	matchStage := bson.M{
+		"$and": []bson.M{
+			{"status": "active"},
+			{"$or": []bson.M{
+				{"isPrivate": showPrivate},
+				{"settings.showInDiscovery": true},
+			}},
+		},
+	}
+	aggregator.Match(matchStage)
+
+	projectStage := bson.M{
+		"communityId": 1,
+		"slug":        1,
+		"name":        1,
+		"description": 1,
+		"shortDesc":   1,
+		"ownerId":     1,
+		"isPrivate":   1,
+		"members":     1,
+		"memberCount": 1,
+		"postCount":   1,
+		"stats":       1,
+		"status":      1,
+		"score":       1,
+	}
+	aggregator.Project(projectStage)
+
+	aggregator.AddFields(bson.M{
+		"score": bson.M{
+			"$meta": "searchScore",
+		},
+	})
+
+	aggregator.Sort(bson.M{"score": -1, "memberCount": -1})
+	aggregator.Skip(int64((page - 1) * limit))
+	aggregator.Limit(int64(limit))
+
+	communitiesResults, err := aggregator.Exec()
+	if err != nil {
+		s.logger.Error("Error executing community autocomplete: %v", err)
+		return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, err)
 	}
 
 	aggregator.Close()
