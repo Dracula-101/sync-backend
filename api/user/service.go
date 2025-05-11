@@ -24,7 +24,7 @@ type UserService interface {
 	FindUserById(userId string) (*model.User, error)
 	FindUserByEmail(email string) (*model.User, error)
 	FindUserByUsername(username string) (*model.User, error)
-	FindUserAuthProvider(userId string, providerName string) (*model.User, error)
+	FindUserAuthProvider(userId string, username string, providerName string) (*model.User, error)
 
 	/* USER INFO UPDATE */
 	UpdateLoginHistory(userId string, loginHistory model.LoginHistory) error
@@ -230,9 +230,9 @@ func (s *userService) FindUserByUsername(username string) (*model.User, error) {
 	return user, nil
 }
 
-func (s *userService) FindUserAuthProvider(userId string, providerName string) (*model.User, error) {
+func (s *userService) FindUserAuthProvider(userId string, username string, providerName string) (*model.User, error) {
 	s.log.Debug("Finding auth provider by user ID: %s and provider name: %s", userId, providerName)
-	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId, "providers.providerName": providerName}, nil)
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId, "username": username, "providers.providerName": providerName}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			return nil, nil

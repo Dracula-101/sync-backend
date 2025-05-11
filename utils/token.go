@@ -34,6 +34,9 @@ func DecodeGoogleJWTToken(token string) (*GoogleToken, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling token payload: %v", err)
 	}
+	if googleToken.Email == "" {
+		return nil, errors.New("email not found in token payload")
+	}
 
 	return &googleToken, nil
 }

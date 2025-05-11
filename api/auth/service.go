@@ -176,11 +176,21 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 
 func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*dto.GoogleLoginResponse, network.ApiError) {
 	s.logger.Info("Logging in user with Google")
-	user, err := s.userService.FindUserAuthProvider(googleLoginRequest.GoogleIdToken, userModels.GoogleProviderName)
+	user, err := s.userService.FindUserAuthProvider(googleLoginRequest.GoogleIdToken, googleLoginRequest.Username, userModels.GoogleProviderName)
 	if err != nil {
 		return nil, network.NewInternalServerError("Error finding user", ERR_USER, err)
 	}
-
+	loginHistory := userModels.LoginHistory{
+		LoginTime: primitive.NewDateTimeFromTime(time.Now()),
+		IpAddress: googleLoginRequest.IpAddress,
+		UserAgent: googleLoginRequest.DeviceUserAgent,
+		Device: userModels.UserDeviceInfo{
+			Os:    googleLoginRequest.DeviceType,
+			Type:  googleLoginRequest.DeviceType,
+			Name:  googleLoginRequest.DeviceName,
+			Model: googleLoginRequest.DeviceModel,
+		},
+	}
 	deviceInfo := sessionModels.DeviceInfo{
 		DeviceId:        googleLoginRequest.DeviceId,
 		DeviceName:      googleLoginRequest.DeviceName,
@@ -215,6 +225,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
+		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
 		loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 		s.logger.Success("User logged in with Google successfully: %s", user.Email)
 		return loginResponse, nil
@@ -224,6 +235,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		if err != nil {
 			return nil, network.NewInternalServerError("Error getting user session", ERR_USER, err)
 		}
+		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
 		if session != nil {
 			s.sessionService.UpdateSessionInfo(session.SessionID, deviceInfo, locationInfo)
 			loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), session.Token, session.RefreshToken)
