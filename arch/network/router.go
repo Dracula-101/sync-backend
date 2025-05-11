@@ -16,8 +16,10 @@ type router struct {
 func NewRouter(env string, appLogger utils.AppLogger) Router {
 	var mode string
 	switch env {
+	case "debug":
 	case "development":
 		mode = gin.DebugMode
+	case "staging":
 	case "production":
 		mode = gin.ReleaseMode
 	case "test":

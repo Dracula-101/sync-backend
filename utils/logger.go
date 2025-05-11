@@ -241,9 +241,6 @@ func (l *AppLogger) Info(format string, v ...interface{}) {
 }
 
 func (l *AppLogger) Success(format string, v ...interface{}) {
-	if l.config.Level > DebugLevel {
-		return
-	}
 	l.log(InfoLevel, "✅", "SUCCESS  ", Green, format, v...)
 }
 
