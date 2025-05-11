@@ -190,6 +190,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 			Name:  googleLoginRequest.DeviceName,
 			Model: googleLoginRequest.DeviceModel,
 		},
+		Provider: userModels.GoogleProviderName,
 	}
 	deviceInfo := sessionModels.DeviceInfo{
 		DeviceId:        googleLoginRequest.DeviceId,
@@ -221,10 +222,11 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		if err != nil {
 			return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 		}
-		_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
+		session, err := s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
+		loginHistory.SessionId = session.SessionID
 		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
 		loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 		s.logger.Success("User logged in with Google successfully: %s", user.Email)
@@ -235,6 +237,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		if err != nil {
 			return nil, network.NewInternalServerError("Error getting user session", ERR_USER, err)
 		}
+		loginHistory.SessionId = session.SessionID
 		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
 		if session != nil {
 			s.sessionService.UpdateSessionInfo(session.SessionID, deviceInfo, locationInfo)
