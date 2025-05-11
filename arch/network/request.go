@@ -15,13 +15,13 @@ import (
 // ReqBody handles JSON request body binding and validation
 func ReqBody[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 	if err := ctx.ShouldBindJSON(dto); err != nil {
-		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest)
+		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest, "body")
 	}
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
 	if err := v.Struct(dto); err != nil {
-		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity)
+		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "body")
 	}
 
 	return dto.GetValue(), nil
@@ -41,13 +41,13 @@ func ReqForm[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 	}
 
 	if err != nil {
-		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest)
+		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest, "form")
 	}
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
 	if err := v.Struct(dto); err != nil {
-		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity)
+		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "form")
 	}
 
 	return dto.GetValue(), nil
@@ -56,13 +56,13 @@ func ReqForm[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 // ReqQuery handles query parameter binding and validation
 func ReqQuery[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 	if err := ctx.ShouldBindQuery(dto); err != nil {
-		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest)
+		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest, "query")
 	}
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
 	if err := v.Struct(dto); err != nil {
-		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity)
+		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "query")
 	}
 
 	return dto.GetValue(), nil
@@ -71,13 +71,13 @@ func ReqQuery[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 // ReqParams handles URI parameter binding and validation
 func ReqParams[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 	if err := ctx.ShouldBindUri(dto); err != nil {
-		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest)
+		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest, "params")
 	}
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
 	if err := v.Struct(dto); err != nil {
-		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity)
+		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "params")
 	}
 
 	return dto.GetValue(), nil
@@ -86,26 +86,46 @@ func ReqParams[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 // ReqHeaders handles header binding and validation
 func ReqHeaders[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 	if err := ctx.ShouldBindHeader(dto); err != nil {
-		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest)
+		return nil, handleBindingError(ctx, dto, err, http.StatusBadRequest, "header")
 	}
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
 	if err := v.Struct(dto); err != nil {
-		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity)
+		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "header")
 	}
 
 	return dto.GetValue(), nil
 }
 
 // handleBindingError handles binding errors (typically 400 Bad Request)
-func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCode int) error {
+func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCode int, bindType string) error {
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
-		return handleValidationError(ctx, dto, validationErrors, statusCode)
+		return handleValidationError(ctx, dto, validationErrors, statusCode, bindType)
 	}
 
-	// Handle JSON syntax errors or other binding issues
+	if err == nil {
+		return nil
+	}
+
 	errorDetails := make([]ErrorDetail, 0)
+	errorCode := "BINDING_ERROR"
+	errorMessage := fmt.Sprintf("Failed to bind %s parameters", bindType)
+
+	switch bindType {
+	case "body":
+		errorCode = "BODY_BINDING_ERROR"
+	case "form":
+		errorCode = "FORM_BINDING_ERROR"
+	case "query":
+		errorCode = "QUERY_BINDING_ERROR"
+	case "params":
+		errorCode = "PARAMS_BINDING_ERROR"
+	case "header":
+		errorCode = "HEADER_BINDING_ERROR"
+	}
+
+	// Handle specific error types
 	if syntaxErr, ok := err.(*json.SyntaxError); ok {
 		errorDetails = append(errorDetails, ErrorDetail{
 			Code:    "JSON_SYNTAX_ERROR",
@@ -119,10 +139,49 @@ func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCo
 			Detail:  typeErr.Error(),
 		})
 	} else if err.Error() == "EOF" {
+		switch bindType {
+		case "body":
+			errorDetails = append(errorDetails, ErrorDetail{
+				Code:    "EMPTY_BODY",
+				Message: "Empty request body",
+				Detail:  "The request body is empty",
+			})
+		case "form":
+			errorDetails = append(errorDetails, ErrorDetail{
+				Code:    "EMPTY_FORM",
+				Message: "Empty form data",
+				Detail:  "The form data is empty",
+			})
+		case "query":
+			errorDetails = append(errorDetails, ErrorDetail{
+				Code:    "EMPTY_QUERY",
+				Message: "Empty query parameters",
+				Detail:  "The query parameters are empty",
+			})
+		case "params":
+			errorDetails = append(errorDetails, ErrorDetail{
+				Code:    "EMPTY_PARAMS",
+				Message: "Empty URI parameters",
+				Detail:  "The URI parameters are empty",
+			})
+		case "header":
+			errorDetails = append(errorDetails, ErrorDetail{
+				Code:    "EMPTY_HEADER",
+				Message: "Empty header parameters",
+				Detail:  "The header parameters are empty",
+			})
+		}
+	} else if err.Error() == "http: no such file" {
 		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "EMPTY_REQUEST_BODY",
-			Message: "Empty request body",
-			Detail:  "The request body is empty",
+			Code:    "FILE_NOT_FOUND",
+			Message: "File not found",
+			Detail:  "The specified file was not found",
+		})
+	} else if err.Error() == "http: request URI too large" {
+		errorDetails = append(errorDetails, ErrorDetail{
+			Code:    "REQUEST_URI_TOO_LARGE",
+			Message: "Request URI too large",
+			Detail:  "The request URI exceeds the maximum size limit",
 		})
 	} else if err.Error() == "http: request body too large" {
 		errorDetails = append(errorDetails, ErrorDetail{
@@ -138,8 +197,8 @@ func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCo
 		})
 	} else {
 		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "BINDING_ERROR",
-			Message: "Binding error",
+			Code:    errorCode,
+			Message: errorMessage,
 			Detail:  err.Error(),
 		})
 	}
@@ -150,7 +209,7 @@ func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCo
 }
 
 // handleValidationError handles validation errors (typically 422 Unprocessable Entity)
-func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statusCode int) error {
+func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statusCode int, bindType string) error {
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		msgs, e := dto.ValidateErrors(validationErrors)
 		if e != nil {
@@ -181,7 +240,7 @@ func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statu
 			errResponse.Errors[i] = ErrorDetail{
 				Code:    ErrorFieldValidationCode,
 				Message: msg,
-				Field:   validationErrors[i].Field(),
+				Field:   fmt.Sprintf("%s:%s", bindType, validationErrors[i].Field()),
 				Detail:  fmt.Sprintf("Error: Field validation for %s failed on the %s tag", validationErrors[i].Field(), validationErrors[i].Tag()),
 			}
 		}

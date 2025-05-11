@@ -15,6 +15,7 @@ import (
 type Query[T any] interface {
 	Close()
 	CreateIndexes(indexes []mongo.IndexModel) error
+	CreateSearchIndexes(indexes []mongo.SearchIndexModel) error
 	FindOne(filter bson.M, opts *options.FindOneOptions) (*T, error)
 	FindAll(filter bson.M, opts *options.FindOptions) ([]*T, error)
 	FindPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
@@ -27,10 +28,10 @@ type Query[T any] interface {
 	FilterMany(filter bson.M, opts *options.FindOptions) ([]*T, error)
 	FilterPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
 	FilterCount(filter bson.M) (int64, error)
-	UpdateOne(filter bson.M, update bson.M) (*mongo.UpdateResult, error)
-	UpdateMany(filter bson.M, update bson.M) (*mongo.UpdateResult, error)
-	DeleteOne(filter bson.M) (*mongo.DeleteResult, error)
-	DeleteMany(filter bson.M) (*mongo.DeleteResult, error)
+	UpdateOne(filter bson.M, update bson.M, opts *options.UpdateOptions) (*mongo.UpdateResult, error)
+	UpdateMany(filter bson.M, update bson.M, opts *options.UpdateOptions) (*mongo.UpdateResult, error)
+	DeleteOne(filter bson.M, opts *options.DeleteOptions) (*mongo.DeleteResult, error)
+	DeleteMany(filter bson.M, opts *options.DeleteOptions) (*mongo.DeleteResult, error)
 }
 
 type query[T any] struct {
@@ -80,6 +81,17 @@ func (q *query[T]) FindOne(filter bson.M, opts *options.FindOneOptions) (*T, err
 	}
 	q.logger.Info("[ MONGO ] - FindOne query executed successfully")
 	return &doc, nil
+}
+
+func (q *query[T]) CreateSearchIndexes(indexes []mongo.SearchIndexModel) error {
+	defer q.Close()
+	_, err := q.collection.SearchIndexes().CreateMany(q.context, indexes)
+	if err != nil {
+		q.logger.Error("[ MONGO ] - Error creating search indexes: %v", err)
+		return fmt.Errorf("error creating search indexes: %w", err)
+	}
+	q.logger.Info("[ MONGO ] - Search indexes created successfully")
+	return nil
 }
 
 func (q *query[T]) FindAll(filter bson.M, opts *options.FindOptions) ([]*T, error) {
@@ -346,10 +358,10 @@ func (q *query[T]) FilterCount(filter bson.M) (int64, error) {
 /*
  * Example -> update := bson.M{"$set": bson.M{"field": "newValue"}}
  */
-func (q *query[T]) UpdateOne(filter bson.M, update bson.M) (*mongo.UpdateResult, error) {
+func (q *query[T]) UpdateOne(filter bson.M, update bson.M, opts *options.UpdateOptions) (*mongo.UpdateResult, error) {
 	defer q.Close()
 	q.logger.Info("[ MONGO ] - Executing UpdateOne query with filter: %v, update: %v", filter, update)
-	result, err := q.collection.UpdateOne(q.context, filter, update)
+	result, err := q.collection.UpdateOne(q.context, filter, update, opts)
 	if err != nil {
 		q.logger.Error("[ MONGO ] - Error executing UpdateOne query: %v", err)
 		return nil, err
@@ -361,10 +373,10 @@ func (q *query[T]) UpdateOne(filter bson.M, update bson.M) (*mongo.UpdateResult,
 /*
  * Example -> update := bson.M{"$set": bson.M{"field": "newValue"}}
  */
-func (q *query[T]) UpdateMany(filter bson.M, update bson.M) (*mongo.UpdateResult, error) {
+func (q *query[T]) UpdateMany(filter bson.M, update bson.M, opts *options.UpdateOptions) (*mongo.UpdateResult, error) {
 	defer q.Close()
 	q.logger.Info("[ MONGO ] - Executing UpdateMany query with filter: %v, update: %v", filter, update)
-	result, err := q.collection.UpdateMany(q.context, filter, update)
+	result, err := q.collection.UpdateMany(q.context, filter, update, opts)
 	if err != nil {
 		q.logger.Error("[ MONGO ] - Error executing UpdateMany query: %v", err)
 		return nil, err
@@ -373,10 +385,10 @@ func (q *query[T]) UpdateMany(filter bson.M, update bson.M) (*mongo.UpdateResult
 	return result, nil
 }
 
-func (q *query[T]) DeleteOne(filter bson.M) (*mongo.DeleteResult, error) {
+func (q *query[T]) DeleteOne(filter bson.M, opts *options.DeleteOptions) (*mongo.DeleteResult, error) {
 	defer q.Close()
 	q.logger.Info("[ MONGO ] - Executing DeleteOne query with filter: %v", filter)
-	result, err := q.collection.DeleteOne(q.context, filter)
+	result, err := q.collection.DeleteOne(q.context, filter, opts)
 	if err != nil {
 		q.logger.Error("[ MONGO ] - Error executing DeleteOne query: %v", err)
 		return nil, err
@@ -385,10 +397,10 @@ func (q *query[T]) DeleteOne(filter bson.M) (*mongo.DeleteResult, error) {
 	return result, nil
 }
 
-func (q *query[T]) DeleteMany(filter bson.M) (*mongo.DeleteResult, error) {
+func (q *query[T]) DeleteMany(filter bson.M, opts *options.DeleteOptions) (*mongo.DeleteResult, error) {
 	defer q.Close()
 	q.logger.Info("[ MONGO ] - Executing DeleteMany query with filter: %v", filter)
-	result, err := q.collection.DeleteMany(q.context, filter)
+	result, err := q.collection.DeleteMany(q.context, filter, opts)
 	if err != nil {
 		q.logger.Error("[ MONGO ] - Error executing DeleteMany query: %v", err)
 		return nil, err

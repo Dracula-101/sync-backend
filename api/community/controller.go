@@ -13,6 +13,8 @@ import (
 type CommunityController interface {
 	CreateCommunity(request *dto.CreateCommunityRequest) (*dto.CreateCommunityResponse, error)
 	GetCommunityById(id string) (*model.Community, error)
+	SearchCommunities(query string) ([]model.Community, error)
+	GetMyCommunities(userId string) ([]model.Community, error)
 }
 
 type communityController struct {

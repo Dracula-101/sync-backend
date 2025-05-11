@@ -9,22 +9,11 @@ import (
 
 func CustomTagNameFunc() validator.TagNameFunc {
 	return func(fld reflect.StructField) string {
-		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-		if len(name) > 1 {
-			return name
+		for _, tag := range []string{"json", "form", "uri", "param", "query"} {
+			if name := strings.SplitN(fld.Tag.Get(tag), ",", 2)[0]; name != "" && name != "-" {
+				return name
+			}
 		}
-		if name == "" {
-			name = strings.SplitN(fld.Tag.Get("form"), ",", 2)[0]
-		}
-		if len(name) > 1 {
-			return name
-		}
-		if name == "" {
-			name = strings.SplitN(fld.Tag.Get("uri"), ",", 2)[0]
-		}
-		if name == "-" {
-			return ""
-		}
-		return name
+		return fld.Name
 	}
 }

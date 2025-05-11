@@ -1,10 +1,11 @@
 package model
 
 import (
-	"sync-backend/utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"github.com/google/uuid"
 )
 
 const CommentCollectionName = "comments"
@@ -48,12 +49,12 @@ func NewComment(postId string, authorId string, content string, parentId string,
 	path := postId
 	if parentId != "" {
 		// If this is a reply, construct the path by appending to the parent's path
-		path = parentId + "." + utils.GenerateUUID()
+		path = parentId + "." + uuid.New().String()
 	}
 
 	return &Comment{
 		Id:            primitive.NewObjectID(),
-		CommentId:     utils.GenerateUUID(),
+		CommentId:     uuid.New().String(),
 		PostId:        postId,
 		ParentId:      parentId,
 		AuthorId:      authorId,

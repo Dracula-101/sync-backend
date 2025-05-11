@@ -33,21 +33,25 @@ type UserService interface {
 	ValidateUserPassword(user *model.User, password string) error
 
 	/* USER COMMUNITY */
+	GetMyCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
+	GetJoinedCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
 	JoinCommunity(userId string, communityId string) error
 	LeaveCommunity(userId string, communityId string) error
 }
 
 type userService struct {
-	log                utils.AppLogger
-	userQueryBuilder   mongo.QueryBuilder[model.User]
-	transactionBuilder mongo.TransactionBuilder
+	log                   utils.AppLogger
+	userQueryBuilder      mongo.QueryBuilder[model.User]
+	communityQueryBuilder mongo.QueryBuilder[communityModels.Community]
+	transactionBuilder    mongo.TransactionBuilder
 }
 
 func NewUserService(db mongo.Database) UserService {
 	return &userService{
-		userQueryBuilder:   mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
-		transactionBuilder: mongo.NewTransactionBuilder(db),
-		log:                utils.NewServiceLogger("UserService"),
+		userQueryBuilder:      mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
+		communityQueryBuilder: mongo.NewQueryBuilder[communityModels.Community](db, communityModels.CommunityCollectionName),
+		transactionBuilder:    mongo.NewTransactionBuilder(db),
+		log:                   utils.NewServiceLogger("UserService"),
 	}
 }
 
@@ -138,7 +142,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		existingUser.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": existingUser.UserId}, bson.M{
 			"$set": existingUser.GetValue(),
-		})
+		}, nil)
 		if err != nil {
 			s.log.Error("Error updating existing user: %v", err)
 			return nil, fmt.Errorf("error updating existing user: %v", err)
@@ -263,7 +267,7 @@ func (s *userService) UpdateLoginHistory(userId string, loginHistory model.Login
 		"$set": bson.M{
 			"lastLogin": loginHistory.LoginTime,
 		},
-	})
+	}, nil)
 	if err != nil {
 		s.log.Error("Error updating login history: %v", err)
 		return fmt.Errorf("error updating login history: %v", err)
@@ -294,7 +298,7 @@ func (s *userService) JoinCommunity(userId string, communityId string) error {
 		"$addToSet": bson.M{
 			"joinedWavelengths": communityId,
 		},
-	})
+	}, nil)
 	if err != nil {
 		s.log.Error("Error joining community: %v", err)
 		return fmt.Errorf("error joining community: %v", err)
@@ -338,7 +342,7 @@ func (s *userService) LeaveCommunity(userId string, communityId string) error {
 		"$pull": bson.M{
 			"joinedWavelengths": communityId,
 		},
-	})
+	}, nil)
 	if err != nil {
 		s.log.Error("Error leaving community: %v", err)
 		return fmt.Errorf("error leaving community: %v", err)
@@ -374,4 +378,69 @@ func (s *userService) LeaveCommunity(userId string, communityId string) error {
 
 	s.log.Debug("User %s left community %s successfully", userId, communityId)
 	return nil
+}
+
+func (s *userService) GetMyCommunities(userId string, page int, limit int) ([]communityModels.Community, error) {
+	s.log.Debug("Getting communities for user %s", userId)
+
+	// get community from ownerId
+	communities, err := s.communityQueryBuilder.SingleQuery().FilterMany(
+		bson.M{"ownerId": userId},
+		nil,
+	)
+
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, nil
+		}
+		s.log.Error("Error getting community by ownerId: %v", err)
+		return nil, err
+	}
+
+	if len(communities) == 0 {
+		s.log.Debug("No communities found for user %s", userId)
+		return nil, nil
+	}
+
+	var communites []communityModels.Community
+	for _, community := range communities {
+		if community != nil {
+			communites = append(communites, *community)
+		}
+	}
+
+	s.log.Debug("Found %d communities for user %s", len(communites), userId)
+	return communites, nil
+}
+
+func (s *userService) GetJoinedCommunities(userId string, page int, limit int) ([]communityModels.Community, error) {
+	s.log.Debug("Getting joined communities for user %s", userId)
+
+	// get community from ownerId
+	communities, err := s.communityQueryBuilder.SingleQuery().FilterMany(
+		bson.M{"members": userId},
+		nil,
+	)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return nil, nil
+		}
+		s.log.Error("Error getting community by ownerId: %v", err)
+		return nil, err
+	}
+
+	if len(communities) == 0 {
+		s.log.Debug("No communities found for user %s", userId)
+		return nil, nil
+	}
+
+	var communites []communityModels.Community
+	for _, community := range communities {
+		if community != nil {
+			communites = append(communites, *community)
+		}
+	}
+
+	s.log.Debug("Found %d communities for user %s", len(communites), userId)
+	return communites, nil
 }

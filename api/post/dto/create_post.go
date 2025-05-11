@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"mime/multipart"
 	"sync-backend/api/post/model"
 
 	"github.com/go-playground/validator/v10"
@@ -11,21 +12,18 @@ import (
 // =======================================
 
 type CreatePostRequest struct {
-	Title       string         `form:"title" json:"title" validate:"required,min=1,max=300"`
-	Content     string         `form:"content" json:"content" validate:"required"`
-	Tags        []string       `form:"tags" json:"tags"`
-	Media       []string       `form:"media" json:"media"`
-	Type        model.PostType `form:"type" json:"type" validate:"required,oneof=text image video link"`
-	CommunityId string         `form:"communityId" json:"communityId" validate:"required"`
-	IsNSFW      bool           `form:"isNSFW,omitempty" json:"isNSFW"`
-	IsSpoiler   bool           `form:"isSpoiler,omitempty" json:"isSpoiler"`
+	Title       string                  `form:"title" json:"title" binding:"required" validate:"required,min=1,max=100"`
+	Content     string                  `form:"content" json:"content" binding:"required" validate:"required,min=1,max=10000"`
+	Tags        []string                `form:"tags,omitempty" json:"tags"`
+	Media       []*multipart.FileHeader `form:"media,omitempty" json:"media" validate:"dive"`
+	CommunityId string                  `form:"communityId" json:"communityId" binding:"required" validate:"required"`
+	Type        model.PostType          `form:"type" json:"type" binding:"required" validate:"required,oneof=TEXT IMAGE VIDEO"`
+	IsNSFW      bool                    `form:"isNSFW,omitempty" json:"isNSFW"`
+	IsSpoiler   bool                    `form:"isSpoiler,omitempty" json:"isSpoiler"`
 }
 
 func NewCreatePostRequest() *CreatePostRequest {
-	return &CreatePostRequest{
-		Tags:  []string{},
-		Media: []string{},
-	}
+	return &CreatePostRequest{}
 }
 
 func (r *CreatePostRequest) GetValue() *CreatePostRequest {
@@ -44,6 +42,8 @@ func (r *CreatePostRequest) ValidateErrors(errs validator.ValidationErrors) ([]s
 			msgs = append(msgs, err.Field()+" must be at most "+err.Param()+" characters")
 		case "oneof":
 			msgs = append(msgs, err.Field()+" must be one of "+err.Param())
+		case "dive":
+			msgs = append(msgs, err.Field()+" must be a valid file")
 		default:
 			msgs = append(msgs, err.Field()+" is invalid")
 		}

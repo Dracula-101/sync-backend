@@ -36,10 +36,11 @@ const (
 	ServiceUnavailableErrorCode      = "SERVICE_UNAVAILABLE"
 	GatewayTimeoutErrorCode          = "GATEWAY_TIMEOUT"
 	HTTPVersionNotSupportedErrorCode = "HTTP_VERSION_NOT_SUPPORTED"
+	ErrorBindingCode                 = "BINDING_ERROR"
 	ErrorValidationCode              = "VALIDATION_ERROR"
 	ErrorFieldValidationCode         = "FIELD_VALIDATION_ERROR"
 	DB_ERROR                         = "DB_ERROR"
-	CACHE_ERROR                     = "CACHE_ERROR"
+	CACHE_ERROR                      = "CACHE_ERROR"
 	FORBIDDEN_ERROR                  = "FORBIDDEN_ERROR"
 	UnknownErrorCode                 = "UNKNOWN_ERROR"
 )

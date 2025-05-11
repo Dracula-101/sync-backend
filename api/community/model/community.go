@@ -1,21 +1,27 @@
 package model
 
 import (
+	"context"
 	"math/rand"
 	"regexp"
 	"strings"
-	"sync-backend/utils"
 	"time"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-)
+	mongod "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"sync-backend/arch/mongo"
+)
 
 const CommunityCollectionName = "communities"
 
 type Community struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	CommunityId string             `bson:"communityId" json:"communityId"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	CommunityId string             `bson:"communityId" json:"id"`
 	Slug        string             `bson:"slug" json:"slug"`
 	Name        string             `bson:"name" json:"name"`
 	Description string             `bson:"description" json:"description"`
@@ -27,7 +33,7 @@ type Community struct {
 	PostCount   int64              `bson:"postCount" json:"postCount"`
 	Media       CommunityMedia     `bson:"media" json:"media"`
 	Rules       []CommunityRule    `bson:"rules" json:"rules"`
-	Tags        []CommunityTag     `bson:"tags" json:"tags"`
+	Tags        []CommunityTagInfo `bson:"tags" json:"tags"`
 	Moderators  []string           `bson:"moderators" json:"moderators"`
 	Settings    CommunitySettings  `bson:"settings" json:"settings"`
 	Stats       CommunityStats     `bson:"stats" json:"stats"`
@@ -84,7 +90,7 @@ type CommunitySettings struct {
 	Language             string   `bson:"language" json:"language"`
 	ContentFilters       []string `bson:"contentFilters" json:"contentFilters"`
 	MinAccountAgeToPost  int      `bson:"minAccountAgeToPost" json:"minAccountAgeToPost"`
-	MinKarmaToPost       int      `bson:"minKarmaToPost" json:"minKarmaToPost"`
+	MinSynergyToPost     int      `bson:"minSynergyToPost" json:"minSynergyToPost"`
 }
 
 type CommunityStats struct {
@@ -129,7 +135,7 @@ type MemberContributions struct {
 	PostCount         int64   `bson:"postCount" json:"postCount"`
 	CommentCount      int64   `bson:"commentCount" json:"commentCount"`
 	ReactionCount     int64   `bson:"reactionCount" json:"reactionCount"`
-	KarmaPoints       int64   `bson:"karmaPoints" json:"karmaPoints"`
+	SynergyPoints     int64   `bson:"synergyPoints" json:"synergyPoints"`
 	ContributionScore float64 `bson:"contributionScore" json:"contributionScore"`
 }
 
@@ -226,7 +232,7 @@ type NewCommunityArgs struct {
 	OwnerId       string
 	AvatarUrl     *string
 	BackgroundUrl *string
-	Tags          []CommunityTag
+	Tags          []CommunityTagInfo
 }
 
 func NewCommunity(args NewCommunityArgs) *Community {
@@ -244,7 +250,7 @@ func NewCommunity(args NewCommunityArgs) *Community {
 
 	return &Community{
 		ID:          primitive.NewObjectID(),
-		CommunityId: utils.GenerateUUID(),
+		CommunityId: uuid.New().String(),
 		Slug:        slug,
 		Name:        args.Name,
 		Description: args.Description,
@@ -312,7 +318,7 @@ func NewCommunity(args NewCommunityArgs) *Community {
 			Language:             "en",
 			ContentFilters:       []string{},
 			MinAccountAgeToPost:  0,
-			MinKarmaToPost:       0,
+			MinSynergyToPost:     0,
 		},
 		Stats: CommunityStats{
 			DailyActiveUsers:   1,
@@ -379,4 +385,69 @@ func randomString(length int) string {
 		result[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(result)
+}
+
+func (c *Community) GetCollectionName() string {
+	return CommunityCollectionName
+}
+
+func (c *Community) GetValue() *Community {
+	return c
+}
+
+func (c *Community) Validate() error {
+	validate := validator.New()
+	return validate.Struct(c)
+}
+
+func (c *Community) EnsureIndexes(db mongo.Database) {
+	indexes := []mongod.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "communityId", Value: 1},
+			},
+			Options: options.Index().SetUnique(true).SetName("idx_community_id_unique"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "slug", Value: 1},
+			},
+			Options: options.Index().SetUnique(true).SetName("idx_community_slug_unique"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "name", Value: 1},
+			},
+			Options: options.Index().SetUnique(true).SetName("idx_community_name_unique"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "members", Value: 1},
+			},
+			Options: options.Index().SetName("idx_community_members"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "settings.showInDiscovery", Value: 1},
+				{Key: "isPrivate", Value: 1},
+				{Key: "status", Value: 1},
+			},
+			Options: options.Index().SetName("idx_community_discovery"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "stats.popularityScore", Value: -1},
+			},
+			Options: options.Index().SetName("idx_community_popularity"),
+		},
+		// TTL index for deleted communities - 30 days (1 month)
+		{
+			Keys: bson.D{
+				{Key: "metadata.deletedAt", Value: 1},
+			},
+			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60).SetName("ttl_community_deleted"),
+		},
+	}
+
+	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CreateIndexes(indexes)
 }
