@@ -18,7 +18,7 @@ type GetMyCommunitiesRequest struct {
 
 func NewGetMyCommunitiesRequest() *GetMyCommunitiesRequest {
 	return &GetMyCommunitiesRequest{
-		Pagination: *coredto.EmptyPagination(),
+		Pagination: *coredto.NewPagination(),
 	}
 }
 

@@ -33,10 +33,15 @@ func NewPostController(postService PostService, authenticatorProvider network.Au
 
 func (c *postController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting post routes")
-	group.POST("/create", c.authenticatorProvider.Middleware(), c.uploadProvider.Middleware("media"), c.CreatePost)
+	group.Use(c.authenticatorProvider.Middleware())
+	group.POST("/create", c.uploadProvider.Middleware("media"), c.CreatePost)
 	group.GET("/get/:postId", c.GetPost)
-	group.POST("/edit/:postId", c.authenticatorProvider.Middleware(), c.EditPost)
-	group.GET("/get/user", c.authenticatorProvider.Middleware(), c.UserPosts)
+	group.POST("/edit/:postId", c.EditPost)
+
+	// User post routes
+	group.GET("/get/user", c.UserPosts)
+
+	// Community post routes
 	group.GET("/get/community/:communityId", c.GetCommunityPosts)
 }
 

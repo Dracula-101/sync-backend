@@ -57,6 +57,8 @@ type NewUserArgs struct {
 	BackgroundUrl string
 	Language      common.Language
 	TimeZone      common.TimeZone
+	Theme         string
+	Country       string
 	DeviceToken   DeviceToken
 }
 
@@ -84,8 +86,8 @@ func NewUser(
 			UserPreferencesArgs{
 				timezone: newUserArgs.TimeZone.ToDetail(),
 				Language: newUserArgs.Language.ToDetail(),
-				Theme:    "light",
-				Location: "India",
+				Theme:    newUserArgs.Theme,
+				Location: newUserArgs.Country,
 			},
 		),
 		DeviceTokens: []DeviceToken{

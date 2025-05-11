@@ -93,6 +93,8 @@ func (s *userService) CreateUser(userName string, email string, password string,
 		BackgroundUrl: "https://placehold.co/1200x400.png",
 		Language:      common.English,
 		TimeZone:      common.AsiaKolkata,
+		Theme:         "light",
+		Country:       "IN",
 		DeviceToken:   *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
 	})
 	if err != nil {

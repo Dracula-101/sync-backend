@@ -10,7 +10,6 @@ const (
 	DeviceOsHeader      = "X-Device-OS"
 	DeviceModelHeader   = "X-Device-Model"
 	DeviceVersionHeader = "X-Device-Version"
-	LocaleHeader        = "X-Locale"
 
 	DefaultDeviceId      = "default-device-id"
 	DefaultDeviceName    = "default-device-name"
@@ -18,5 +17,6 @@ const (
 	DefaultDeviceOs      = "default-device-os"
 	DefaultDeviceModel   = "default-device-model"
 	DefaultDeviceVersion = "default-device-version"
-	DefaultLocale        = "en-US"
+
+	UserLocation = "UserLocation"
 )

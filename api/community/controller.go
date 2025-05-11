@@ -40,8 +40,12 @@ func NewCommunityController(
 
 func (c *communityController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting community routes")
-	group.POST("/create", c.authProvider.Middleware(), c.CreateCommunity)
+	group.Use(c.authProvider.Middleware())
+	group.POST("/create", c.CreateCommunity)
 	group.GET("/:communityId", c.GetCommunityById)
+	group.GET("/search", c.SearchCommunities)
+	group.GET("/autocomplete", c.AutocompeleteCommunities)
+	group.GET("/trending", c.GetTrendingCommunities)
 }
 
 func (c *communityController) CreateCommunity(ctx *gin.Context) {
@@ -76,4 +80,54 @@ func (c *communityController) GetCommunityById(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessDataResponse("Community fetched successfully", community)
+}
+
+func (c *communityController) SearchCommunities(ctx *gin.Context) {
+	query, err := network.ReqQuery(ctx, dto.NewSearchCommunityRequest())
+	if err != nil {
+		return
+	}
+
+	communities, err := c.communityService.SearchCommunities(
+		query.Query,
+		query.Page,
+		query.Limit,
+		query.ShowPrivate,
+	)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Communities fetched successfully", communities)
+}
+
+func (c *communityController) AutocompeleteCommunities(ctx *gin.Context) {
+	query, err := network.ReqQuery(ctx, dto.NewAutocompleteCommunityRequest())
+	if err != nil {
+		return
+	}
+
+	communities, err := c.communityService.AutocompleteCommunities(query.Query, query.Page, query.Limit, query.ShowPrivate)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Communities fetched successfully", communities)
+}
+
+func (c *communityController) GetTrendingCommunities(ctx *gin.Context) {
+	query, err := network.ReqQuery(ctx, dto.NewGetTrendingCommunitiesRequest())
+	if err != nil {
+		return
+	}
+
+	communities, err := c.communityService.GetTrendingCommunities(query.Page, query.Limit)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Communities fetched successfully", communities)
 }

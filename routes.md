@@ -15,7 +15,7 @@ All authenticated routes require a valid JWT token in the Authorization header:
 - [X] `POST /auth/google` - Login with Google Token
 - [X] `POST /auth/google/callback` - Handle Google OAuth callback
 - [X] `POST /auth/logout` - User logout
-- [X] `POST /auth/forgot-password` - Request password reset
+- [ ] `POST /auth/forgot-password` - Request password reset
 - [X] `POST /auth/refresh-token` - Refresh access token
 
 

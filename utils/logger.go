@@ -102,7 +102,9 @@ func DefaultAppLogger(env string, logLevel string, serviceName string) AppLogger
 }
 
 func NewServiceLogger(serviceName string) AppLogger {
-	return DefaultAppLogger("development", "debug", serviceName)
+	env := os.Getenv("ENV")
+	logLevel := os.Getenv("LOG_LEVEL")
+	return DefaultAppLogger(env, logLevel, serviceName)
 }
 
 func getTerminalWidth() int {
@@ -113,8 +115,34 @@ func getTerminalWidth() int {
 	return width
 }
 
+func (l *AppLogger) simpleLog(level LogLevel, prefix, levelStr, color, format string, v ...interface{}) {
+	if level < l.config.Level {
+		return
+	}
+
+	timestamp := time.Now().Format("2006:01:02 15:04:05.000")
+	message := fmt.Sprintf(format, v...)
+
+	serviceName := l.config.ServiceName
+	if len(serviceName) > 15 {
+		serviceName = serviceName[:15]
+	}
+
+	logLine := fmt.Sprintf("%s | %-15s | %s | %s", timestamp, serviceName, levelStr, message)
+
+	if level >= ErrorLevel {
+		fmt.Fprintln(l.config.ErrorOutput, logLine)
+	} else {
+		fmt.Fprintln(l.config.Output, logLine)
+	}
+}
+
 func (l *AppLogger) log(level LogLevel, prefix, levelStr, color, format string, v ...interface{}) {
 	if level < l.config.Level {
+		return
+	}
+	if l.config.Environment == "production" || l.config.Environment == "staging" {
+		l.simpleLog(level, prefix, levelStr, color, format, v...)
 		return
 	}
 
@@ -231,7 +259,7 @@ func (l *AppLogger) Error(format string, v ...interface{}) {
 }
 
 func (l *AppLogger) Fatal(format string, v ...interface{}) {
-	l.log(ErrorLevel, "⛔", "FATAL    ", BgRed+White, format, v...)
+	l.log(ErrorLevel, "❌", "FATAL    ", Red, format, v...)
 	os.Exit(1)
 }
 

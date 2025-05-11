@@ -15,11 +15,12 @@ import (
 
 type JoinedCommunitiesRequest struct {
 	coredto.Pagination
+	
 }
 
 func NewJoinedCommunitiesRequest() *JoinedCommunitiesRequest {
 	return &JoinedCommunitiesRequest{
-		Pagination: *coredto.EmptyPagination(),
+		Pagination: *coredto.NewPagination(),
 	}
 }
 
@@ -44,7 +45,7 @@ func (s *JoinedCommunitiesRequest) ValidateErrors(errs validator.ValidationError
 
 type JoinedCommunitiesResponse struct {
 	Communities []model.Community `json:"communities"`
-	Total       int      `json:"total"`
+	Total       int               `json:"total"`
 }
 
 func NewJoinedCommunitiesResponse(communities []model.Community, total int) *JoinedCommunitiesResponse {

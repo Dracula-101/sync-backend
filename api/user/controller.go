@@ -36,19 +36,42 @@ func NewUserController(
 
 func (c *userController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting user routes")
-	group.GET("/me", c.authProvider.Middleware(), c.GetMe)
+	group.Use(c.authProvider.Middleware())
+	group.GET("/me", c.GetMe)
+	group.GET("/:userId", c.GetUserById)
 
 	// User community routes
-	group.POST("/join/:communityId", c.authProvider.Middleware(), c.JoinCommunity)
-	group.POST("/leave/:communityId", c.authProvider.Middleware(), c.LeaveCommunity)
-	group.GET("/communities/owner", c.authProvider.Middleware(), c.GetMyCommunities)
-	group.GET("/communities/joined", c.authProvider.Middleware(), c.GetJoinedCommunities)
+	group.POST("/join/:communityId", c.JoinCommunity)
+	group.POST("/leave/:communityId", c.LeaveCommunity)
+	group.GET("/communities/owner", c.GetMyCommunities)
+	group.GET("/communities/joined", c.GetJoinedCommunities)
 }
 
 func (c *userController) GetMe(ctx *gin.Context) {
 
 	userId := c.ContextPayload.MustGetUserId(ctx)
 	user, err := c.userService.FindUserById(*userId)
+
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	if user == nil {
+		c.Send(ctx).NotFoundError("User not found", nil)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Profile fetched successfully", user)
+}
+
+func (c *userController) GetUserById(ctx *gin.Context) {
+	params, err := network.ReqParams(ctx, dto.NewGetUserRequest())
+	if err != nil {
+		return
+	}
+	userId := params.UserId
+	user, err := c.userService.FindUserById(userId)
 
 	if err != nil {
 		c.Send(ctx).MixedError(err)

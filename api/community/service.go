@@ -19,6 +19,7 @@ type CommunityService interface {
 	CheckUserInCommunity(userId string, communityId string) network.ApiError
 	SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError)
 	AutocompleteCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunityAutocomplete, network.ApiError)
+	GetTrendingCommunities(page int, limit int) ([]*model.CommunitySearchResult, network.ApiError)
 }
 
 type communityService struct {
@@ -398,6 +399,88 @@ func (s *communityService) AutocompleteCommunities(query string, page int, limit
 	if err != nil {
 		s.logger.Error("Error executing community autocomplete: %v", err)
 		return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, err)
+	}
+
+	aggregator.Close()
+	return communitiesResults, nil
+}
+
+func (s *communityService) GetTrendingCommunities(page int, limit int) ([]*model.CommunitySearchResult, network.ApiError) {
+	s.logger.Info("Fetching trending communities, page: %d, limit: %d", page, limit)
+
+	aggregator := s.communitySearchPipeline.
+		Aggregate(s.Context()).
+		AllowDiskUse(true)
+
+	matchStage := bson.M{
+		"$and": []bson.M{
+			{"status": "active"},
+			{"$or": []bson.M{
+				{"isPrivate": false},
+				{"settings.showInDiscovery": true},
+			}},
+		},
+	}
+	aggregator.Match(matchStage)
+
+	aggregator.AddFields(bson.M{
+		"trendingScore": bson.M{
+			"$add": []interface{}{
+				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.engagementRate", 0}}, 3}},
+				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.growthRate", 0}}, 2}},
+				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.popularityScore", 0}}, 1.5}},
+				bson.M{
+					"$divide": []interface{}{
+						1,
+						bson.M{
+							"$add": []interface{}{
+								1,
+								bson.M{
+									"$divide": []interface{}{
+										bson.M{"$subtract": []interface{}{"$$NOW", "$lastActivityAt"}},
+										86400000, // MS in a day
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	projectStage := bson.M{
+		"communityId":   1,
+		"slug":          1,
+		"name":          1,
+		"description":   1,
+		"shortDesc":     1,
+		"ownerId":       1,
+		"isPrivate":     1,
+		"members":       1,
+		"memberCount":   1,
+		"postCount":     1,
+		"stats":         1,
+		"trendingScore": 1,
+		"status":        1,
+	}
+	aggregator.Project(projectStage)
+
+	sortStage := bson.M{
+		"trendingScore": -1,
+		"memberCount":   -1,
+		"postCount":     -1,
+	}
+
+	communitiesResults, err := aggregator.
+		Sort(sortStage).
+		Skip(int64((page - 1) * limit)).
+		Limit(int64(limit)).
+		Exec()
+
+	if err != nil {
+		s.logger.Error("Error executing trending communities query: %v", err)
+		return nil, network.NewInternalServerError("Error fetching trending communities", network.DB_ERROR, err)
 	}
 
 	aggregator.Close()

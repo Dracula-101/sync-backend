@@ -3,6 +3,7 @@ package dto
 import (
 	"fmt"
 	"sync-backend/api/community/model"
+	coredto "sync-backend/arch/dto"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -12,15 +13,14 @@ import (
 // ==================================================
 
 type AutocompleteCommunityRequest struct {
-	Query string `form:"query" validate:"required"`
-	Page  int    `form:"page" validate:"required,min=1"`
-	Limit int    `form:"limit" validate:"required,min=1,max=100"`
+	Query       string `form:"query" validate:"required"`
+	ShowPrivate bool   `form:"show_private" query:"show_private"`
+	coredto.Pagination
 }
 
 func NewAutocompleteCommunityRequest() *AutocompleteCommunityRequest {
 	return &AutocompleteCommunityRequest{
-		Page:  1,
-		Limit: 10,
+		Pagination: *coredto.NewPagination(),
 	}
 }
 

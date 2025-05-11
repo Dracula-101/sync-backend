@@ -3,6 +3,7 @@ package utils
 import (
 	"math/rand"
 	"strings"
+	"time"
 )
 
 func GenerateUniqueSlug(name string) string {
@@ -22,7 +23,6 @@ func Slugify(name string, unique bool) string {
 	slug = strings.ReplaceAll(slug, "_", "-")
 	return slug
 }
-
 func GenerateRandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 	var result strings.Builder
@@ -33,11 +33,11 @@ func GenerateRandomString(length int) string {
 }
 
 func GenerateRandomInt(max int) int {
-	rand.Seed(rand.Int63())
-	return rand.Intn(max)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return r.Intn(max)
 }
 
 func GenerateRandomFloat64() float64 {
-	rand.Seed(rand.Int63())
-	return rand.Float64()
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return r.Float64()
 }

@@ -15,34 +15,37 @@ type authController struct {
 	logger utils.AppLogger
 	network.BaseController
 	common.ContextPayload
-	authProvider    network.AuthenticationProvider
-	authService     AuthService
-	userService     user.UserService
-	locationService location.LocationService
+	authProvider     network.AuthenticationProvider
+	locationProvider network.LocationProvider
+	authService      AuthService
+	userService      user.UserService
+	locationService  location.LocationService
 }
 
 func NewAuthController(
 	authService AuthService,
 	authProvider network.AuthenticationProvider,
+	locationProvider network.LocationProvider,
 	userService user.UserService,
 	locationService location.LocationService,
 ) network.Controller {
 	return &authController{
-		logger:          utils.NewServiceLogger("AuthController"),
-		BaseController:  network.NewBaseController("/api/v1/auth", authProvider),
-		ContextPayload:  common.NewContextPayload(),
-		authProvider:    authProvider,
-		authService:     authService,
-		userService:     userService,
-		locationService: locationService,
+		logger:           utils.NewServiceLogger("AuthController"),
+		BaseController:   network.NewBaseController("/api/v1/auth", authProvider),
+		ContextPayload:   common.NewContextPayload(),
+		authProvider:     authProvider,
+		authService:      authService,
+		userService:      userService,
+		locationService:  locationService,
+		locationProvider: locationProvider,
 	}
 }
 
 func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting auth routes")
-	group.POST("/signup", c.SignUp)
-	group.POST("/login", c.Login)
-	group.POST("/google", c.GoogleLogin)
+	group.POST("/signup", c.locationProvider.Middleware(), c.SignUp)
+	group.POST("/login", c.locationProvider.Middleware(), c.Login)
+	group.POST("/google", c.locationProvider.Middleware(), c.GoogleLogin)
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
 	group.POST("/forgot-password", c.ForgotPassword)
 	group.POST("/refresh-token", c.RefreshToken)
@@ -63,7 +66,8 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	c.SetRequestDetails(ctx, &body.BaseRequest)
+	c.SetRequestDeviceDetails(ctx, &body.BaseDeviceRequest)
+	c.SetRequestLocationDetails(ctx, &body.BaseLocationRequest)
 	data, err := c.authService.SignUp(body)
 
 	if err != nil {
@@ -78,7 +82,8 @@ func (c *authController) Login(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	c.SetRequestDetails(ctx, &body.BaseRequest)
+	c.SetRequestDeviceDetails(ctx, &body.BaseDeviceRequest)
+	c.SetRequestLocationDetails(ctx, &body.BaseLocationRequest)
 	data, err := c.authService.Login(body)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
@@ -92,7 +97,8 @@ func (c *authController) GoogleLogin(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	c.SetRequestDetails(ctx, &body.BaseRequest)
+	c.SetRequestDeviceDetails(ctx, &body.BaseDeviceRequest)
+	c.SetRequestLocationDetails(ctx, &body.BaseLocationRequest)
 	data, err := c.authService.GoogleLogin(body)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
@@ -117,7 +123,7 @@ func (c *authController) ForgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	c.SetRequestDetails(ctx, &body.BaseRequest)
+	c.SetRequestDeviceDetails(ctx, &body.BaseDeviceRequest)
 	err = c.authService.ForgotPassword(body)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
