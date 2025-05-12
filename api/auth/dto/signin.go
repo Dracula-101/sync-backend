@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+	"mime/multipart"
 
 	"sync-backend/api/user/model"
 	coredto "sync-backend/arch/dto"
@@ -14,11 +15,15 @@ import (
 // =======================================
 
 type SignUpRequest struct {
-	coredto.BaseRequest
-	UserName      string `json:"username" binding:"required" validate:"required,min=3,max=50"`
-	Email         string `json:"email" binding:"required,email" validate:"email"`
-	Password      string `json:"password" binding:"required" validate:"required,min=6,max=100"`
-	ProfilePicUrl string `json:"profile_pic_url" binding:"omitempty,max=500" validate:"omitempty,max=500"`
+	coredto.BaseDeviceRequest
+	coredto.BaseLocationRequest
+	UserName           string                `form:"username" binding:"required" validate:"required,min=3,max=50"`
+	Email              string                `form:"email" binding:"required,email" validate:"email"`
+	Password           string                `form:"password" binding:"required" validate:"required,min=6,max=100"`
+	ProfilePhoto       *multipart.FileHeader `form:"profile_photo" binding:"omitempty" validate:"omitempty"`
+	BackgroundPhoto    *multipart.FileHeader `form:"background_photo" binding:"omitempty" validate:"omitempty"`
+	ProfileFilePath    string
+	BackgroundFilePath string
 }
 
 func NewSignUpRequest() *SignUpRequest {

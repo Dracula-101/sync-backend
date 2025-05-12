@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"sync-backend/api/common/media"
 	communityModels "sync-backend/api/community/model"
 	"sync-backend/api/user/model"
 	"sync-backend/arch/common"
@@ -17,14 +18,14 @@ import (
 
 type UserService interface {
 	/* CREATING USER */
-	CreateUser(userName string, email string, password string, profilePicUrl string) (*model.User, error)
-	CreateUserWithGoogleId(userName string, googleIdToken string) (*model.User, error)
+	CreateUser(userName string, email string, password string, profilePic string, backgroundPic string, locale string, timezone string, country string) (*model.User, error)
+	CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error)
 
 	/* FINDING USER */
 	FindUserById(userId string) (*model.User, error)
 	FindUserByEmail(email string) (*model.User, error)
 	FindUserByUsername(username string) (*model.User, error)
-	FindUserAuthProvider(userId string, providerName string) (*model.User, error)
+	FindUserAuthProvider(userId string, username string, providerName string) (*model.User, error)
 
 	/* USER INFO UPDATE */
 	UpdateLoginHistory(userId string, loginHistory model.LoginHistory) error
@@ -37,17 +38,25 @@ type UserService interface {
 	GetJoinedCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
 	JoinCommunity(userId string, communityId string) error
 	LeaveCommunity(userId string, communityId string) error
+
+	/* USER FOLLOWING */
+	FollowUser(userId string, followUserId string) error
+	UnfollowUser(userId string, unfollowUserId string) error
+	BlockUser(userId string, blockUserId string) error
+	UnblockUser(userId string, unblockUserId string) error
 }
 
 type userService struct {
+	mediaService          media.MediaService
 	log                   utils.AppLogger
 	userQueryBuilder      mongo.QueryBuilder[model.User]
 	communityQueryBuilder mongo.QueryBuilder[communityModels.Community]
 	transactionBuilder    mongo.TransactionBuilder
 }
 
-func NewUserService(db mongo.Database) UserService {
+func NewUserService(db mongo.Database, mediaService media.MediaService) UserService {
 	return &userService{
+		mediaService:          mediaService,
 		userQueryBuilder:      mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
 		communityQueryBuilder: mongo.NewQueryBuilder[communityModels.Community](db, communityModels.CommunityCollectionName),
 		transactionBuilder:    mongo.NewTransactionBuilder(db),
@@ -55,7 +64,7 @@ func NewUserService(db mongo.Database) UserService {
 	}
 }
 
-func (s *userService) CreateUser(userName string, email string, password string, profilePicUrl string) (*model.User, error) {
+func (s *userService) CreateUser(userName string, email string, password string, profilePic string, backgroundPic string, locale string, timezone string, country string) (*model.User, error) {
 	s.log.Debug("Creating user with email: %s", email)
 	filter := bson.M{
 		"$or": []bson.M{
@@ -85,15 +94,59 @@ func (s *userService) CreateUser(userName string, email string, password string,
 		s.log.Error("Error hashing password: %v", err)
 		return nil, err
 	}
+	var profilePicUrl, profileId string
+	var profileHeight, profileWidth int
+	var backgroundUrl, backgroundId string
+	var backgroundHeight, backgroundWidth int
+	if profilePic != "" {
+		profileInfo, _ := s.mediaService.UploadMedia(profilePic, userName+"_profile", "profile")
+		profileId = profileInfo.Id
+		profilePicUrl = profileInfo.Url
+		profileHeight = profileInfo.Height
+		profileWidth = profileInfo.Width
+	} else {
+		profilePic = "https://placehold.co/150x150.png"
+		profileId = "default-profile-id"
+		profilePicUrl = profilePic
+		profileHeight = 150
+		profileWidth = 150
+	}
+
+	if backgroundPic != "" {
+		backgroundInfo, _ := s.mediaService.UploadMedia(backgroundPic, userName+"_background", "background")
+		backgroundId = backgroundInfo.Id
+		backgroundUrl = backgroundInfo.Url
+		backgroundHeight = backgroundInfo.Height
+		backgroundWidth = backgroundInfo.Width
+	} else {
+		backgroundPic = "https://placehold.co/1200x400.png"
+		backgroundId = "default-background-id"
+		backgroundUrl = backgroundPic
+		backgroundHeight = 400
+		backgroundWidth = 1200
+	}
+
 	user, err := model.NewUser(model.NewUserArgs{
-		UserName:      userName,
-		Email:         email,
-		PasswordHash:  hashedPassword,
-		AvatarUrl:     profilePicUrl,
-		BackgroundUrl: "https://placehold.co/1200x400.png",
-		Language:      common.English,
-		TimeZone:      common.AsiaKolkata,
-		DeviceToken:   *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
+		UserName:     userName,
+		Email:        email,
+		PasswordHash: hashedPassword,
+		AvatarUrl: model.Image{
+			Id:     profileId,
+			Url:    profilePicUrl,
+			Width:  profileWidth,
+			Height: profileHeight,
+		},
+		BackgroundUrl: model.Image{
+			Id:     backgroundId,
+			Url:    backgroundUrl,
+			Width:  backgroundWidth,
+			Height: backgroundHeight,
+		},
+		Language:    common.GetLanguageByID(locale),
+		TimeZone:    common.GetTimeZone(timezone),
+		Theme:       "light",
+		Country:     country,
+		DeviceToken: *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
 	})
 	if err != nil {
 		s.log.Error("Error creating user: %v", err)
@@ -109,7 +162,7 @@ func (s *userService) CreateUser(userName string, email string, password string,
 	return user, nil
 }
 
-func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken string) (*model.User, error) {
+func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error) {
 	s.log.Debug("Creating user with Google ID token: %s", googleIdToken[0:10]+"***********")
 	googleUser, err := utils.DecodeGoogleJWTToken(googleIdToken)
 	if err != nil {
@@ -122,7 +175,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		return nil, fmt.Errorf("error checking for existing user: %v", err)
 	}
-
+	width, height, _ := utils.GetImageSize(googleUser.Picture)
 	if existingUser != nil {
 		for _, provider := range existingUser.Providers {
 			if provider.AuthProvider == model.GoogleProviderName {
@@ -138,6 +191,8 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		})
 		existingUser.VerifiedEmail = googleUser.EmailVerified
 		existingUser.Avatar.ProfilePic.Url = googleUser.Picture
+		existingUser.Avatar.ProfilePic.Width = width
+		existingUser.Avatar.ProfilePic.Height = height
 		existingUser.Email = googleUser.Email
 		existingUser.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": existingUser.UserId}, bson.M{
@@ -152,14 +207,23 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 	} else {
 		s.log.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
 		user, err := model.NewUser(model.NewUserArgs{
-			UserName:      userName,
-			Email:         googleUser.Email,
-			PasswordHash:  googleIdToken,
-			AvatarUrl:     googleUser.Picture,
-			BackgroundUrl: "https://placehold.co/1200x400.png",
-			Language:      common.English,
-			TimeZone:      common.AsiaKolkata,
-			DeviceToken:   *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
+			UserName: userName,
+			Email:    googleUser.Email,
+			AvatarUrl: model.Image{
+				Id:     "default-profile-id",
+				Url:    googleUser.Picture,
+				Width:  width,
+				Height: height,
+			},
+			BackgroundUrl: model.Image{
+				Id:     "default-background-id",
+				Url:    "https://placehold.co/1200x400.png",
+				Width:  1200,
+				Height: 400,
+			},
+			Language:    common.GetLanguageByID(locale),
+			TimeZone:    common.GetTimeZone(timezone),
+			DeviceToken: *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
 		})
 		if err != nil {
 			return nil, err
@@ -228,9 +292,9 @@ func (s *userService) FindUserByUsername(username string) (*model.User, error) {
 	return user, nil
 }
 
-func (s *userService) FindUserAuthProvider(userId string, providerName string) (*model.User, error) {
+func (s *userService) FindUserAuthProvider(userId string, username string, providerName string) (*model.User, error) {
 	s.log.Debug("Finding auth provider by user ID: %s and provider name: %s", userId, providerName)
-	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId, "providers.providerName": providerName}, nil)
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId, "username": username, "providers.providerName": providerName}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			return nil, nil
@@ -443,4 +507,177 @@ func (s *userService) GetJoinedCommunities(userId string, page int, limit int) (
 
 	s.log.Debug("Found %d communities for user %s", len(communites), userId)
 	return communites, nil
+}
+
+func (s *userService) FollowUser(userId string, followUserId string) error {
+	s.log.Debug("Following user %s for user %s", followUserId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": followUserId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to follow does not exist: %s", followUserId)
+			return fmt.Errorf("user to follow does not exist")
+		}
+		s.log.Error("Error checking if user to follow exists: %v", err)
+		return fmt.Errorf("error checking if user to follow exists: %v", err)
+	}
+	if userId == followUserId {
+		s.log.Error("Cannot follow self")
+		return errors.New("cannot follow self")
+	}
+
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	userCollection := transaction.GetCollection(model.UserCollectionName)
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
+		"$addToSet": bson.M{
+			"follows": followUserId,
+		}})
+	if err != nil {
+		s.log.Error("error following user: %v", err)
+		return fmt.Errorf("error following user: %v", err)
+	}
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": followUserId}, bson.M{
+		"$addToSet": bson.M{
+			"followers": userId,
+		}})
+	if err != nil {
+		s.log.Error("error following user: %v", err)
+		return fmt.Errorf("error following user: %v", err)
+	}
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	s.log.Debug("User %s followed user %s successfully", userId, followUserId)
+	return nil
+}
+
+func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
+	s.log.Debug("Unfollowing user %s for user %s", unfollowUserId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": unfollowUserId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to follow does not exist: %s", unfollowUserId)
+			return fmt.Errorf("user to follow does not exist")
+		}
+		s.log.Error("Error checking if user to follow exists: %v", err)
+		return fmt.Errorf("error checking if user to follow exists: %v", err)
+	}
+	if userId == unfollowUserId {
+		s.log.Error("Cannot follow self")
+		return errors.New("cannot follow self")
+	}
+
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	userCollection := transaction.GetCollection(model.UserCollectionName)
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
+		"$pull": bson.M{
+			"follows": unfollowUserId,
+		}})
+	if err != nil {
+		s.log.Error("error unfollowing user: %v", err)
+		return fmt.Errorf("error unfollowing user: %v", err)
+	}
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": unfollowUserId}, bson.M{
+		"$pull": bson.M{
+			"followers": userId,
+		}})
+	if err != nil {
+		s.log.Error("error unfollowing user: %v", err)
+		return fmt.Errorf("error unfollowing user: %v", err)
+	}
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	s.log.Debug("User %s unfollowed user %s successfully", userId, unfollowUserId)
+	return nil
+}
+
+func (s *userService) BlockUser(userId string, blockUserId string) error {
+	s.log.Debug("Blocking user %s for user %s", blockUserId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": blockUserId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to block does not exist: %s", blockUserId)
+			return fmt.Errorf("user to block does not exist")
+		}
+		s.log.Error("Error checking if user to block exists: %v", err)
+		return fmt.Errorf("error checking if user to block exists: %v", err)
+	}
+	if userId == blockUserId {
+		s.log.Error("Cannot block self")
+		return errors.New("cannot block self")
+	}
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	userCollection := transaction.GetCollection(model.UserCollectionName)
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
+		"$addToSet": bson.M{
+			"preferences.blockList": blockUserId,
+		}})
+	if err != nil {
+		s.log.Error("error blocking user: %v", err)
+		return fmt.Errorf("error blocking user: %v", err)
+	}
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	s.log.Debug("User %s blocked user %s successfully", userId, blockUserId)
+	return nil
+}
+
+func (s *userService) UnblockUser(userId string, unblockUserId string) error {
+	s.log.Debug("Unblocking user %s for user %s", unblockUserId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": unblockUserId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to unblock does not exist: %s", unblockUserId)
+			return fmt.Errorf("user to unblock does not exist")
+		}
+		s.log.Error("Error checking if user to unblock exists: %v", err)
+		return fmt.Errorf("error checking if user to unblock exists: %v", err)
+	}
+	if userId == unblockUserId {
+		s.log.Error("Cannot block self")
+		return errors.New("cannot block self")
+	}
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	userCollection := transaction.GetCollection(model.UserCollectionName)
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
+		"$pull": bson.M{
+			"preferences.blockList": unblockUserId,
+		}})
+	if err != nil {
+		s.log.Error("error unblocking user: %v", err)
+		return fmt.Errorf("error unblocking user: %v", err)
+	}
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	s.log.Debug("User %s unblocked user %s successfully", userId, unblockUserId)
+	return nil
 }

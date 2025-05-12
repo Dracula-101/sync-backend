@@ -2,12 +2,12 @@ package auth
 
 import (
 	"sync-backend/api/auth/dto"
-	"sync-backend/api/common/location"
-	"sync-backend/api/common/session"
 	sessionModels "sync-backend/api/common/session/model"
+	userModels "sync-backend/api/user/model"
+
+	"sync-backend/api/common/session"
 	"sync-backend/api/common/token"
 	"sync-backend/api/user"
-	userModels "sync-backend/api/user/model"
 	"sync-backend/arch/config"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
@@ -29,34 +29,31 @@ type AuthService interface {
 
 type authService struct {
 	network.BaseService
-	logger          utils.AppLogger
-	userService     user.UserService
-	locationService location.LocationService
-	sessionService  session.SessionService
-	tokenService    token.TokenService
+	logger         utils.AppLogger
+	userService    user.UserService
+	sessionService session.SessionService
+	tokenService   token.TokenService
 }
 
 func NewAuthService(
 	config *config.Config,
 	userService user.UserService,
 	sessionService session.SessionService,
-	locationService location.LocationService,
 	tokenService token.TokenService,
 ) AuthService {
 	return &authService{
-		BaseService:     network.NewBaseService(),
-		logger:          utils.NewServiceLogger("AuthService"),
-		userService:     userService,
-		locationService: locationService,
-		sessionService:  sessionService,
-		tokenService:    tokenService,
+		BaseService:    network.NewBaseService(),
+		logger:         utils.NewServiceLogger("AuthService"),
+		userService:    userService,
+		sessionService: sessionService,
+		tokenService:   tokenService,
 	}
 }
 
 func (s *authService) SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpResponse, network.ApiError) {
 	s.logger.Info("Signing up user with email: %s", signUpRequest.Email)
 
-	user, err := s.userService.CreateUser(signUpRequest.UserName, signUpRequest.Email, signUpRequest.Password, signUpRequest.ProfilePicUrl)
+	user, err := s.userService.CreateUser(signUpRequest.UserName, signUpRequest.Email, signUpRequest.Password, signUpRequest.ProfileFilePath, signUpRequest.BackgroundFilePath, signUpRequest.Locale, signUpRequest.TimeZone, signUpRequest.Country)
 	if err != nil {
 		return nil, network.NewInternalServerError("Error creating user", ERR_USER, err)
 	}
@@ -66,9 +63,28 @@ func (s *authService) SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpRespo
 		return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 	}
 
-	deviceInfo := sessionModels.NewDeviceInfo(signUpRequest.DeviceId, signUpRequest.DeviceName, signUpRequest.DeviceType, signUpRequest.DeviceType, signUpRequest.DeviceModel, signUpRequest.DeviceVersion)
+	deviceInfo := sessionModels.DeviceInfo{
+		DeviceId:        signUpRequest.DeviceId,
+		DeviceName:      signUpRequest.DeviceName,
+		DeviceType:      signUpRequest.DeviceType,
+		DeviceOS:        signUpRequest.DeviceOS,
+		DeviceModel:     signUpRequest.DeviceModel,
+		DeviceVersion:   signUpRequest.DeviceVersion,
+		DeviceUserAgent: signUpRequest.DeviceUserAgent,
+	}
 
-	_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, signUpRequest.UserAgent, signUpRequest.IPAddress)
+	locationInfo := sessionModels.LocationInfo{
+		Country:    signUpRequest.Country,
+		City:       signUpRequest.City,
+		Latitude:   signUpRequest.Latitude,
+		Longitude:  signUpRequest.Longitude,
+		LocaleCode: signUpRequest.Locale,
+		Timezone:   signUpRequest.TimeZone,
+		GmtOffset:  signUpRequest.GMTOffset,
+		IpAddress:  signUpRequest.IpAddress,
+	}
+
+	_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
 	if err != nil {
 		return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 	}
@@ -93,6 +109,12 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		return nil, network.NewBadRequestError("User has not set password", nil)
 	}
 
+	if user.Status == userModels.Deleted {
+		return nil, network.NewBadRequestError("User is deleted or unavailable", nil)
+	} else if user.Status == userModels.Banned {
+		return nil, network.NewBadRequestError("User is banned", nil)
+	}
+
 	err = s.userService.ValidateUserPassword(user, loginRequest.Password)
 	if err != nil {
 		return nil, network.NewUnauthorizedError("Entered Password is incorrect", err)
@@ -104,8 +126,8 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 	}
 	loginHistory := userModels.LoginHistory{
 		LoginTime: primitive.NewDateTimeFromTime(time.Now()),
-		IpAddress: loginRequest.IPAddress,
-		UserAgent: loginRequest.UserAgent,
+		IpAddress: loginRequest.IpAddress,
+		UserAgent: loginRequest.DeviceUserAgent,
 		Device: userModels.UserDeviceInfo{
 			Os:    loginRequest.DeviceType,
 			Type:  loginRequest.DeviceType,
@@ -113,34 +135,46 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 			Model: loginRequest.DeviceModel,
 		},
 	}
+	deviceInfo := sessionModels.DeviceInfo{
+		DeviceId:        loginRequest.DeviceId,
+		DeviceName:      loginRequest.DeviceName,
+		DeviceType:      loginRequest.DeviceType,
+		DeviceOS:        loginRequest.DeviceOS,
+		DeviceModel:     loginRequest.DeviceModel,
+		DeviceVersion:   loginRequest.DeviceVersion,
+		DeviceUserAgent: loginRequest.DeviceUserAgent,
+	}
+	locationInfo := sessionModels.LocationInfo{
+		Country:    loginRequest.Country,
+		City:       loginRequest.City,
+		Latitude:   loginRequest.Latitude,
+		Longitude:  loginRequest.Longitude,
+		LocaleCode: loginRequest.Locale,
+		Timezone:   loginRequest.TimeZone,
+		GmtOffset:  loginRequest.GMTOffset,
+		IpAddress:  loginRequest.IpAddress,
+	}
 	if session != nil {
-		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
-
-		s.sessionService.UpdateSessionInfo(session.SessionID, *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
+		s.sessionService.UpdateSessionInfo(session.SessionID, deviceInfo, locationInfo)
 		loginHistory.SessionId = session.SessionID
 		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
-
 		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), session.Token, session.RefreshToken)
 		s.logger.Success("User logged in successfully: %s", loginRequest.Email)
-		// update the login history
 		return loginResponse, nil
 	} else {
-		// Create a new session
 		token, err := s.tokenService.GenerateTokenPair(user.UserId)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 		}
 
-		deviceInfo := sessionModels.NewDeviceInfo(loginRequest.DeviceId, loginRequest.DeviceName, loginRequest.DeviceType, loginRequest.DeviceType, loginRequest.DeviceModel, loginRequest.DeviceVersion)
-
 		session, err = s.sessionService.CreateSession(
-			user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, loginRequest.UserAgent, loginRequest.IPAddress)
+			user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
 		loginHistory.SessionId = session.SessionID
 		s.userService.UpdateLoginHistory(user.UserId, loginHistory)
-
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
+
 		loginResponse := dto.NewLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 		s.logger.Success("User logged in successfully: %s", loginRequest.Email)
 		return loginResponse, nil
@@ -149,16 +183,46 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 
 func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*dto.GoogleLoginResponse, network.ApiError) {
 	s.logger.Info("Logging in user with Google")
-	user, err := s.userService.FindUserAuthProvider(googleLoginRequest.GoogleIdToken, userModels.GoogleProviderName)
+	user, err := s.userService.FindUserAuthProvider(googleLoginRequest.GoogleIdToken, googleLoginRequest.Username, userModels.GoogleProviderName)
 	if err != nil {
 		return nil, network.NewInternalServerError("Error finding user", ERR_USER, err)
 	}
-
-	deviceInfo := sessionModels.NewDeviceInfo(googleLoginRequest.DeviceId, googleLoginRequest.DeviceName, googleLoginRequest.DeviceType, googleLoginRequest.DeviceType, googleLoginRequest.DeviceModel, googleLoginRequest.DeviceVersion)
-
+	loginHistory := userModels.LoginHistory{
+		LoginTime: primitive.NewDateTimeFromTime(time.Now()),
+		IpAddress: googleLoginRequest.IpAddress,
+		UserAgent: googleLoginRequest.DeviceUserAgent,
+		Device: userModels.UserDeviceInfo{
+			Os:    googleLoginRequest.DeviceType,
+			Type:  googleLoginRequest.DeviceType,
+			Name:  googleLoginRequest.DeviceName,
+			Model: googleLoginRequest.DeviceModel,
+		},
+		Provider: userModels.GoogleProviderName,
+	}
+	deviceInfo := sessionModels.DeviceInfo{
+		DeviceId:        googleLoginRequest.DeviceId,
+		DeviceName:      googleLoginRequest.DeviceName,
+		DeviceType:      googleLoginRequest.DeviceType,
+		DeviceOS:        googleLoginRequest.DeviceOS,
+		DeviceModel:     googleLoginRequest.DeviceModel,
+		DeviceVersion:   googleLoginRequest.DeviceVersion,
+		DeviceUserAgent: googleLoginRequest.DeviceUserAgent,
+	}
+	locationInfo := sessionModels.LocationInfo{
+		Country:    googleLoginRequest.Country,
+		City:       googleLoginRequest.City,
+		Latitude:   googleLoginRequest.Latitude,
+		Longitude:  googleLoginRequest.Longitude,
+		LocaleCode: googleLoginRequest.Locale,
+		Timezone:   googleLoginRequest.TimeZone,
+		GmtOffset:  googleLoginRequest.GMTOffset,
+		IpAddress:  googleLoginRequest.IpAddress,
+	}
+	var loginResponse *dto.GoogleLoginResponse
+	var session *sessionModels.Session
 	if user == nil {
 		s.logger.Debug("User not found, creating new user")
-		user, err := s.userService.CreateUserWithGoogleId(googleLoginRequest.Username, googleLoginRequest.GoogleIdToken)
+		user, err = s.userService.CreateUserWithGoogleId(googleLoginRequest.Username, googleLoginRequest.GoogleIdToken, googleLoginRequest.Locale, googleLoginRequest.TimeZone, googleLoginRequest.Country)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating user", ERR_USER, err)
 		}
@@ -166,21 +230,27 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		if err != nil {
 			return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 		}
-		_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
+		session, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 		}
-		loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
+		loginResponse = dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 		s.logger.Success("User logged in with Google successfully: %s", user.Email)
-		return loginResponse, nil
 	} else {
 		s.logger.Debug("User found, updating session")
-		session, err := s.sessionService.GetUserActiveSession(user.UserId)
+		session, err = s.sessionService.GetUserActiveSession(user.UserId)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error getting user session", ERR_USER, err)
 		}
+
+		if user.Status == userModels.Deleted {
+			return nil, network.NewBadRequestError("User is deleted or unavailable", nil)
+		} else if user.Status == userModels.Banned {
+			return nil, network.NewBadRequestError("User is banned", nil)
+		}
+
 		if session != nil {
-			s.sessionService.UpdateSessionInfo(session.SessionID, *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
+			s.sessionService.UpdateSessionInfo(session.SessionID, deviceInfo, locationInfo)
 			loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), session.Token, session.RefreshToken)
 			s.logger.Success("User logged in with Google successfully: %s", user.Email)
 			return loginResponse, nil
@@ -189,15 +259,17 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 			if err != nil {
 				return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 			}
-			_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), *deviceInfo, googleLoginRequest.UserAgent, googleLoginRequest.IPAddress)
+			session, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
 			if err != nil {
 				return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
 			}
-			loginResponse := dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
+			loginResponse = dto.NewGoogleLoginResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
 			s.logger.Success("User logged in with Google successfully: %s", user.Email)
-			return loginResponse, nil
 		}
 	}
+	loginHistory.SessionId = session.SessionID
+	s.userService.UpdateLoginHistory(user.UserId, loginHistory)
+	return loginResponse, nil
 }
 
 func (s *authService) Logout(userId string) network.ApiError {

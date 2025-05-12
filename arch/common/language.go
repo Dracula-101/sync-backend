@@ -97,3 +97,12 @@ func AllLanguages() []Language {
 	}
 	return all
 }
+
+func GetLanguageByID(id string) Language {
+	for lang, detail := range languageDetails {
+		if detail.id == id {
+			return lang
+		}
+	}
+	return English // Default to English if not found
+}

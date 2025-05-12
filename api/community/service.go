@@ -3,6 +3,8 @@ package community
 import (
 	"errors"
 	"fmt"
+	"sync-backend/api/common/media"
+	mediaMadels "sync-backend/api/common/media/model"
 	"sync-backend/api/community/model"
 	"sync-backend/arch/mongo"
 	"sync-backend/arch/network"
@@ -14,15 +16,17 @@ import (
 )
 
 type CommunityService interface {
-	CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError)
+	CreateCommunity(name string, description string, tags []string, avatarFilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError)
 	GetCommunityById(id string) (*model.Community, network.ApiError)
 	CheckUserInCommunity(userId string, communityId string) network.ApiError
 	SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError)
 	AutocompleteCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunityAutocomplete, network.ApiError)
+	GetTrendingCommunities(page int, limit int) ([]*model.CommunitySearchResult, network.ApiError)
 }
 
 type communityService struct {
 	network.BaseService
+	mediaService                  media.MediaService
 	logger                        utils.AppLogger
 	communityQueryBuilder         mongo.QueryBuilder[model.Community]
 	communityTagQueryBuilder      mongo.QueryBuilder[model.CommunityTag]
@@ -30,8 +34,9 @@ type communityService struct {
 	communityAutocompletePipeline mongo.AggregateBuilder[model.Community, model.CommunityAutocomplete]
 }
 
-func NewCommunityService(db mongo.Database) CommunityService {
+func NewCommunityService(db mongo.Database, mediaService media.MediaService) CommunityService {
 	return &communityService{
+		mediaService:                  mediaService,
 		BaseService:                   network.NewBaseService(),
 		logger:                        utils.NewServiceLogger("CommunityService"),
 		communityQueryBuilder:         mongo.NewQueryBuilder[model.Community](db, model.CommunityCollectionName),
@@ -41,7 +46,7 @@ func NewCommunityService(db mongo.Database) CommunityService {
 	}
 }
 
-func (s *communityService) CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError) {
+func (s *communityService) CreateCommunity(name string, description string, tags []string, avatarfilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError) {
 	s.logger.Info("Creating community with name: %s", name)
 	// get all community tags with the given tags
 	filter := bson.M{"tag_id": bson.M{"$in": tags}}
@@ -61,13 +66,54 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 		convertedTags[i] = tag.ToCommunityTagInfo()
 	}
 
+	var avatarPhoto mediaMadels.MediaInfo
+	if avatarfilePath != "" {
+		avatarPhoto, err = s.mediaService.UploadMedia(avatarfilePath, userId+"_avatar", "community")
+		if err != nil {
+			s.logger.Error("Error uploading media: %v", err)
+		}
+	} else {
+		avatarPhoto = mediaMadels.MediaInfo{
+			Id:     "default-avatar-community",
+			Url:    "https:placehold.co/200x200.png",
+			Width:  200,
+			Height: 200,
+		}
+	}
+
+	var backgroundPhoto mediaMadels.MediaInfo
+	if backgroundFilePath != "" {
+		backgroundPhoto, err = s.mediaService.UploadMedia(backgroundFilePath, userId+"_background", "community")
+		if err != nil {
+			s.logger.Error("Error uploading media: %v", err)
+		}
+	} else {
+		backgroundPhoto = mediaMadels.MediaInfo{
+			Id:     "default-background-community",
+			Url:    "https://placehold.co/1400x300.png",
+			Width:  1400,
+			Height: 300,
+		}
+	}
+	avatarPhotoInfo := model.Image{
+		ID:     avatarPhoto.Id,
+		Url:    avatarPhoto.Url,
+		Width:  avatarPhoto.Width,
+		Height: avatarPhoto.Height,
+	}
+	backgroundPhotoInfo := model.Image{
+		ID:     backgroundPhoto.Id,
+		Url:    backgroundPhoto.Url,
+		Width:  backgroundPhoto.Width,
+		Height: backgroundPhoto.Height,
+	}
 	community := model.NewCommunity(model.NewCommunityArgs{
-		Name:          name,
-		Description:   description,
-		OwnerId:       userId,
-		AvatarUrl:     nil,
-		BackgroundUrl: nil,
-		Tags:          convertedTags,
+		Name:        name,
+		Description: description,
+		OwnerId:     userId,
+		Avatar:      avatarPhotoInfo,
+		Background:  backgroundPhotoInfo,
+		Tags:        convertedTags,
 	})
 
 	//check for duplicate community slug
@@ -398,6 +444,88 @@ func (s *communityService) AutocompleteCommunities(query string, page int, limit
 	if err != nil {
 		s.logger.Error("Error executing community autocomplete: %v", err)
 		return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, err)
+	}
+
+	aggregator.Close()
+	return communitiesResults, nil
+}
+
+func (s *communityService) GetTrendingCommunities(page int, limit int) ([]*model.CommunitySearchResult, network.ApiError) {
+	s.logger.Info("Fetching trending communities, page: %d, limit: %d", page, limit)
+
+	aggregator := s.communitySearchPipeline.
+		Aggregate(s.Context()).
+		AllowDiskUse(true)
+
+	matchStage := bson.M{
+		"$and": []bson.M{
+			{"status": "active"},
+			{"$or": []bson.M{
+				{"isPrivate": false},
+				{"settings.showInDiscovery": true},
+			}},
+		},
+	}
+	aggregator.Match(matchStage)
+
+	aggregator.AddFields(bson.M{
+		"trendingScore": bson.M{
+			"$add": []interface{}{
+				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.engagementRate", 0}}, 3}},
+				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.growthRate", 0}}, 2}},
+				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.popularityScore", 0}}, 1.5}},
+				bson.M{
+					"$divide": []interface{}{
+						1,
+						bson.M{
+							"$add": []interface{}{
+								1,
+								bson.M{
+									"$divide": []interface{}{
+										bson.M{"$subtract": []interface{}{"$$NOW", "$lastActivityAt"}},
+										86400000, // MS in a day
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	projectStage := bson.M{
+		"communityId":   1,
+		"slug":          1,
+		"name":          1,
+		"description":   1,
+		"shortDesc":     1,
+		"ownerId":       1,
+		"isPrivate":     1,
+		"members":       1,
+		"memberCount":   1,
+		"postCount":     1,
+		"stats":         1,
+		"trendingScore": 1,
+		"status":        1,
+	}
+	aggregator.Project(projectStage)
+
+	sortStage := bson.M{
+		"trendingScore": -1,
+		"memberCount":   -1,
+		"postCount":     -1,
+	}
+
+	communitiesResults, err := aggregator.
+		Sort(sortStage).
+		Skip(int64((page - 1) * limit)).
+		Limit(int64(limit)).
+		Exec()
+
+	if err != nil {
+		s.logger.Error("Error executing trending communities query: %v", err)
+		return nil, network.NewInternalServerError("Error fetching trending communities", network.DB_ERROR, err)
 	}
 
 	aggregator.Close()

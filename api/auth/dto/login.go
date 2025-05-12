@@ -13,9 +13,10 @@ import (
 // =======================================
 
 type LoginRequest struct {
-	coredto.BaseRequest
-	Email    string `json:"email" binding:"required,email" validate:"email"`
-	Password string `json:"password" binding:"required" validate:"required,min=6,max=100"`
+	coredto.BaseDeviceRequest
+	coredto.BaseLocationRequest
+	Email    string `form:"email" binding:"required,email" validate:"email"`
+	Password string `form:"password" binding:"required" validate:"required,min=6,max=100"`
 }
 
 func NewLoginRequest() *LoginRequest {
@@ -50,15 +51,15 @@ func (s *LoginRequest) ValidateErrors(errs validator.ValidationErrors) ([]string
 // =======================================
 
 type LoginResponse struct {
-	User        model.UserInfo `json:"user"`
-	AccessToken string         `json:"access_token" validate:"required"`
+	User         model.UserInfo `json:"user"`
+	AccessToken  string         `json:"access_token" validate:"required"`
 	RefreshToken string         `json:"refresh_token" validate:"required"`
 }
 
 func NewLoginResponse(userInfo model.UserInfo, accessToken string, refreshToken string) *LoginResponse {
 	return &LoginResponse{
-		User:        userInfo,
-		AccessToken: accessToken,
+		User:         userInfo,
+		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}
 }

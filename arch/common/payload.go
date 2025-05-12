@@ -8,6 +8,7 @@ import (
 )
 
 type ContextPayload interface {
+	GetUserId(ctx *gin.Context) *string
 	MustGetUserId(ctx *gin.Context) *string
 	SetUserId(ctx *gin.Context, value string)
 
@@ -16,13 +17,29 @@ type ContextPayload interface {
 
 	MustGetIP(ctx *gin.Context) string
 	MustGetUserAgent(ctx *gin.Context) string
-	SetRequestDetails(ctx *gin.Context, req *coredto.BaseRequest)
+	SetRequestDeviceDetails(ctx *gin.Context, req *coredto.BaseDeviceRequest)
+	SetRequestLocationDetails(ctx *gin.Context, req *coredto.BaseLocationRequest)
 }
 
 type payload struct{}
 
 func NewContextPayload() ContextPayload {
 	return &payload{}
+}
+
+func (payload *payload) GetUserId(ctx *gin.Context) *string {
+	value, ok := ctx.Get(network.UserPayload)
+	if !ok {
+		return nil
+	}
+	if value == nil {
+		return nil
+	}
+	userId, ok := value.(string)
+	if !ok {
+		return nil
+	}
+	return &userId
 }
 
 func (payload *payload) MustGetUserId(ctx *gin.Context) *string {
@@ -105,22 +122,31 @@ func (payload *payload) MustGetDeviceVersion(ctx *gin.Context) string {
 	return value
 }
 
-func (payload *payload) MustGetLocale(ctx *gin.Context) string {
-	value := ctx.GetHeader(network.LocaleHeader)
-	if value == "" {
-		return network.DefaultLocale
-	}
-	return value
-}
-
-func (payload *payload) SetRequestDetails(ctx *gin.Context, req *coredto.BaseRequest) {
-	req.IPAddress = payload.MustGetIP(ctx)
-	req.UserAgent = payload.MustGetUserAgent(ctx)
+func (payload *payload) SetRequestDeviceDetails(ctx *gin.Context, req *coredto.BaseDeviceRequest) {
 	req.DeviceId = payload.MustGetDeviceId(ctx)
 	req.DeviceName = payload.MustGetDeviceName(ctx)
 	req.DeviceType = payload.MustGetDeviceType(ctx)
 	req.DeviceOS = payload.MustGetDeviceOS(ctx)
 	req.DeviceModel = payload.MustGetDeviceModel(ctx)
 	req.DeviceVersion = payload.MustGetDeviceVersion(ctx)
-	req.Locale = payload.MustGetLocale(ctx)
+	req.DeviceUserAgent = payload.MustGetUserAgent(ctx)
+}
+
+func (payload *payload) SetRequestLocationDetails(ctx *gin.Context, req *coredto.BaseLocationRequest) {
+	locationData, exists := ctx.Get(network.UserLocation)
+	if !exists {
+		return
+	}
+	if locationData == nil {
+		return
+	}
+	location := locationData.(*coredto.BaseLocationRequest)
+	req.Country = location.Country
+	req.City = location.City
+	req.Latitude = location.Latitude
+	req.Longitude = location.Longitude
+	req.TimeZone = location.TimeZone
+	req.GMTOffset = location.GMTOffset
+	req.Locale = location.Locale
+	req.IpAddress = location.IpAddress
 }

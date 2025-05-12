@@ -16,7 +16,6 @@ import (
 
 const SessionCollectionName = "sessions"
 
-// Session represents a user session
 type Session struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	SessionID    string             `bson:"sessionId" json:"sessionId"`
@@ -24,9 +23,7 @@ type Session struct {
 	RefreshToken string             `bson:"refreshToken" json:"refreshToken"`
 	ExpiresAt    primitive.DateTime `bson:"expiresAt" json:"expiresAt"`
 	UserID       string             `bson:"userId" json:"userId"`
-	UserAgent    string             `bson:"userAgent" json:"userAgent"`
 	Device       DeviceInfo         `bson:"device" json:"device"`
-	IPAddress    string             `bson:"ipAddress" json:"ipAddress"`
 	Location     LocationInfo       `bson:"location" json:"location"`
 	LastActive   primitive.DateTime `bson:"lastActive" json:"lastActive"`
 	IssuedAt     primitive.DateTime `bson:"issuedAt" json:"issuedAt"`
@@ -45,8 +42,6 @@ type NewSessionArgs struct {
 	RefreshToken string
 	ExpiresAt    time.Time
 	DeviceInfo   DeviceInfo
-	UserAgent    string
-	IpAddress    string
 	Location     LocationInfo
 }
 
@@ -58,9 +53,7 @@ func NewSession(newSessionArgs NewSessionArgs) (*Session, error) {
 		RefreshToken: newSessionArgs.RefreshToken,
 		ExpiresAt:    primitive.NewDateTimeFromTime(newSessionArgs.ExpiresAt),
 		UserID:       newSessionArgs.UserId,
-		UserAgent:    newSessionArgs.UserAgent,
 		Device:       newSessionArgs.DeviceInfo,
-		IPAddress:    newSessionArgs.IpAddress,
 		Location:     newSessionArgs.Location,
 		LastActive:   now,
 		IssuedAt:     now,
@@ -108,7 +101,6 @@ func (*Session) EnsureIndexes(db mongo.Database) {
 			},
 			Options: options.Index().SetUnique(true).SetName("idx_session_refresh_token_unique"),
 		},
-		// Essential compound index for user session management
 		{
 			Keys: bson.D{
 				{Key: "userId", Value: 1},

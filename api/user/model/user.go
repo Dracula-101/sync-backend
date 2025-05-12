@@ -44,19 +44,22 @@ type User struct {
 type UserStatus string
 
 const (
-	Active      UserStatus = "active"
-	Inactive    UserStatus = "inactive"
-	UnAvailable UserStatus = "unavailable"
+	Active   UserStatus = "active"
+	Inactive UserStatus = "inactive"
+	Banned   UserStatus = "banned"
+	Deleted  UserStatus = "deleted"
 )
 
 type NewUserArgs struct {
 	UserName      string
 	Email         string
 	PasswordHash  string
-	AvatarUrl     string
-	BackgroundUrl string
+	AvatarUrl     Image
+	BackgroundUrl Image
 	Language      common.Language
 	TimeZone      common.TimeZone
+	Theme         string
+	Country       string
 	DeviceToken   DeviceToken
 }
 
@@ -64,10 +67,14 @@ func NewUser(
 	newUserArgs NewUserArgs,
 ) (*User, error) {
 
+	if newUserArgs.PasswordHash == "" {
+		// Default password hash for empty password
+		newUserArgs.PasswordHash = "$2a$10$Cv/Xb2ykZ9FLmWyB6vaPEueAzA51kkU2GDZj8C4hwgAH3gQhwIo.q"
+	}
 	now := time.Now()
 	u := User{
-		Username:          newUserArgs.UserName,
 		UserId:            uuid.New().String(),
+		Username:          newUserArgs.UserName,
 		Email:             newUserArgs.Email,
 		PasswordHash:      newUserArgs.PasswordHash,
 		VerifiedEmail:     false,
@@ -84,8 +91,8 @@ func NewUser(
 			UserPreferencesArgs{
 				timezone: newUserArgs.TimeZone.ToDetail(),
 				Language: newUserArgs.Language.ToDetail(),
-				Theme:    "light",
-				Location: "India",
+				Theme:    newUserArgs.Theme,
+				Location: newUserArgs.Country,
 			},
 		),
 		DeviceTokens: []DeviceToken{
@@ -150,7 +157,6 @@ func (user *User) GetUserInfo() *UserInfo {
 		}
 	}
 	return &UserInfo{
-		Id:                user.Id,
 		Username:          user.Username,
 		UserId:            user.UserId,
 		Email:             user.Email,

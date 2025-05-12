@@ -12,7 +12,7 @@ import (
 // =======================================
 
 type ForgotPassRequest struct {
-	coredto.BaseRequest
+	coredto.BaseDeviceRequest
 	Email string `json:"email" binding:"required,email" validate:"required,email"`
 }
 

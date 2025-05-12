@@ -6,7 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func EmptyPagination() *Pagination {
+func NewPagination() *Pagination {
 	return &Pagination{
 		Page:  1,
 		Limit: 10,

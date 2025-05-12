@@ -104,6 +104,7 @@ type ParamNMiddlewareProvider[T any] interface {
 }
 
 type AuthenticationProvider Param0MiddlewareProvider
+type LocationProvider Param0MiddlewareProvider
 type AuthorizationProvider ParamNMiddlewareProvider[string]
 
 type BaseRouter interface {

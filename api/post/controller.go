@@ -20,7 +20,7 @@ type postController struct {
 	postService           PostService
 }
 
-func NewPostController(postService PostService, authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider) network.Controller {
+func NewPostController(authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider, postService PostService) network.Controller {
 	return &postController{
 		BaseController:        network.NewBaseController("/api/v1/post", authenticatorProvider),
 		ContextPayload:        common.NewContextPayload(),
@@ -33,10 +33,15 @@ func NewPostController(postService PostService, authenticatorProvider network.Au
 
 func (c *postController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting post routes")
-	group.POST("/create", c.authenticatorProvider.Middleware(), c.uploadProvider.Middleware("media"), c.CreatePost)
+	group.Use(c.authenticatorProvider.Middleware())
+	group.POST("/create", c.uploadProvider.Middleware("media"), c.CreatePost)
 	group.GET("/get/:postId", c.GetPost)
-	group.POST("/edit/:postId", c.authenticatorProvider.Middleware(), c.EditPost)
-	group.GET("/get/user", c.authenticatorProvider.Middleware(), c.UserPosts)
+	group.POST("/edit/:postId", c.EditPost)
+
+	// User post routes
+	group.GET("/get/user", c.UserPosts)
+
+	// Community post routes
 	group.GET("/get/community/:communityId", c.GetCommunityPosts)
 }
 
@@ -46,7 +51,7 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 		return
 	}
 	userId := c.MustGetUserId(ctx)
-	files := c.uploadProvider.GetUploadedFiles(ctx)
+	files := c.uploadProvider.GetUploadedFiles(ctx, "media")
 
 	c.logger.Info("Creating post with title: %s", body.Title)
 	var filesList []string
@@ -75,7 +80,7 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 
 	c.Send(ctx).SuccessDataResponse("Post created successfully", dto.CreatePostResponse{PostId: post.PostId})
 	c.logger.Debug("Post details: %+v", post)
-	c.uploadProvider.DeleteUploadedFiles(ctx)
+	c.uploadProvider.DeleteUploadedFiles(ctx, "media")
 }
 
 func (c *postController) GetPost(ctx *gin.Context) {

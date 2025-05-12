@@ -6,6 +6,7 @@ import (
 	"sync-backend/api/auth"
 	authMW "sync-backend/api/auth/middleware"
 	"sync-backend/api/common/location"
+	"sync-backend/api/common/media"
 	"sync-backend/api/common/session"
 	"sync-backend/api/common/token"
 	"sync-backend/api/community"
@@ -34,6 +35,7 @@ type appModule struct {
 	SessionService  session.SessionService
 	LocationService location.LocationService
 	TokenService    token.TokenService
+	MediaService    media.MediaService
 
 	// Services
 	AuthService      auth.AuthService
@@ -47,15 +49,19 @@ func (m *appModule) GetInstance() *appModule {
 
 func (m *appModule) Controllers() []network.Controller {
 	return []network.Controller{
-		auth.NewAuthController(m.AuthService, m.AuthenticationProvider(), m.UserService, m.LocationService),
-		community.NewCommunityController(m.CommunityService, m.AuthenticationProvider()),
-		user.NewUserController(m.AuthenticationProvider(), m.UserService, m.LocationService),
-		post.NewPostController(m.PostService, m.AuthenticationProvider(), m.UploadProvider()),
+		auth.NewAuthController(m.AuthenticationProvider(), m.LocationProvider(), m.UploadProvider(), m.AuthService, m.UserService, m.LocationService),
+		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.CommunityService),
+		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.LocationService),
+		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService),
 	}
 }
 
 func (m *appModule) AuthenticationProvider() network.AuthenticationProvider {
 	return authMW.NewAuthenticationProvider(m.TokenService, m.UserService, m.SessionService, m.Store)
+}
+
+func (m *appModule) LocationProvider() network.LocationProvider {
+	return authMW.NewLocationProvider(m.LocationService, m.Store)
 }
 
 func (m *appModule) UploadProvider() coreMW.UploadProvider {
@@ -73,25 +79,29 @@ func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 }
 
 func NewAppModule(context context.Context, env *config.Env, config *config.Config, db mongo.Database, ipDb pg.Database, store redis.Store) Module {
+	mediaService := media.NewMediaService(*env)
 	locationService := location.NewLocationService(ipDb)
 	tokenService := token.NewTokenService(config)
-	sessionService := session.NewSessionService(db, locationService)
+	sessionService := session.NewSessionService(db)
 
-	userService := user.NewUserService(db)
-	authService := auth.NewAuthService(config, userService, sessionService, locationService, tokenService)
-	communityService := community.NewCommunityService(db)
-	postService := post.NewPostService(db, userService, communityService)
+	userService := user.NewUserService(db, mediaService)
+	authService := auth.NewAuthService(config, userService, sessionService, tokenService)
+	communityService := community.NewCommunityService(db, mediaService)
+	postService := post.NewPostService(db, userService, communityService, mediaService)
 	return &appModule{
-		Context:         context,
-		Env:             env,
-		Config:          config,
-		DB:              db,
-		IpDB:            ipDb,
-		Store:           store,
+		Context: context,
+		Env:     env,
+		Config:  config,
+		DB:      db,
+		IpDB:    ipDb,
+		Store:   store,
+
+		// Common services
 		UserService:     userService,
 		LocationService: locationService,
 		SessionService:  sessionService,
 		TokenService:    tokenService,
+		MediaService:    mediaService,
 
 		// Services
 		AuthService:      authService,

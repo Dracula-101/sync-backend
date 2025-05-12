@@ -29,7 +29,14 @@ func LoadPEMFileInto(path string) ([]byte, error) {
 	return data, nil
 }
 
-// CopyWithProgress copies from src to dst with progress tracking for larger files
 func CopyWithProgress(dst io.Writer, src io.Reader, totalSize int64) (int64, error) {
 	return io.Copy(dst, src)
+}
+
+func GetFileExtension(filePath string) string {
+	parts := strings.Split(filePath, ".")
+	if len(parts) < 2 {
+		return ""
+	}
+	return parts[len(parts)-1]
 }

@@ -25,6 +25,18 @@ func GetImageFromURL(url string) (image.Image, error) {
 	return img, nil
 }
 
+func GetImageSizeFromFile(filePath string) (int, int, error) {
+	img, err := GetImageFromURL(filePath)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to get image from file: %w", err)
+	}
+
+	width := img.Bounds().Dx()
+	height := img.Bounds().Dy()
+
+	return width, height, nil
+}
+
 func GetImageSize(url string) (int, int, error) {
 	resp, err := http.Get(url)
 	if err != nil {

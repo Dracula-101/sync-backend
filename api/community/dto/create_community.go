@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+	"mime/multipart"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -11,11 +12,13 @@ import (
 // ==========================================
 
 type CreateCommunityRequest struct {
-	Name          string   `json:"name" binding:"required" validate:"required,min=3,max=50"`
-	Description   string   `json:"description" binding:"required" validate:"required,min=15,max=500"`
-	TagIds        []string `json:"tag_ids" binding:"required" validate:"required"`
-	AvatarUrl     string   `json:"avatar_url" binding:"omitempty" validate:"omitempty"`
-	BackgroundUrl string   `json:"background_url" binding:"omitempty" validate:"omitempty"`
+	Name               string                `form:"name" binding:"required" validate:"required,min=3,max=50"`
+	Description        string                `form:"description" binding:"required" validate:"required,min=15,max=500"`
+	TagIds             []string              `form:"tag_ids" binding:"required" validate:"required"`
+	AvatarPhoto        *multipart.FileHeader `form:"avatar_photo" binding:"omitempty" validate:"omitempty"`
+	BackgroundPhoto    *multipart.FileHeader `form:"background_photo" binding:"omitempty" validate:"omitempty"`
+	AvatarFilePath     string
+	BackgroundFilePath string
 }
 
 func NewCreateCommunityRequest() *CreateCommunityRequest {

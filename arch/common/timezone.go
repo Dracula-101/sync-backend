@@ -186,3 +186,34 @@ func (tz TimeZone) GetCurrentOffset() (string, error) {
 	}
 	return fmt.Sprintf("UTC%d:%02d", hours, minutes), nil // Negative sign already included in hours
 }
+
+func GetTimeZone(gmt string) TimeZone {
+	if gmt == "Unknown" {
+		return UTC
+	}
+
+	offsetMap := make(map[string][]TimeZone)
+
+	for tz := range timeZoneDetails {
+		_, err := tz.GetCurrentOffset()
+		if err == nil {
+			if len(gmt) >= 3 && gmt[0:3] == "GMT" {
+				utcOffset := "UTC" + gmt[3:]
+				offsetMap[utcOffset] = append(offsetMap[utcOffset], tz)
+			}
+		}
+	}
+
+	utcFormat := ""
+	if len(gmt) >= 3 && gmt[0:3] == "GMT" {
+		utcFormat = "UTC" + gmt[3:]
+	} else {
+		return UTC // Return UTC for malformed input
+	}
+
+	if zones, found := offsetMap[utcFormat]; found && len(zones) > 0 {
+		return zones[0]
+	}
+
+	return UTC
+}

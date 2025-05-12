@@ -12,7 +12,8 @@ import (
 // =======================================
 
 type GoogleLoginRequest struct {
-	coredto.BaseRequest
+	coredto.BaseDeviceRequest
+	coredto.BaseLocationRequest
 	GoogleIdToken string `json:"google_id_token" binding:"required" validate:"required"`
 	Username      string `json:"username" binding:"required" validate:"required,min=3,max=50"`
 }

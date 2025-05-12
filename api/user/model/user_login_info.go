@@ -8,6 +8,7 @@ type LoginHistory struct {
 	IpAddress string             `bson:"ipAddress" json:"ipAddress"`
 	UserAgent string             `bson:"userAgent" json:"userAgent"`
 	Device    UserDeviceInfo     `bson:"device" json:"device"`
+	Provider  string             `bson:"provider" json:"provider,omitempty"`
 }
 
 type UserDeviceInfo struct {
