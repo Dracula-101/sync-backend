@@ -62,12 +62,10 @@ func (s *mediaService) UploadMedia(filePath string, filename string, folderPath 
 	s.logger.Info("Media uploaded successfully: publicID=%s, url=%s", resp.PublicID, resp.SecureURL)
 
 	return model.MediaInfo{
-		Id:       resp.PublicID,
-		Url:      resp.SecureURL,
-		MimeType: model.MediaMimeType(resp.Format),
-		Width:    resp.Width,
-		Height:   resp.Height,
-		Size:     resp.Bytes,
+		Id:     resp.PublicID,
+		Url:    resp.SecureURL,
+		Width:  resp.Width,
+		Height: resp.Height,
 	}, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sync-backend/api/common/media"
+	mediaMadels "sync-backend/api/common/media/model"
 	"sync-backend/api/community/model"
 	"sync-backend/arch/mongo"
 	"sync-backend/arch/network"
@@ -65,13 +66,34 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 		convertedTags[i] = tag.ToCommunityTagInfo()
 	}
 
-	avatarPhoto, avErr := s.mediaService.UploadMedia(avatarfilePath, userId+"_avatar", "community")
-	backgroundPhoto, bgErr := s.mediaService.UploadMedia(backgroundFilePath, userId+"_background", "community")
-	if avErr != nil {
-		s.logger.Error("Error uploading media: %v", err)
+	var avatarPhoto mediaMadels.MediaInfo
+	if avatarfilePath != "" {
+		avatarPhoto, err = s.mediaService.UploadMedia(avatarfilePath, userId+"_avatar", "community")
+		if err != nil {
+			s.logger.Error("Error uploading media: %v", err)
+		}
+	} else {
+		avatarPhoto = mediaMadels.MediaInfo{
+			Id:     "default-avatar-community",
+			Url:    "https:placehold.co/200x200.png",
+			Width:  200,
+			Height: 200,
+		}
 	}
-	if bgErr != nil {
-		s.logger.Error("Error uploading media: %v", err)
+
+	var backgroundPhoto mediaMadels.MediaInfo
+	if backgroundFilePath != "" {
+		backgroundPhoto, err = s.mediaService.UploadMedia(backgroundFilePath, userId+"_background", "community")
+		if err != nil {
+			s.logger.Error("Error uploading media: %v", err)
+		}
+	} else {
+		backgroundPhoto = mediaMadels.MediaInfo{
+			Id:     "default-background-community",
+			Url:    "https://placehold.co/1400x300.png",
+			Width:  1400,
+			Height: 300,
+		}
 	}
 	avatarPhotoInfo := model.Image{
 		ID:     avatarPhoto.Id,
@@ -85,7 +107,6 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 		Width:  backgroundPhoto.Width,
 		Height: backgroundPhoto.Height,
 	}
-
 	community := model.NewCommunity(model.NewCommunityArgs{
 		Name:        name,
 		Description: description,
