@@ -38,6 +38,12 @@ type UserService interface {
 	GetJoinedCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
 	JoinCommunity(userId string, communityId string) error
 	LeaveCommunity(userId string, communityId string) error
+
+	/* USER FOLLOWING */
+	FollowUser(userId string, followUserId string) error
+	UnfollowUser(userId string, unfollowUserId string) error
+	BlockUser(userId string, blockUserId string) error
+	UnblockUser(userId string, unblockUserId string) error
 }
 
 type userService struct {
@@ -201,8 +207,8 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 	} else {
 		s.log.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
 		user, err := model.NewUser(model.NewUserArgs{
-			UserName:     userName,
-			Email:        googleUser.Email,
+			UserName: userName,
+			Email:    googleUser.Email,
 			AvatarUrl: model.Image{
 				Id:     "default-profile-id",
 				Url:    googleUser.Picture,
@@ -501,4 +507,177 @@ func (s *userService) GetJoinedCommunities(userId string, page int, limit int) (
 
 	s.log.Debug("Found %d communities for user %s", len(communites), userId)
 	return communites, nil
+}
+
+func (s *userService) FollowUser(userId string, followUserId string) error {
+	s.log.Debug("Following user %s for user %s", followUserId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": followUserId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to follow does not exist: %s", followUserId)
+			return fmt.Errorf("user to follow does not exist")
+		}
+		s.log.Error("Error checking if user to follow exists: %v", err)
+		return fmt.Errorf("error checking if user to follow exists: %v", err)
+	}
+	if userId == followUserId {
+		s.log.Error("Cannot follow self")
+		return errors.New("cannot follow self")
+	}
+
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+	userCollection := transaction.GetCollection(model.UserCollectionName)
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
+		"$addToSet": bson.M{
+			"follows": followUserId,
+		}})
+	if err != nil {
+		s.log.Error("error following user: %v", err)
+		return fmt.Errorf("error following user: %v", err)
+	}
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": followUserId}, bson.M{
+		"$addToSet": bson.M{
+			"followers": userId,
+		}})
+	if err != nil {
+		s.log.Error("error following user: %v", err)
+		return fmt.Errorf("error following user: %v", err)
+	}
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	s.log.Debug("User %s followed user %s successfully", userId, followUserId)
+	return nil
+}
+
+func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
+	s.log.Debug("Unfollowing user %s for user %s", unfollowUserId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": unfollowUserId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to follow does not exist: %s", unfollowUserId)
+			return fmt.Errorf("user to follow does not exist")
+		}
+		s.log.Error("Error checking if user to follow exists: %v", err)
+		return fmt.Errorf("error checking if user to follow exists: %v", err)
+	}
+	if userId == unfollowUserId {
+		s.log.Error("Cannot follow self")
+		return errors.New("cannot follow self")
+	}
+
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	userCollection := transaction.GetCollection(model.UserCollectionName)
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
+		"$pull": bson.M{
+			"follows": unfollowUserId,
+		}})
+	if err != nil {
+		s.log.Error("error unfollowing user: %v", err)
+		return fmt.Errorf("error unfollowing user: %v", err)
+	}
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": unfollowUserId}, bson.M{
+		"$pull": bson.M{
+			"followers": userId,
+		}})
+	if err != nil {
+		s.log.Error("error unfollowing user: %v", err)
+		return fmt.Errorf("error unfollowing user: %v", err)
+	}
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	s.log.Debug("User %s unfollowed user %s successfully", userId, unfollowUserId)
+	return nil
+}
+
+func (s *userService) BlockUser(userId string, blockUserId string) error {
+	s.log.Debug("Blocking user %s for user %s", blockUserId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": blockUserId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to block does not exist: %s", blockUserId)
+			return fmt.Errorf("user to block does not exist")
+		}
+		s.log.Error("Error checking if user to block exists: %v", err)
+		return fmt.Errorf("error checking if user to block exists: %v", err)
+	}
+	if userId == blockUserId {
+		s.log.Error("Cannot block self")
+		return errors.New("cannot block self")
+	}
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	userCollection := transaction.GetCollection(model.UserCollectionName)
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
+		"$addToSet": bson.M{
+			"preferences.blockList": blockUserId,
+		}})
+	if err != nil {
+		s.log.Error("error blocking user: %v", err)
+		return fmt.Errorf("error blocking user: %v", err)
+	}
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	s.log.Debug("User %s blocked user %s successfully", userId, blockUserId)
+	return nil
+}
+
+func (s *userService) UnblockUser(userId string, unblockUserId string) error {
+	s.log.Debug("Unblocking user %s for user %s", unblockUserId, userId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": unblockUserId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to unblock does not exist: %s", unblockUserId)
+			return fmt.Errorf("user to unblock does not exist")
+		}
+		s.log.Error("Error checking if user to unblock exists: %v", err)
+		return fmt.Errorf("error checking if user to unblock exists: %v", err)
+	}
+	if userId == unblockUserId {
+		s.log.Error("Cannot block self")
+		return errors.New("cannot block self")
+	}
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	err = transaction.Start()
+	if err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return fmt.Errorf("error starting transaction: %v", err)
+	}
+
+	userCollection := transaction.GetCollection(model.UserCollectionName)
+	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
+		"$pull": bson.M{
+			"preferences.blockList": unblockUserId,
+		}})
+	if err != nil {
+		s.log.Error("error unblocking user: %v", err)
+		return fmt.Errorf("error unblocking user: %v", err)
+	}
+	if err := transaction.Commit(); err != nil {
+		s.log.Error("Error committing transaction: %v", err)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	s.log.Debug("User %s unblocked user %s successfully", userId, unblockUserId)
+	return nil
 }

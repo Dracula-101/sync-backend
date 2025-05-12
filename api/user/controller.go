@@ -43,6 +43,10 @@ func (c *userController) MountRoutes(group *gin.RouterGroup) {
 	group.Use(c.authProvider.Middleware())
 	group.GET("/me", c.GetMe)
 	group.GET("/:userId", c.GetUserById)
+	group.POST("/follow/:userId", c.FollowUser)
+	group.POST("/unfollow/:userId", c.UnfollowUser)
+	group.POST("/block/:userId", c.BlockUser)
+	group.POST("/unblock/:userId", c.UnblockUser)
 
 	// User community routes
 	group.POST("/join/:communityId", c.JoinCommunity)
@@ -88,6 +92,78 @@ func (c *userController) GetUserById(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessDataResponse("Profile fetched successfully", user)
+}
+
+func (c *userController) FollowUser(ctx *gin.Context) {
+	followUserId := ctx.Param("userId")
+	userId := c.ContextPayload.MustGetUserId(ctx)
+
+	if *userId == followUserId {
+		c.Send(ctx).BadRequestError("Cannot follow yourself", nil)
+		return
+	}
+
+	err := c.userService.FollowUser(*userId, followUserId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessMsgResponse("Followed user successfully")
+}
+
+func (c *userController) UnfollowUser(ctx *gin.Context) {
+	unfollowUserId := ctx.Param("userId")
+	userId := c.ContextPayload.MustGetUserId(ctx)
+
+	if *userId == unfollowUserId {
+		c.Send(ctx).BadRequestError("Cannot unfollow yourself", nil)
+		return
+	}
+
+	err := c.userService.UnfollowUser(*userId, unfollowUserId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessMsgResponse("Unfollowed user successfully")
+}
+
+func (c *userController) BlockUser(ctx *gin.Context) {
+	blockUserId := ctx.Param("userId")
+	userId := c.ContextPayload.MustGetUserId(ctx)
+
+	if *userId == blockUserId {
+		c.Send(ctx).BadRequestError("Cannot block yourself", nil)
+		return
+	}
+
+	err := c.userService.BlockUser(*userId, blockUserId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessMsgResponse("Blocked user successfully")
+}
+
+func (c *userController) UnblockUser(ctx *gin.Context) {
+	unblockUserId := ctx.Param("userId")
+	userId := c.ContextPayload.MustGetUserId(ctx)
+
+	if *userId == unblockUserId {
+		c.Send(ctx).BadRequestError("Cannot unblock yourself", nil)
+		return
+	}
+
+	err := c.userService.UnblockUser(*userId, unblockUserId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessMsgResponse("Unblocked user successfully")
 }
 
 func (c *userController) JoinCommunity(ctx *gin.Context) {
