@@ -16,9 +16,9 @@ import (
 
 type UploadProvider interface {
 	network.BaseMiddlewareProvider
-	Middleware(string) gin.HandlerFunc
-	GetUploadedFiles(ctx *gin.Context) *UploadedFiles
-	DeleteUploadedFiles(ctx *gin.Context) error
+	Middleware(fieldname string) gin.HandlerFunc
+	GetUploadedFiles(ctx *gin.Context, fieldname string) *UploadedFiles
+	DeleteUploadedFiles(ctx *gin.Context, fieldname string) error
 }
 
 type uploadMiddleware struct {
@@ -69,7 +69,7 @@ func (p *uploadMiddleware) Middleware(fieldName string) gin.HandlerFunc {
 
 		var userID string
 		if p.config.UseUserID {
-			userIDValue := p.ContextPayload.MustGetUserId(c)
+			userIDValue := p.ContextPayload.GetUserId(c)
 			if userIDValue == nil {
 				p.logger.Warn("User ID not found in context")
 			} else {
@@ -139,13 +139,13 @@ func (p *uploadMiddleware) Middleware(fieldName string) gin.HandlerFunc {
 
 			p.logger.Info("File uploaded successfully: %s -> %s", file.Filename, filePath)
 		}
-		c.Set("uploadedFiles", uploadedFiles)
+		c.Set("uploadedFiles-"+fieldName, uploadedFiles)
 		c.Next()
 	}
 }
 
-func (p *uploadMiddleware) GetUploadedFiles(c *gin.Context) *UploadedFiles {
-	files, exists := c.Get("uploadedFiles")
+func (p *uploadMiddleware) GetUploadedFiles(c *gin.Context, fieldName string) *UploadedFiles {
+	files, exists := c.Get("uploadedFiles-" + fieldName)
 	if !exists {
 		p.logger.Warn("No uploaded files found in context")
 		return &UploadedFiles{Files: []UploadedFile{}}
@@ -159,8 +159,8 @@ func (p *uploadMiddleware) GetUploadedFiles(c *gin.Context) *UploadedFiles {
 	return &UploadedFiles{Files: []UploadedFile{}}
 }
 
-func (p *uploadMiddleware) DeleteUploadedFiles(c *gin.Context) error {
-	files, exists := c.Get("uploadedFiles")
+func (p *uploadMiddleware) DeleteUploadedFiles(c *gin.Context, fieldName string) error {
+	files, exists := c.Get("uploadedFiles-" + fieldName)
 	if !exists {
 		p.logger.Warn("No uploaded files found in context")
 		return nil

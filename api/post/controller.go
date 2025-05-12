@@ -20,7 +20,7 @@ type postController struct {
 	postService           PostService
 }
 
-func NewPostController(postService PostService, authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider) network.Controller {
+func NewPostController(authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider, postService PostService) network.Controller {
 	return &postController{
 		BaseController:        network.NewBaseController("/api/v1/post", authenticatorProvider),
 		ContextPayload:        common.NewContextPayload(),
@@ -51,7 +51,7 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 		return
 	}
 	userId := c.MustGetUserId(ctx)
-	files := c.uploadProvider.GetUploadedFiles(ctx)
+	files := c.uploadProvider.GetUploadedFiles(ctx, "media")
 
 	c.logger.Info("Creating post with title: %s", body.Title)
 	var filesList []string
@@ -80,7 +80,7 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 
 	c.Send(ctx).SuccessDataResponse("Post created successfully", dto.CreatePostResponse{PostId: post.PostId})
 	c.logger.Debug("Post details: %+v", post)
-	c.uploadProvider.DeleteUploadedFiles(ctx)
+	c.uploadProvider.DeleteUploadedFiles(ctx, "media")
 }
 
 func (c *postController) GetPost(ctx *gin.Context) {

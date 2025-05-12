@@ -8,6 +8,7 @@ import (
 )
 
 type ContextPayload interface {
+	GetUserId(ctx *gin.Context) *string
 	MustGetUserId(ctx *gin.Context) *string
 	SetUserId(ctx *gin.Context, value string)
 
@@ -24,6 +25,21 @@ type payload struct{}
 
 func NewContextPayload() ContextPayload {
 	return &payload{}
+}
+
+func (payload *payload) GetUserId(ctx *gin.Context) *string {
+	value, ok := ctx.Get(network.UserPayload)
+	if !ok {
+		return nil
+	}
+	if value == nil {
+		return nil
+	}
+	userId, ok := value.(string)
+	if !ok {
+		return nil
+	}
+	return &userId
 }
 
 func (payload *payload) MustGetUserId(ctx *gin.Context) *string {

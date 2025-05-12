@@ -5,6 +5,7 @@ import (
 	"sync-backend/api/common/location"
 	"sync-backend/api/user"
 	"sync-backend/arch/common"
+	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
 
@@ -16,6 +17,7 @@ type authController struct {
 	network.BaseController
 	common.ContextPayload
 	authProvider     network.AuthenticationProvider
+	uploadProvider   coreMW.UploadProvider
 	locationProvider network.LocationProvider
 	authService      AuthService
 	userService      user.UserService
@@ -23,9 +25,10 @@ type authController struct {
 }
 
 func NewAuthController(
-	authService AuthService,
 	authProvider network.AuthenticationProvider,
 	locationProvider network.LocationProvider,
+	uploadProvider coreMW.UploadProvider,
+	authService AuthService,
 	userService user.UserService,
 	locationService location.LocationService,
 ) network.Controller {
@@ -34,16 +37,17 @@ func NewAuthController(
 		BaseController:   network.NewBaseController("/api/v1/auth", authProvider),
 		ContextPayload:   common.NewContextPayload(),
 		authProvider:     authProvider,
+		uploadProvider:   uploadProvider,
+		locationProvider: locationProvider,
 		authService:      authService,
 		userService:      userService,
 		locationService:  locationService,
-		locationProvider: locationProvider,
 	}
 }
 
 func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting auth routes")
-	group.POST("/signup", c.locationProvider.Middleware(), c.SignUp)
+	group.POST("/signup", c.locationProvider.Middleware(), c.uploadProvider.Middleware("profile_photo"), c.uploadProvider.Middleware("background_photo"), c.SignUp)
 	group.POST("/login", c.locationProvider.Middleware(), c.Login)
 	group.POST("/google", c.locationProvider.Middleware(), c.GoogleLogin)
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
@@ -52,7 +56,7 @@ func (c *authController) MountRoutes(group *gin.RouterGroup) {
 }
 
 func (c *authController) SignUp(ctx *gin.Context) {
-	body, err := network.ReqBody(ctx, dto.NewSignUpRequest())
+	body, err := network.ReqForm(ctx, dto.NewSignUpRequest())
 	if err != nil {
 		return
 	}
@@ -66,6 +70,25 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 
+	exists, err = c.userService.FindUserByUsername(body.UserName)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	if exists != nil {
+		c.Send(ctx).ConflictError("User with this username already exists", nil)
+		return
+	}
+
+	profilePic := c.uploadProvider.GetUploadedFiles(ctx, "profile_photo")
+	backgroundPic := c.uploadProvider.GetUploadedFiles(ctx, "background_photo")
+	if len(profilePic.Files) != 0 {
+		body.ProfileFilePath = profilePic.Files[0].Path
+	}
+	if len(backgroundPic.Files) != 0 {
+		body.BackgroundFilePath = backgroundPic.Files[0].Path
+	}
+
 	c.SetRequestDeviceDetails(ctx, &body.BaseDeviceRequest)
 	c.SetRequestLocationDetails(ctx, &body.BaseLocationRequest)
 	data, err := c.authService.SignUp(body)
@@ -75,10 +98,12 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessDataResponse("User created successfully", data)
+	// c.uploadProvider.DeleteUploadedFiles(ctx, "profile_photo")
+	// c.uploadProvider.DeleteUploadedFiles(ctx, "background_photo")
 }
 
 func (c *authController) Login(ctx *gin.Context) {
-	body, err := network.ReqBody(ctx, dto.NewLoginRequest())
+	body, err := network.ReqForm(ctx, dto.NewLoginRequest())
 	if err != nil {
 		return
 	}

@@ -2,6 +2,7 @@ package post
 
 import (
 	"fmt"
+	"sync-backend/api/common/media"
 	"sync-backend/api/community"
 	"sync-backend/api/post/model"
 	"sync-backend/api/user"
@@ -25,16 +26,18 @@ type PostService interface {
 
 type postService struct {
 	network.BaseService
-	logger           utils.AppLogger
+	mediaService     media.MediaService
 	userService      user.UserService
+	logger           utils.AppLogger
 	communityService community.CommunityService
 	postQueryBuilder mongo.QueryBuilder[model.Post]
 }
 
-func NewPostService(db mongo.Database, userService user.UserService, communityService community.CommunityService) PostService {
+func NewPostService(db mongo.Database, userService user.UserService, communityService community.CommunityService, mediaService media.MediaService) PostService {
 	return &postService{
 		BaseService:      network.NewBaseService(),
 		logger:           utils.NewServiceLogger("PostService"),
+		mediaService:     mediaService,
 		userService:      userService,
 		communityService: communityService,
 		postQueryBuilder: mongo.NewQueryBuilder[model.Post](db, model.PostCollectionName),

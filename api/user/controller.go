@@ -4,6 +4,7 @@ import (
 	"sync-backend/api/common/location"
 	"sync-backend/api/user/dto"
 	"sync-backend/arch/common"
+	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
 
@@ -15,12 +16,14 @@ type userController struct {
 	network.BaseController
 	common.ContextPayload
 	authProvider    network.AuthenticationProvider
+	uploadProvider  coreMW.UploadProvider
 	userService     UserService
 	locationService location.LocationService
 }
 
 func NewUserController(
 	authProvider network.AuthenticationProvider,
+	uploadProvider coreMW.UploadProvider,
 	userService UserService,
 	locationService location.LocationService,
 ) network.Controller {
@@ -29,6 +32,7 @@ func NewUserController(
 		BaseController:  network.NewBaseController("/api/v1/user", nil),
 		ContextPayload:  common.NewContextPayload(),
 		authProvider:    authProvider,
+		uploadProvider:  uploadProvider,
 		userService:     userService,
 		locationService: locationService,
 	}

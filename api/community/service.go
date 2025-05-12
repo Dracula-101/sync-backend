@@ -3,6 +3,7 @@ package community
 import (
 	"errors"
 	"fmt"
+	"sync-backend/api/common/media"
 	"sync-backend/api/community/model"
 	"sync-backend/arch/mongo"
 	"sync-backend/arch/network"
@@ -24,6 +25,7 @@ type CommunityService interface {
 
 type communityService struct {
 	network.BaseService
+	mediaService                  media.MediaService
 	logger                        utils.AppLogger
 	communityQueryBuilder         mongo.QueryBuilder[model.Community]
 	communityTagQueryBuilder      mongo.QueryBuilder[model.CommunityTag]
@@ -31,8 +33,9 @@ type communityService struct {
 	communityAutocompletePipeline mongo.AggregateBuilder[model.Community, model.CommunityAutocomplete]
 }
 
-func NewCommunityService(db mongo.Database) CommunityService {
+func NewCommunityService(db mongo.Database, mediaService media.MediaService) CommunityService {
 	return &communityService{
+		mediaService:                  mediaService,
 		BaseService:                   network.NewBaseService(),
 		logger:                        utils.NewServiceLogger("CommunityService"),
 		communityQueryBuilder:         mongo.NewQueryBuilder[model.Community](db, model.CommunityCollectionName),

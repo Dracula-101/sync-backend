@@ -30,29 +30,36 @@ type Env struct {
 	RedisPort     int    `mapstructure:"REDIS_PORT"`
 	RedisPassword string `mapstructure:"REDIS_PWD"`
 	RedisDB       int    `mapstructure:"REDIS_DB"`
+
+	CloudinaryCloudName string `mapstructure:"CLOUDINARY_CLOUD_NAME"`
+	CloudinaryAPIKey    string `mapstructure:"CLOUDINARY_API_KEY"`
+	CloudinaryAPISecret string `mapstructure:"CLOUDINARY_API_SECRET"`
 }
 
 func NewEnv(file string) Env {
 	_ = gotenv.Load(file)
 	env := Env{
-		Host:          GetStrEnvOrPanic("HOST"),
-		Port:          GetIntEnvOrPanic("PORT"),
-		Env:           GetStrEnvOrPanic("ENV"),
-		LogLevel:      GetStrEnvOrPanic("LOG_LEVEL"),
-		JWTSecret:     GetStrEnvOrPanic("JWT_SECRET"),
-		DBUser:        GetStrEnvOrPanic("DB_USER"),
-		DBPassword:    GetStrEnvOrPanic("DB_PASSWORD"),
-		DBHost:        GetStrEnvOrPanic("DB_HOST"),
-		DBName:        GetStrEnvOrPanic("DB_NAME"),
-		IpDBHost:      GetStrEnvOrPanic("IP_DB_HOST"),
-		IpDBPort:      GetIntEnvOrPanic("IP_DB_PORT"),
-		IpDBUser:      GetStrEnvOrPanic("IP_DB_USER"),
-		IpDBPassword:  GetStrEnvOrPanic("IP_DB_PASSWORD"),
-		IpDBName:      GetStrEnvOrPanic("IP_DB_NAME"),
-		RedisHost:     GetStrEnvOrPanic("REDIS_HOST"),
-		RedisPort:     GetIntEnvOrPanic("REDIS_PORT"),
-		RedisDB:       GetIntEnvOrPanic("REDIS_DB"),
-		RedisPassword: GetStrEnvOrPanic("REDIS_PASSWORD"),
+		Host:                GetStrEnvOrPanic("HOST"),
+		Port:                GetIntEnvOrPanic("PORT"),
+		Env:                 GetStrEnvOrPanic("ENV"),
+		LogLevel:            GetStrEnvOrPanic("LOG_LEVEL"),
+		JWTSecret:           GetStrEnvOrPanic("JWT_SECRET"),
+		DBUser:              GetStrEnvOrPanic("DB_USER"),
+		DBPassword:          GetStrEnvOrPanic("DB_PASSWORD"),
+		DBHost:              GetStrEnvOrPanic("DB_HOST"),
+		DBName:              GetStrEnvOrPanic("DB_NAME"),
+		IpDBHost:            GetStrEnvOrPanic("IP_DB_HOST"),
+		IpDBPort:            GetIntEnvOrPanic("IP_DB_PORT"),
+		IpDBUser:            GetStrEnvOrPanic("IP_DB_USER"),
+		IpDBPassword:        GetStrEnvOrPanic("IP_DB_PASSWORD"),
+		IpDBName:            GetStrEnvOrPanic("IP_DB_NAME"),
+		RedisHost:           GetStrEnvOrPanic("REDIS_HOST"),
+		RedisPort:           GetIntEnvOrPanic("REDIS_PORT"),
+		RedisDB:             GetIntEnvOrPanic("REDIS_DB"),
+		RedisPassword:       GetStrEnvOrPanic("REDIS_PASSWORD"),
+		CloudinaryCloudName: GetStrEnvOrPanic("CLOUDINARY_CLOUD_NAME"),
+		CloudinaryAPIKey:    GetStrEnvOrPanic("CLOUDINARY_API_KEY"),
+		CloudinaryAPISecret: GetStrEnvOrPanic("CLOUDINARY_API_SECRET"),
 	}
 	return env
 }

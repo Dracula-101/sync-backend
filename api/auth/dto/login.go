@@ -15,8 +15,8 @@ import (
 type LoginRequest struct {
 	coredto.BaseDeviceRequest
 	coredto.BaseLocationRequest
-	Email    string `json:"email" binding:"required,email" validate:"email"`
-	Password string `json:"password" binding:"required" validate:"required,min=6,max=100"`
+	Email    string `form:"email" binding:"required,email" validate:"email"`
+	Password string `form:"password" binding:"required" validate:"required,min=6,max=100"`
 }
 
 func NewLoginRequest() *LoginRequest {

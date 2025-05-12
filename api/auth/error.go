@@ -2,6 +2,7 @@ package auth
 
 const (
 	ERR_USER              = "ERR_USER"
+	ERR_BAN_USER          = "ERR_BAN_USER"
 	ERR_TOKEN             = "ERR_TOKEN"
 	ERR_SESSION           = "ERR_SESSION"
 	ERR_USER_NOT_FOUND    = "ERR_USER_NOT_FOUND"

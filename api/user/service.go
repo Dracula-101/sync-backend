@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"sync-backend/api/common/media"
 	communityModels "sync-backend/api/community/model"
 	"sync-backend/api/user/model"
 	"sync-backend/arch/common"
@@ -17,8 +18,8 @@ import (
 
 type UserService interface {
 	/* CREATING USER */
-	CreateUser(userName string, email string, password string, profilePicUrl string) (*model.User, error)
-	CreateUserWithGoogleId(userName string, googleIdToken string) (*model.User, error)
+	CreateUser(userName string, email string, password string, profilePic string, backgroundPic string, locale string, timezone string, country string) (*model.User, error)
+	CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error)
 
 	/* FINDING USER */
 	FindUserById(userId string) (*model.User, error)
@@ -40,14 +41,16 @@ type UserService interface {
 }
 
 type userService struct {
+	mediaService          media.MediaService
 	log                   utils.AppLogger
 	userQueryBuilder      mongo.QueryBuilder[model.User]
 	communityQueryBuilder mongo.QueryBuilder[communityModels.Community]
 	transactionBuilder    mongo.TransactionBuilder
 }
 
-func NewUserService(db mongo.Database) UserService {
+func NewUserService(db mongo.Database, mediaService media.MediaService) UserService {
 	return &userService{
+		mediaService:          mediaService,
 		userQueryBuilder:      mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
 		communityQueryBuilder: mongo.NewQueryBuilder[communityModels.Community](db, communityModels.CommunityCollectionName),
 		transactionBuilder:    mongo.NewTransactionBuilder(db),
@@ -55,7 +58,7 @@ func NewUserService(db mongo.Database) UserService {
 	}
 }
 
-func (s *userService) CreateUser(userName string, email string, password string, profilePicUrl string) (*model.User, error) {
+func (s *userService) CreateUser(userName string, email string, password string, profilePic string, backgroundPic string, locale string, timezone string, country string) (*model.User, error) {
 	s.log.Debug("Creating user with email: %s", email)
 	filter := bson.M{
 		"$or": []bson.M{
@@ -85,17 +88,59 @@ func (s *userService) CreateUser(userName string, email string, password string,
 		s.log.Error("Error hashing password: %v", err)
 		return nil, err
 	}
+	var profilePicUrl, profileId string
+	var profileHeight, profileWidth int
+	var backgroundUrl, backgroundId string
+	var backgroundHeight, backgroundWidth int
+	if profilePic != "" {
+		profileInfo, _ := s.mediaService.UploadMedia(profilePic, userName+"_profile", "profile")
+		profileId = profileInfo.Id
+		profilePicUrl = profileInfo.Url
+		profileHeight = profileInfo.Height
+		profileWidth = profileInfo.Width
+	} else {
+		profilePic = "https://placehold.co/150x150.png"
+		profileId = "default-profile-id"
+		profilePicUrl = profilePic
+		profileHeight = 150
+		profileWidth = 150
+	}
+
+	if backgroundPic != "" {
+		backgroundInfo, _ := s.mediaService.UploadMedia(backgroundPic, userName+"_background", "background")
+		backgroundId = backgroundInfo.Id
+		backgroundUrl = backgroundInfo.Url
+		backgroundHeight = backgroundInfo.Height
+		backgroundWidth = backgroundInfo.Width
+	} else {
+		backgroundPic = "https://placehold.co/1200x400.png"
+		backgroundId = "default-background-id"
+		backgroundUrl = backgroundPic
+		backgroundHeight = 400
+		backgroundWidth = 1200
+	}
+
 	user, err := model.NewUser(model.NewUserArgs{
-		UserName:      userName,
-		Email:         email,
-		PasswordHash:  hashedPassword,
-		AvatarUrl:     profilePicUrl,
-		BackgroundUrl: "https://placehold.co/1200x400.png",
-		Language:      common.English,
-		TimeZone:      common.AsiaKolkata,
-		Theme:         "light",
-		Country:       "IN",
-		DeviceToken:   *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
+		UserName:     userName,
+		Email:        email,
+		PasswordHash: hashedPassword,
+		AvatarUrl: model.Image{
+			Id:     profileId,
+			Url:    profilePicUrl,
+			Width:  profileWidth,
+			Height: profileHeight,
+		},
+		BackgroundUrl: model.Image{
+			Id:     backgroundId,
+			Url:    backgroundUrl,
+			Width:  backgroundWidth,
+			Height: backgroundHeight,
+		},
+		Language:    common.GetLanguageByID(locale),
+		TimeZone:    common.GetTimeZone(timezone),
+		Theme:       "light",
+		Country:     country,
+		DeviceToken: *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
 	})
 	if err != nil {
 		s.log.Error("Error creating user: %v", err)
@@ -111,7 +156,7 @@ func (s *userService) CreateUser(userName string, email string, password string,
 	return user, nil
 }
 
-func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken string) (*model.User, error) {
+func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error) {
 	s.log.Debug("Creating user with Google ID token: %s", googleIdToken[0:10]+"***********")
 	googleUser, err := utils.DecodeGoogleJWTToken(googleIdToken)
 	if err != nil {
@@ -124,7 +169,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		return nil, fmt.Errorf("error checking for existing user: %v", err)
 	}
-
+	width, height, _ := utils.GetImageSize(googleUser.Picture)
 	if existingUser != nil {
 		for _, provider := range existingUser.Providers {
 			if provider.AuthProvider == model.GoogleProviderName {
@@ -140,6 +185,8 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		})
 		existingUser.VerifiedEmail = googleUser.EmailVerified
 		existingUser.Avatar.ProfilePic.Url = googleUser.Picture
+		existingUser.Avatar.ProfilePic.Width = width
+		existingUser.Avatar.ProfilePic.Height = height
 		existingUser.Email = googleUser.Email
 		existingUser.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": existingUser.UserId}, bson.M{
@@ -154,14 +201,23 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 	} else {
 		s.log.Debug("Creating new user with Google ID: %s", googleIdToken[0:10]+"***********")
 		user, err := model.NewUser(model.NewUserArgs{
-			UserName:      userName,
-			Email:         googleUser.Email,
-			PasswordHash:  googleIdToken,
-			AvatarUrl:     googleUser.Picture,
-			BackgroundUrl: "https://placehold.co/1200x400.png",
-			Language:      common.English,
-			TimeZone:      common.AsiaKolkata,
-			DeviceToken:   *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
+			UserName:     userName,
+			Email:        googleUser.Email,
+			AvatarUrl: model.Image{
+				Id:     "default-profile-id",
+				Url:    googleUser.Picture,
+				Width:  width,
+				Height: height,
+			},
+			BackgroundUrl: model.Image{
+				Id:     "default-background-id",
+				Url:    "https://placehold.co/1200x400.png",
+				Width:  1200,
+				Height: 400,
+			},
+			Language:    common.GetLanguageByID(locale),
+			TimeZone:    common.GetTimeZone(timezone),
+			DeviceToken: *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
 		})
 		if err != nil {
 			return nil, err

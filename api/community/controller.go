@@ -4,6 +4,7 @@ import (
 	"sync-backend/api/community/dto"
 	"sync-backend/api/community/model"
 	"sync-backend/arch/common"
+	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
 
@@ -22,18 +23,21 @@ type communityController struct {
 	network.BaseController
 	common.ContextPayload
 	authProvider     network.AuthenticationProvider
+	uploadProvider   coreMW.UploadProvider
 	communityService CommunityService
 }
 
 func NewCommunityController(
-	communityService CommunityService,
 	authProvider network.AuthenticationProvider,
+	uploadProvider coreMW.UploadProvider,
+	communityService CommunityService,
 ) network.Controller {
 	return &communityController{
 		logger:           utils.NewServiceLogger("CommunityController"),
 		BaseController:   network.NewBaseController("/api/v1/community", authProvider),
 		ContextPayload:   common.NewContextPayload(),
 		authProvider:     authProvider,
+		uploadProvider:   uploadProvider,
 		communityService: communityService,
 	}
 }
