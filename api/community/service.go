@@ -15,7 +15,7 @@ import (
 )
 
 type CommunityService interface {
-	CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError)
+	CreateCommunity(name string, description string, tags []string, avatarFilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError)
 	GetCommunityById(id string) (*model.Community, network.ApiError)
 	CheckUserInCommunity(userId string, communityId string) network.ApiError
 	SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError)
@@ -45,7 +45,7 @@ func NewCommunityService(db mongo.Database, mediaService media.MediaService) Com
 	}
 }
 
-func (s *communityService) CreateCommunity(name string, description string, tags []string, avatarUrl string, backgroundUrl string, userId string) (*model.Community, network.ApiError) {
+func (s *communityService) CreateCommunity(name string, description string, tags []string, avatarfilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError) {
 	s.logger.Info("Creating community with name: %s", name)
 	// get all community tags with the given tags
 	filter := bson.M{"tag_id": bson.M{"$in": tags}}
@@ -65,13 +65,34 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 		convertedTags[i] = tag.ToCommunityTagInfo()
 	}
 
+	avatarPhoto, avErr := s.mediaService.UploadMedia(avatarfilePath, userId+"_avatar", "community")
+	backgroundPhoto, bgErr := s.mediaService.UploadMedia(backgroundFilePath, userId+"_background", "community")
+	if avErr != nil {
+		s.logger.Error("Error uploading media: %v", err)
+	}
+	if bgErr != nil {
+		s.logger.Error("Error uploading media: %v", err)
+	}
+	avatarPhotoInfo := model.Image{
+		ID:     avatarPhoto.Id,
+		Url:    avatarPhoto.Url,
+		Width:  avatarPhoto.Width,
+		Height: avatarPhoto.Height,
+	}
+	backgroundPhotoInfo := model.Image{
+		ID:     backgroundPhoto.Id,
+		Url:    backgroundPhoto.Url,
+		Width:  backgroundPhoto.Width,
+		Height: backgroundPhoto.Height,
+	}
+
 	community := model.NewCommunity(model.NewCommunityArgs{
-		Name:          name,
-		Description:   description,
-		OwnerId:       userId,
-		AvatarUrl:     nil,
-		BackgroundUrl: nil,
-		Tags:          convertedTags,
+		Name:        name,
+		Description: description,
+		OwnerId:     userId,
+		Avatar:      avatarPhotoInfo,
+		Background:  backgroundPhotoInfo,
+		Tags:        convertedTags,
 	})
 
 	//check for duplicate community slug

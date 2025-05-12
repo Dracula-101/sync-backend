@@ -50,15 +50,10 @@ type CommunityMedia struct {
 }
 
 type Image struct {
-	ID           string `bson:"id" json:"id"`
-	Url          string `bson:"url" json:"url"`
-	Width        int    `bson:"width" json:"width"`
-	Height       int    `bson:"height" json:"height"`
-	ThumbnailUrl string `bson:"thumbnailUrl,omitempty" json:"thumbnailUrl,omitempty"`
-	AltText      string `bson:"altText" json:"altText"`
-	Caption      string `bson:"caption,omitempty" json:"caption,omitempty"`
-	FileSize     int64  `bson:"fileSize,omitempty" json:"fileSize,omitempty"`
-	MimeType     string `bson:"mimeType,omitempty" json:"mimeType,omitempty"`
+	ID     string `bson:"id" json:"id"`
+	Url    string `bson:"url" json:"url"`
+	Width  int    `bson:"width" json:"width"`
+	Height int    `bson:"height" json:"height"`
 }
 
 type CommunityRule struct {
@@ -227,26 +222,17 @@ type Metadata struct {
 }
 
 type NewCommunityArgs struct {
-	Name          string
-	Description   string
-	OwnerId       string
-	AvatarUrl     *string
-	BackgroundUrl *string
-	Tags          []CommunityTagInfo
+	Name        string
+	Description string
+	OwnerId     string
+	Avatar      Image
+	Background  Image
+	Tags        []CommunityTagInfo
 }
 
 func NewCommunity(args NewCommunityArgs) *Community {
 	now := primitive.NewDateTimeFromTime(time.Now())
 	slug := generateSlug(args.Name)
-	communityAvatarUrl := getDefaultAvatarUrl()
-	if avatarUrl := args.AvatarUrl; avatarUrl != nil {
-		communityAvatarUrl = *avatarUrl
-	}
-	ownerId := args.OwnerId
-	communityBackgroundUrl := getDefaultBackgroundUrl()
-	if backgroundUrl := args.BackgroundUrl; backgroundUrl != nil {
-		communityBackgroundUrl = *backgroundUrl
-	}
 
 	return &Community{
 		ID:          primitive.NewObjectID(),
@@ -255,29 +241,15 @@ func NewCommunity(args NewCommunityArgs) *Community {
 		Name:        args.Name,
 		Description: args.Description,
 		ShortDesc:   truncateString(args.Description, 160),
-		OwnerId:     ownerId,
+		OwnerId:     args.OwnerId,
 		IsPrivate:   false,
-		Members:     []string{ownerId},
+		Members:     []string{args.OwnerId},
 		MemberCount: 1,
 		PostCount:   0,
-		Moderators:  []string{ownerId},
+		Moderators:  []string{args.OwnerId},
 		Media: CommunityMedia{
-			Avatar: Image{
-				ID:       primitive.NewObjectID().Hex(),
-				Url:      communityAvatarUrl,
-				Width:    512,
-				Height:   512,
-				AltText:  args.Name + " community avatar",
-				MimeType: "image/png",
-			},
-			Background: Image{
-				ID:       primitive.NewObjectID().Hex(),
-				Url:      communityBackgroundUrl,
-				Width:    1920,
-				Height:   1080,
-				AltText:  args.Name + " community background",
-				MimeType: "image/jpeg",
-			},
+			Avatar:       args.Avatar,
+			Background:   args.Background,
 			Gallery:      []Image{},
 			FeaturedPost: "",
 		},
@@ -292,7 +264,7 @@ func NewCommunity(args NewCommunityArgs) *Community {
 				Metadata: Metadata{
 					CreatedAt: now,
 					UpdatedAt: now,
-					CreatedBy: ownerId,
+					CreatedBy: args.OwnerId,
 					Version:   1,
 				},
 			},
@@ -333,7 +305,7 @@ func NewCommunity(args NewCommunityArgs) *Community {
 		Metadata: Metadata{
 			CreatedAt: now,
 			UpdatedAt: now,
-			CreatedBy: ownerId,
+			CreatedBy: args.OwnerId,
 			Version:   1,
 		},
 	}
@@ -368,14 +340,6 @@ func truncateString(s string, maxLength int) string {
 	}
 
 	return s[:lastSpace] + "..."
-}
-
-func getDefaultAvatarUrl() string {
-	return "https://www.shutterstock.com/image-vector/sound-wave-simple-icon-black-260nw-2126255804.jpg"
-}
-
-func getDefaultBackgroundUrl() string {
-	return "https://placehold.co/1200x400.png"
 }
 
 func randomString(length int) string {

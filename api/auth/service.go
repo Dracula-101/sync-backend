@@ -222,7 +222,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 	var session *sessionModels.Session
 	if user == nil {
 		s.logger.Debug("User not found, creating new user")
-		user, err := s.userService.CreateUserWithGoogleId(googleLoginRequest.Username, googleLoginRequest.GoogleIdToken, googleLoginRequest.Locale, googleLoginRequest.TimeZone, googleLoginRequest.Country)
+		user, err = s.userService.CreateUserWithGoogleId(googleLoginRequest.Username, googleLoginRequest.GoogleIdToken, googleLoginRequest.Locale, googleLoginRequest.TimeZone, googleLoginRequest.Country)
 		if err != nil {
 			return nil, network.NewInternalServerError("Error creating user", ERR_USER, err)
 		}

@@ -98,8 +98,8 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessDataResponse("User created successfully", data)
-	// c.uploadProvider.DeleteUploadedFiles(ctx, "profile_photo")
-	// c.uploadProvider.DeleteUploadedFiles(ctx, "background_photo")
+	c.uploadProvider.DeleteUploadedFiles(ctx, "profile_photo")
+	c.uploadProvider.DeleteUploadedFiles(ctx, "background_photo")
 }
 
 func (c *authController) Login(ctx *gin.Context) {
