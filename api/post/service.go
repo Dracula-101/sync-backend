@@ -48,7 +48,26 @@ func (s *postService) CreatePost(
 	title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool,
 ) (*model.Post, error) {
 	s.logger.Info("Creating post with title: %s", title)
-	post := model.NewPost(userId, communityId, title, content, tags, media, postType, isNSFW, isSpoiler)
+	var fileUrls []model.Media
+	for _, file := range media {
+		s.logger.Debug("File uploaded: %s", file)
+		mediaInfo, err := s.mediaService.UploadMedia(file, userId+"_post", "post")
+		if err != nil {
+			s.logger.Error("Failed to upload media: %v", err)
+			return nil, network.NewInternalServerError("Failed to upload media", network.MEDIA_ERROR, err)
+		}
+		fileUrls = append(fileUrls, model.Media{
+			Id:        mediaInfo.Id,
+			Type:      model.MediaType(mediaInfo.Type),
+			Url:       mediaInfo.Url,
+			Width:     mediaInfo.Width,
+			Height:    mediaInfo.Height,
+			FileSize:  mediaInfo.Size,
+			CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
+		})
+	}
+
+	post := model.NewPost(userId, communityId, title, content, tags, fileUrls, postType, isNSFW, isSpoiler)
 
 	if err := s.communityService.CheckUserInCommunity(userId, communityId); err != nil {
 		s.logger.Error("User is not a member of the community: %v", err)

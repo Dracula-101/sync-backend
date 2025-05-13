@@ -152,6 +152,13 @@ func (p *uploadMiddleware) GetUploadedFiles(c *gin.Context, fieldName string) *U
 	}
 
 	if uploadedFiles, ok := files.(*UploadedFiles); ok {
+		var filteredFiles []UploadedFile
+		for _, file := range uploadedFiles.Files {
+			if file.Path != "" {
+				filteredFiles = append(filteredFiles, file)
+			}
+		}
+		uploadedFiles.Files = filteredFiles
 		return uploadedFiles
 	}
 

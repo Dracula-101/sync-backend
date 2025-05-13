@@ -63,9 +63,11 @@ func (s *mediaService) UploadMedia(filePath string, filename string, folderPath 
 
 	return model.MediaInfo{
 		Id:     resp.PublicID,
+		Type:   resp.ResourceType,
 		Url:    resp.SecureURL,
 		Width:  resp.Width,
 		Height: resp.Height,
+		Size:   int64(resp.Bytes),
 	}, nil
 }
 

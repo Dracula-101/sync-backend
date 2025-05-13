@@ -88,17 +88,13 @@ const (
 
 // Media represents media files attached to a post
 type Media struct {
-	Id           string             `bson:"id" json:"id"`
-	Type         MediaType          `bson:"type" json:"type"`
-	Url          string             `bson:"url" json:"url"`
-	ThumbnailUrl string             `bson:"thumbnailUrl,omitempty" json:"thumbnailUrl,omitempty"`
-	Width        int                `bson:"width,omitempty" json:"width,omitempty"`
-	Height       int                `bson:"height,omitempty" json:"height,omitempty"`
-	FileSize     int64              `bson:"fileSize,omitempty" json:"fileSize,omitempty"`
-	MimeType     string             `bson:"mimeType,omitempty" json:"mimeType,omitempty"`
-	Duration     int                `bson:"duration,omitempty" json:"duration,omitempty"`
-	AltText      string             `bson:"altText,omitempty" json:"altText,omitempty"`
-	CreatedAt    primitive.DateTime `bson:"createdAt" json:"createdAt"`
+	Id        string             `bson:"id" json:"id"`
+	Type      MediaType          `bson:"type" json:"type"`
+	Url       string             `bson:"url" json:"url"`
+	Width     int                `bson:"width,omitempty" json:"width,omitempty"`
+	Height    int                `bson:"height,omitempty" json:"height,omitempty"`
+	FileSize  int64              `bson:"fileSize,omitempty" json:"fileSize,omitempty"`
+	CreatedAt primitive.DateTime `bson:"createdAt" json:"createdAt"`
 }
 
 // MediaType defines the type of media
@@ -113,7 +109,7 @@ const (
 )
 
 // NewPost creates a new post with default values
-func NewPost(authorId string, communityId string, title string, content string, tags []string, media []string, postType PostType, isNSFW bool, isSpoiler bool) *Post {
+func NewPost(authorId string, communityId string, title string, content string, tags []string, media []Media, postType PostType, isNSFW bool, isSpoiler bool) *Post {
 	now := primitive.NewDateTimeFromTime(time.Now())
 
 	return &Post{
@@ -126,6 +122,7 @@ func NewPost(authorId string, communityId string, title string, content string, 
 		Type:         postType,
 		Status:       PostStatusActive,
 		Tags:         tags,
+		Media:        media,
 		Synergy:      0,
 		CommentCount: 0,
 		ViewCount:    0,
@@ -144,6 +141,7 @@ func NewPost(authorId string, communityId string, title string, content string, 
 		CreatedAt:      now,
 		UpdatedAt:      now,
 		LastActivityAt: now,
+		DeletedAt:      nil,
 	}
 }
 

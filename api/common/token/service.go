@@ -14,6 +14,7 @@ import (
 // TokenService defines the interface for token operations
 type TokenService interface {
 	GenerateTokenPair(userId string) (*model.TokenPair, error)
+	GetUserIdFromToken(tokenString string) (string, error)
 	ValidateToken(tokenString string) (*jwt.Token, *model.TokenClaims, error)
 	RefreshTokens(refreshToken string) (*model.TokenPair, error)
 }
@@ -68,6 +69,20 @@ func (s *tokenService) generateToken(userId string, tokenType model.TokenType, e
 	}
 
 	return signedToken, nil
+}
+
+func (s *tokenService) GetUserIdFromToken(tokenString string) (string, error) {
+	token, claims, err := s.ValidateToken(tokenString)
+	if err != nil {
+		return "", fmt.Errorf("invalid token: %w", err)
+	}
+	if claims.UserID == "" {
+		return "", fmt.Errorf("user ID is empty in token claims")
+	}
+	if !token.Valid {
+		return "", fmt.Errorf("token is not valid")
+	}
+	return claims.UserID, nil
 }
 
 func (s *tokenService) GenerateTokenPair(userId string) (*model.TokenPair, error) {

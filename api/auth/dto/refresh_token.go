@@ -1,12 +1,19 @@
 package dto
 
-import "github.com/go-playground/validator/v10"
+import (
+	coredto "sync-backend/arch/dto"
+
+	"github.com/go-playground/validator/v10"
+)
 
 // =======================================
 // ||         Refresh Token Request      ||
 // =======================================
 
 type RefreshTokenRequest struct {
+	coredto.BaseDeviceRequest
+	coredto.BaseLocationRequest
+	AccessToken  string `json:"access_token" binding:"required"`
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 

@@ -52,8 +52,6 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 	}
 	userId := c.MustGetUserId(ctx)
 	files := c.uploadProvider.GetUploadedFiles(ctx, "media")
-
-	c.logger.Info("Creating post with title: %s", body.Title)
 	var filesList []string
 	if files != nil && len(files.Files) > 0 {
 		for _, file := range files.Files {
@@ -61,7 +59,10 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 			filesList = append(filesList, file.Path)
 		}
 	}
-	// TODO: add media service which uploads the images
+	if len(filesList) > 10 {
+		c.Send(ctx).BadRequestError("You can only upload a maximum of 10 files", nil)
+		return
+	}
 	post, err := c.postService.CreatePost(
 		body.Title,
 		body.Content,
