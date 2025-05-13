@@ -98,5 +98,5 @@ func (*PostInteraction) EnsureIndexes(db mongo.Database) {
 			Options: options.Index().SetName("idx_post_interaction_created"),
 		},
 	}
-	mongo.NewQueryBuilder[PostInteraction](db, PostInteractionCollectionName).Query(context.Background()).CreateIndexes(indexes)
+	mongo.NewQueryBuilder[PostInteraction](db, PostInteractionCollectionName).Query(context.Background()).CheckIndexes(indexes)
 }

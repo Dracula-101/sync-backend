@@ -225,5 +225,5 @@ func (*Post) EnsureIndexes(db mongo.Database) {
 		},
 	}
 
-	mongo.NewQueryBuilder[Post](db, PostCollectionName).Query(context.Background()).CreateIndexes(indexes)
+	mongo.NewQueryBuilder[Post](db, PostCollectionName).Query(context.Background()).CheckIndexes(indexes)
 }

@@ -213,6 +213,6 @@ func (*User) EnsureIndexes(db mongo.Database) {
 			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60).SetName("ttl_user_deleted"),
 		},
 	}
-	mongo.NewQueryBuilder[User](db, UserCollectionName).Query(context.Background()).CreateIndexes(indexes)
+	mongo.NewQueryBuilder[User](db, UserCollectionName).Query(context.Background()).CheckIndexes(indexes)
 
 }

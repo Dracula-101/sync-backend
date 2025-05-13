@@ -413,5 +413,5 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 		},
 	}
 
-	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CreateIndexes(indexes)
+	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CheckIndexes(indexes)
 }

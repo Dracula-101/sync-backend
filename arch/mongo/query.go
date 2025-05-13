@@ -14,7 +14,7 @@ import (
 
 type Query[T any] interface {
 	Close()
-	CreateIndexes(indexes []mongo.IndexModel) error
+	CheckIndexes(indexes []mongo.IndexModel) error
 	CreateSearchIndexes(indexes []mongo.SearchIndexModel) error
 	FindOne(filter bson.M, opts *options.FindOneOptions) (*T, error)
 	FindAll(filter bson.M, opts *options.FindOptions) ([]*T, error)
@@ -65,10 +65,72 @@ func (q *query[T]) Close() {
 	}
 }
 
-func (q *query[T]) CreateIndexes(indexes []mongo.IndexModel) error {
+func (q *query[T]) CheckIndexes(indexes []mongo.IndexModel) error {
+	// get indexes and create if not exist and delete which are not in the list
 	defer q.Close()
-	_, err := q.collection.Indexes().CreateMany(q.context, indexes)
-	return err
+	q.logger.Info("[ MONGO ] - Checking indexes for collection: %s", q.collection.Name())
+	existingIndexes, err := q.collection.Indexes().List(q.context)
+	if err != nil {
+		q.logger.Error("[ MONGO ] - Error listing indexes: %v", err)
+		return fmt.Errorf("error listing indexes: %w", err)
+	}
+	defer existingIndexes.Close(q.context)
+	var existingIndexNames []string
+	for existingIndexes.Next(q.context) {
+		var index bson.M
+		if err := existingIndexes.Decode(&index); err != nil {
+			q.logger.Error("[ MONGO ] - Error decoding index: %v", err)
+			return fmt.Errorf("error decoding index: %w", err)
+		}
+		if name, ok := index["name"].(string); ok {
+			existingIndexNames = append(existingIndexNames, name)
+		}
+	}
+	q.logger.Info("[ MONGO ] - Existing indexes: %v", existingIndexNames)
+	// Create indexes if not exist
+	for _, index := range indexes {
+		if !contains(existingIndexNames, index.Options.Name) {
+			q.logger.Info("[ MONGO ] - Creating index: %s", *index.Options.Name)
+			_, err := q.collection.Indexes().CreateOne(q.context, index)
+			if err != nil {
+				q.logger.Error("[ MONGO ] - Error creating index: %v", err)
+				return fmt.Errorf("error creating index: %w", err)
+			}
+		} else {
+			q.logger.Info("[ MONGO ] - Index already exists: %s", *index.Options.Name)
+		}
+	}
+	// Delete indexes which are not in the list, but skip _id_ index
+	for _, existingIndexName := range existingIndexNames {
+		// Skip the default _id_ index
+		if existingIndexName == "_id_" {
+			continue
+		}
+		if !contains(existingIndexNames, &existingIndexName) {
+			q.logger.Info("[ MONGO ] - Dropping index: %s", existingIndexName)
+			_, err := q.collection.Indexes().DropOne(q.context, existingIndexName)
+			if err != nil {
+				q.logger.Error("[ MONGO ] - Error dropping index: %v", err)
+				return fmt.Errorf("error dropping index: %w", err)
+			}
+		} else {
+			q.logger.Info("[ MONGO ] - Index already exists: %s", existingIndexName)
+		}
+	}
+	q.logger.Info("[ MONGO ] - Indexes checked successfully")
+	return nil
+}
+
+func contains(existingIndexNames []string, string *string) bool {
+	if string == nil {
+		return false
+	}
+	for _, name := range existingIndexNames {
+		if name == *string {
+			return true
+		}
+	}
+	return false
 }
 
 func (q *query[T]) FindOne(filter bson.M, opts *options.FindOneOptions) (*T, error) {
