@@ -162,76 +162,20 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 }
 
 func (s *postService) LikePost(userId string, postId string) error {
-	s.logger.Info("Liking post with ID: %s", postId)
-	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
-
-	if err := tx.Start(); err != nil {
-		s.logger.Error("Failed to start transaction: %v", err)
-		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	}
-	postInteractionCollection := tx.GetCollection(model.PostInteractionCollectionName)
-	// check if the user has already disliked or disliked the post
-	exists, mongoErr := postInteractionCollection.CountDocuments(
-		tx.GetContext(),
-		bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeDislike},
-	)
-	if mongoErr != nil {
-		s.logger.Error("Failed to check if post is already liked: %v", mongoErr)
-		return network.NewInternalServerError("Failed to check if post is already liked", network.DB_ERROR, mongoErr)
-	}
-
-	postCollection := tx.GetCollection(model.PostCollectionName)
-	var synergyInc int
-	if exists == 0 {
-		synergyInc = 1
-	} else {
-		synergyInc = -1
-	}
-	err := postCollection.FindOneAndUpdate(
-		tx.GetContext(),
-		bson.M{"postId": postId, "status": model.PostStatusActive},
-		bson.M{
-			"$inc": bson.M{"synergy": synergyInc},
-			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
-		},
-		options.FindOneAndUpdate().SetReturnDocument(options.After),
-	)
-	if err.Err() != nil {
-		s.logger.Error("Failed to like post: %v", err.Err().Error())
-		return network.NewInternalServerError("Failed to like post", network.DB_ERROR, fmt.Errorf("failed to like post: %v", err.Err().Error()))
-	}
-	// insert the interaction
-	postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeLike)
-	if exists == 0 {
-		_, insertErr := postInteractionCollection.InsertOne(tx.GetContext(), postInteraction)
-		if insertErr != nil {
-			s.logger.Error("Failed to insert post interaction: %v", insertErr)
-			return network.NewInternalServerError("Failed to insert post interaction", network.DB_ERROR, fmt.Errorf("failed to insert post interaction: %v", insertErr))
-		}
-	} else {
-		_, updateErr := postInteractionCollection.UpdateOne(
-			tx.GetContext(),
-			bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeDislike},
-			bson.M{"$set": bson.M{"interactionType": model.InteractionTypeLike}},
-		)
-		if updateErr != nil {
-			s.logger.Error("Failed to update post interaction: %v", updateErr)
-			return network.NewInternalServerError("Failed to update post interaction", network.DB_ERROR, fmt.Errorf("failed to update post interaction: %v", updateErr))
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		s.logger.Error("Failed to commit transaction: %v", err)
-		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
-	}
-
-	s.logger.Info("Post liked successfully with ID: %s", postId)
-	return nil
+	return s.toggleInteraction(userId, postId, model.InteractionTypeLike)
 }
 
 func (s *postService) DislikePost(userId string, postId string) error {
-	s.logger.Info("Disliking post with ID: %s", postId)
+	return s.toggleInteraction(userId, postId, model.InteractionTypeDislike)
+}
+
+func (s *postService) toggleInteraction(userId string, postId string, interactionType model.InteractionType) error {
+	action := "liking"
+	if interactionType == model.InteractionTypeDislike {
+		action = "disliking"
+	}
+	s.logger.Info("%s post with ID: %s by user: %s", action, postId, userId)
+
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
 	defer tx.Abort()
 
@@ -239,56 +183,120 @@ func (s *postService) DislikePost(userId string, postId string) error {
 		s.logger.Error("Failed to start transaction: %v", err)
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
+
 	postInteractionCollection := tx.GetCollection(model.PostInteractionCollectionName)
-	// check if the user has already disliked the post
-	exists, mongoErr := postInteractionCollection.CountDocuments(
+	cursor, err := postInteractionCollection.Find(
 		tx.GetContext(),
-		bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeLike},
+		bson.M{
+			"postId": postId,
+			"userId": userId,
+			"interactionType": bson.M{"$in": []model.InteractionType{
+				model.InteractionTypeLike,
+				model.InteractionTypeDislike,
+			}},
+		},
 	)
-	if mongoErr != nil {
-		s.logger.Error("Failed to check if post is already disliked: %v", mongoErr)
-		return network.NewInternalServerError("Failed to check if post is already disliked", network.DB_ERROR, mongoErr)
+	if err != nil {
+		s.logger.Error("Failed to get post interactions: %v", err)
+		return network.NewInternalServerError("Failed to get post interactions", network.DB_ERROR, err)
 	}
 
-	var synergyInc int
-	if exists == 0 {
-		synergyInc = -1
-	} else {
-		synergyInc = -2
+	var existingInteractions []model.PostInteraction
+	if err := cursor.All(tx.GetContext(), &existingInteractions); err != nil {
+		s.logger.Error("Failed to decode post interactions: %v", err)
+		return network.NewInternalServerError("Failed to decode post interactions", network.DB_ERROR, err)
 	}
+
+	synergyChange := 0
+	needToInsert := true
+	needToRemove := false
+	removeID := ""
+
+	if len(existingInteractions) == 0 {
+		// First interaction
+		if interactionType == model.InteractionTypeLike {
+			synergyChange = 1
+		} else {
+			synergyChange = -1
+		}
+	} else if len(existingInteractions) == 1 {
+		existing := existingInteractions[0]
+		needToRemove = true
+		removeID = existing.Id.Hex()
+
+		if existing.InteractionType == interactionType {
+			// Toggle off the same interaction
+			needToInsert = false
+			if interactionType == model.InteractionTypeLike {
+				synergyChange = -1
+			} else {
+				synergyChange = 1
+			}
+		} else {
+			// Switching between like and dislike
+			if interactionType == model.InteractionTypeLike {
+				synergyChange = 2
+			} else {
+				synergyChange = -2
+			}
+		}
+	} else {
+		// Clean up duplicate interactions
+		s.logger.Warn("Multiple interactions found for user %s on post %s - cleaning up", userId, postId)
+		_, deleteErr := postInteractionCollection.DeleteMany(
+			tx.GetContext(),
+			bson.M{"postId": postId, "userId": userId},
+		)
+		if deleteErr != nil {
+			s.logger.Error("Failed to clean up duplicate interactions: %v", deleteErr)
+			return network.NewInternalServerError("Failed to clean up interactions", network.DB_ERROR, deleteErr)
+		}
+
+		if interactionType == model.InteractionTypeLike {
+			synergyChange = 1
+		} else {
+			synergyChange = -1
+		}
+	}
+
 	postCollection := tx.GetCollection(model.PostCollectionName)
-	// update the viewCount and lastActivity
-	err := postCollection.FindOneAndUpdate(
+	updateResult := postCollection.FindOneAndUpdate(
 		tx.GetContext(),
 		bson.M{"postId": postId, "status": model.PostStatusActive},
 		bson.M{
-			"$inc": bson.M{"synergy": synergyInc},
-			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
+			"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
+			"$inc": bson.M{"synergy": synergyChange},
 		},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
-	if err.Err() != nil {
-		s.logger.Error("Failed to dislike post: %v", *err)
-		return network.NewInternalServerError("Failed to dislike post", network.DB_ERROR, fmt.Errorf("failed to dislike post: %v", *err))
+
+	if updateResult.Err() != nil {
+		s.logger.Error("Failed to update post synergy: %v", updateResult.Err())
+		return network.NewInternalServerError("Failed to update post", network.DB_ERROR, updateResult.Err())
 	}
 
-	// insert the interaction
-	postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeDislike)
-	if exists == 0 {
+	if needToRemove && removeID != "" {
+		objID, _ := primitive.ObjectIDFromHex(removeID)
+		_, deleteErr := postInteractionCollection.DeleteOne(
+			tx.GetContext(),
+			bson.M{"_id": objID},
+		)
+		if deleteErr != nil {
+			s.logger.Error("Failed to remove existing interaction: %v", deleteErr)
+			return network.NewInternalServerError("Failed to update interaction", network.DB_ERROR, deleteErr)
+		}
+	}
+
+	if needToInsert {
+		postInteraction := model.NewPostInteraction(userId, postId, interactionType)
 		_, insertErr := postInteractionCollection.InsertOne(tx.GetContext(), postInteraction)
 		if insertErr != nil {
-			s.logger.Error("Failed to insert post interaction: %v", insertErr)
-			return network.NewInternalServerError("Failed to insert post interaction", network.DB_ERROR, fmt.Errorf("failed to insert post interaction: %v", insertErr))
-		}
-	} else {
-		_, updateErr := postInteractionCollection.UpdateOne(
-			tx.GetContext(),
-			bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeLike},
-			bson.M{"$set": bson.M{"interactionType": model.InteractionTypeDislike}},
-		)
-		if updateErr != nil {
-			s.logger.Error("Failed to update post interaction: %v", updateErr)
-			return network.NewInternalServerError("Failed to update post interaction", network.DB_ERROR, fmt.Errorf("failed to update post interaction: %v", updateErr))
+			if mongo.IsDuplicateKeyError(insertErr) {
+				s.logger.Warn("Post interaction already exists (race condition): %v", insertErr)
+			} else {
+				s.logger.Error("Failed to insert post interaction: %v", insertErr)
+				return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, insertErr)
+			}
 		}
 	}
 
@@ -297,7 +305,7 @@ func (s *postService) DislikePost(userId string, postId string) error {
 		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
 	}
 
-	s.logger.Info("Post disliked successfully with ID: %s", postId)
+	s.logger.Info("Post interaction updated successfully for post ID: %s", postId)
 	return nil
 }
 
@@ -327,13 +335,13 @@ func (s *postService) SavePost(userId string, postId string) error {
 	}
 
 	postCollection := tx.GetCollection(model.PostCollectionName)
-	// update the viewCount and lastActivity
+	// update the viewCount and lastActivityAt
 	err := postCollection.FindOneAndUpdate(
 		tx.GetContext(),
 		bson.M{"postId": postId, "status": model.PostStatusActive},
 		bson.M{
 			"$inc": bson.M{"saveCount": 1},
-			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
+			"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
 		},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
@@ -369,13 +377,13 @@ func (s *postService) SharePost(userId string, postId string) error {
 	}
 
 	postCollection := tx.GetCollection(model.PostCollectionName)
-	// update the viewCount and lastActivity
+	// update the viewCount and lastActivityAt
 	result := postCollection.FindOneAndUpdate(
 		tx.GetContext(),
 		bson.M{"postId": postId, "status": model.PostStatusActive},
 		bson.M{
 			"$inc": bson.M{"shareCount": 1},
-			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
+			"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
 		},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)

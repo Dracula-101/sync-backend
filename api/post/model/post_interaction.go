@@ -74,7 +74,7 @@ func (*PostInteraction) EnsureIndexes(db mongo.Database) {
 				{Key: "userId", Value: 1},
 				{Key: "interactionType", Value: 1},
 			},
-			Options: options.Index().SetName("idx_post_interaction_unique"),
+			Options: options.Index().SetUnique(true).SetName("idx_post_interaction_unique"),
 		},
 		{
 			Keys: bson.D{
@@ -96,6 +96,13 @@ func (*PostInteraction) EnsureIndexes(db mongo.Database) {
 				{Key: "interactionType", Value: 1},
 			},
 			Options: options.Index().SetName("idx_post_interaction_created"),
+		},
+		{
+			//ttl
+			Keys: bson.D{
+				{Key: "deletedAt", Value: 1},
+			},
+			Options: options.Index().SetName("idx_post_interaction_deleted").SetExpireAfterSeconds(0),
 		},
 	}
 	mongo.NewQueryBuilder[PostInteraction](db, PostInteractionCollectionName).Query(context.Background()).CheckIndexes(indexes)

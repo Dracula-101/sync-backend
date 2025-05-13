@@ -15,7 +15,7 @@ import (
 type Query[T any] interface {
 	Close()
 	CheckIndexes(indexes []mongo.IndexModel) error
-	CreateSearchIndexes(indexes []mongo.SearchIndexModel) error
+	CheckSearchIndexes(indexes []mongo.SearchIndexModel) error
 	FindOne(filter bson.M, opts *options.FindOneOptions) (*T, error)
 	FindAll(filter bson.M, opts *options.FindOptions) ([]*T, error)
 	FindPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
@@ -28,6 +28,7 @@ type Query[T any] interface {
 	FilterMany(filter bson.M, opts *options.FindOptions) ([]*T, error)
 	FilterPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
 	FilterCount(filter bson.M) (int64, error)
+	CountDocuments(filter bson.M, opts *options.CountOptions) (int64, error)
 	UpdateOne(filter bson.M, update bson.M, opts *options.UpdateOptions) (*mongo.UpdateResult, error)
 	UpdateMany(filter bson.M, update bson.M, opts *options.UpdateOptions) (*mongo.UpdateResult, error)
 	DeleteOne(filter bson.M, opts *options.DeleteOptions) (*mongo.DeleteResult, error)
@@ -86,38 +87,74 @@ func (q *query[T]) CheckIndexes(indexes []mongo.IndexModel) error {
 			existingIndexNames = append(existingIndexNames, name)
 		}
 	}
-	q.logger.Info("[ MONGO ] - Existing indexes: %v", existingIndexNames)
 	// Create indexes if not exist
 	for _, index := range indexes {
 		if !contains(existingIndexNames, index.Options.Name) {
-			q.logger.Info("[ MONGO ] - Creating index: %s", *index.Options.Name)
 			_, err := q.collection.Indexes().CreateOne(q.context, index)
 			if err != nil {
 				q.logger.Error("[ MONGO ] - Error creating index: %v", err)
 				return fmt.Errorf("error creating index: %w", err)
 			}
-		} else {
-			q.logger.Info("[ MONGO ] - Index already exists: %s", *index.Options.Name)
 		}
 	}
 	// Delete indexes which are not in the list, but skip _id_ index
 	for _, existingIndexName := range existingIndexNames {
-		// Skip the default _id_ index
 		if existingIndexName == "_id_" {
 			continue
 		}
 		if !contains(existingIndexNames, &existingIndexName) {
-			q.logger.Info("[ MONGO ] - Dropping index: %s", existingIndexName)
 			_, err := q.collection.Indexes().DropOne(q.context, existingIndexName)
 			if err != nil {
 				q.logger.Error("[ MONGO ] - Error dropping index: %v", err)
 				return fmt.Errorf("error dropping index: %w", err)
 			}
-		} else {
-			q.logger.Info("[ MONGO ] - Index already exists: %s", existingIndexName)
 		}
 	}
-	q.logger.Info("[ MONGO ] - Indexes checked successfully")
+	q.logger.Success("[ MONGO ] - Indexes checked for collection: %s", q.collection.Name())
+	return nil
+}
+
+func (q *query[T]) CheckSearchIndexes(indexes []mongo.SearchIndexModel) error {
+	defer q.Close()
+	q.logger.Info("[ MONGO ] - Checking search indexes for collection: %s", q.collection.Name())
+	existingIndexes, err := q.collection.SearchIndexes().List(q.context, nil)
+	if err != nil {
+		q.logger.Error("[ MONGO ] - Error listing search indexes: %v", err)
+		return fmt.Errorf("error listing search indexes: %w", err)
+	}
+	defer existingIndexes.Close(q.context)
+	var existingIndexNames []string
+	for existingIndexes.Next(q.context) {
+		var index bson.M
+		if err := existingIndexes.Decode(&index); err != nil {
+			q.logger.Error("[ MONGO ] - Error decoding search index: %v", err)
+			return fmt.Errorf("error decoding search index: %w", err)
+		}
+		if name, ok := index["name"].(string); ok {
+			existingIndexNames = append(existingIndexNames, name)
+		}
+	}
+	// Create search indexes if not exist
+	for _, index := range indexes {
+		if !contains(existingIndexNames, index.Options.Name) {
+			_, err := q.collection.SearchIndexes().CreateOne(q.context, index)
+			if err != nil {
+				q.logger.Error("[ MONGO ] - Error creating search index: %v", err)
+				return fmt.Errorf("error creating search index: %w", err)
+			}
+		}
+	}
+	// Delete search indexes which are not in the list, but skip _id_ index
+	for _, existingIndexName := range existingIndexNames {
+		if !contains(existingIndexNames, &existingIndexName) {
+			err := q.collection.SearchIndexes().DropOne(q.context, existingIndexName)
+			if err != nil {
+				q.logger.Error("[ MONGO ] - Error dropping search index: %v", err)
+				return fmt.Errorf("error dropping search index: %w", err)
+			}
+		}
+	}
+	q.logger.Success("[ MONGO ] - Search indexes checked for collection: %s", q.collection.Name())
 	return nil
 }
 
@@ -143,17 +180,6 @@ func (q *query[T]) FindOne(filter bson.M, opts *options.FindOneOptions) (*T, err
 	}
 	q.logger.Info("[ MONGO ] - FindOne query executed successfully")
 	return &doc, nil
-}
-
-func (q *query[T]) CreateSearchIndexes(indexes []mongo.SearchIndexModel) error {
-	defer q.Close()
-	_, err := q.collection.SearchIndexes().CreateMany(q.context, indexes)
-	if err != nil {
-		q.logger.Error("[ MONGO ] - Error creating search indexes: %v", err)
-		return fmt.Errorf("error creating search indexes: %w", err)
-	}
-	q.logger.Info("[ MONGO ] - Search indexes created successfully")
-	return nil
 }
 
 func (q *query[T]) FindAll(filter bson.M, opts *options.FindOptions) ([]*T, error) {
@@ -414,6 +440,18 @@ func (q *query[T]) FilterCount(filter bson.M) (int64, error) {
 		return 0, fmt.Errorf("error executing query: %w", err)
 	}
 	q.logger.Info("[ MONGO ] - FilterCount query executed successfully, count: %d", count)
+	return count, nil
+}
+
+func (q *query[T]) CountDocuments(filter bson.M, opts *options.CountOptions) (int64, error) {
+	defer q.Close()
+	q.logger.Info("[ MONGO ] - Executing CountDocuments query with filter: %v", filter)
+	count, err := q.collection.CountDocuments(q.context, filter, opts)
+	if err != nil {
+		q.logger.Error("[ MONGO ] - Error executing CountDocuments query: %v", err)
+		return 0, fmt.Errorf("error executing query: %w", err)
+	}
+	q.logger.Info("[ MONGO ] - CountDocuments query executed successfully, count: %d", count)
 	return count, nil
 }
 

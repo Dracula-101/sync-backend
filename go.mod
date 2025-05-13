@@ -16,10 +16,12 @@ require (
 
 require golang.org/x/term v0.31.0
 
-require github.com/google/uuid v1.6.0
+require (
+	github.com/cloudinary/cloudinary-go/v2 v2.9.1
+	github.com/google/uuid v1.6.0
+)
 
 require (
-	github.com/cloudinary/cloudinary-go/v2 v2.9.1 // indirect
 	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 )
