@@ -20,6 +20,11 @@ type PostService interface {
 	CreatePost(title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool) (*model.Post, error)
 	GetPost(postId string) (*model.Post, error)
 	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, error)
+	LikePost(userId string, postId string) error
+	UnlikePost(userId string, postId string) error
+	SavePost(userId string, postId string) error
+	SharePost(userId string, postId string) error
+
 	GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error)
 	GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error)
 }
@@ -31,6 +36,7 @@ type postService struct {
 	logger           utils.AppLogger
 	communityService community.CommunityService
 	postQueryBuilder mongo.QueryBuilder[model.Post]
+	transaction      mongo.TransactionBuilder
 }
 
 func NewPostService(db mongo.Database, userService user.UserService, communityService community.CommunityService, mediaService media.MediaService) PostService {
@@ -41,6 +47,7 @@ func NewPostService(db mongo.Database, userService user.UserService, communitySe
 		userService:      userService,
 		communityService: communityService,
 		postQueryBuilder: mongo.NewQueryBuilder[model.Post](db, model.PostCollectionName),
+		transaction:      mongo.NewTransactionBuilder(db),
 	}
 }
 
@@ -99,41 +106,6 @@ func (s *postService) GetPost(postId string) (*model.Post, error) {
 	return post, nil
 }
 
-func (s *postService) GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error) {
-	s.logger.Info("Getting posts for user with ID: %s", userId)
-	filter := bson.M{"authorId": userId}
-	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), nil)
-	if err != nil {
-		s.logger.Error("Failed to get posts: %v", err)
-		return nil, 0, network.NewInternalServerError("Failed to get posts", network.DB_ERROR, err)
-	}
-	nPosts, err := s.postQueryBuilder.SingleQuery().FilterCount(filter)
-	if err != nil {
-		s.logger.Error("Failed to count posts: %v", err)
-		return nil, 0, network.NewInternalServerError("Failed to count posts", network.DB_ERROR, err)
-	}
-	s.logger.Info("Posts retrieved successfully for user with ID: %s", userId)
-	return dbPosts, int(nPosts), nil
-}
-
-func (s *postService) GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error) {
-	s.logger.Info("Getting posts for community with ID: %s", communityId)
-	filter := bson.M{"communityId": communityId}
-	options := options.Find().SetSort(bson.D{primitive.E{Key: "createdAt", Value: -1}})
-	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), options)
-	if err != nil {
-		s.logger.Error("Failed to get posts: %v", err)
-		return nil, 0, network.NewInternalServerError("Failed to get posts", network.DB_ERROR, err)
-	}
-	nPosts, err := s.postQueryBuilder.SingleQuery().FilterCount(filter)
-	if err != nil {
-		s.logger.Error("Failed to count posts: %v", err)
-		return nil, 0, network.NewInternalServerError("Failed to count posts", network.DB_ERROR, err)
-	}
-	s.logger.Info("Posts retrieved successfully for community with ID: %s", communityId)
-	return dbPosts, int(nPosts), nil
-}
-
 func (s *postService) EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (newPostId *string, err error) {
 	s.logger.Info("Editing post with ID: %s", postId)
 	post, err := s.GetPost(postId)
@@ -187,4 +159,154 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 		return &idStr, nil
 	}
 	return nil, nil
+}
+
+func (s *postService) LikePost(userId string, postId string) error {
+	s.logger.Info("Liking post with ID: %s", postId)
+	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
+	defer tx.Abort()
+
+	if err := tx.Start(); err != nil {
+		s.logger.Error("Failed to start transaction: %v", err)
+		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+	}
+	postCollection := tx.GetCollection(model.PostCollectionName)
+	// update the viewCount and lastActivity
+	err := postCollection.FindOneAndUpdate(
+		tx.GetContext(),
+		bson.M{"postId": postId, "status": model.PostStatusActive},
+		bson.M{
+			"$inc": bson.M{"likeCount": 1},
+			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
+		},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+	if err != nil {
+		s.logger.Error("Failed to like post: %v", err)
+		return network.NewInternalServerError("Failed to like post", network.DB_ERROR, fmt.Errorf("failed to like post: %v", err))
+	}
+
+	return nil
+}
+
+func (s *postService) UnlikePost(userId string, postId string) error {
+	s.logger.Info("Unliking post with ID: %s", postId)
+	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
+	defer tx.Abort()
+
+	if err := tx.Start(); err != nil {
+		s.logger.Error("Failed to start transaction: %v", err)
+		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+	}
+
+	postCollection := tx.GetCollection(model.PostCollectionName)
+	// update the viewCount and lastActivity
+	err := postCollection.FindOneAndUpdate(
+		tx.GetContext(),
+		bson.M{"postId": postId, "status": model.PostStatusActive},
+		bson.M{
+			"$inc": bson.M{"likeCount": -1},
+			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
+		},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+	if err != nil {
+		s.logger.Error("Failed to unlike post: %v", err)
+		return network.NewInternalServerError("Failed to unlike post", network.DB_ERROR, fmt.Errorf("failed to unlike post: %v", err))
+	}
+
+	return nil
+}
+
+func (s *postService) SavePost(userId string, postId string) error {
+	s.logger.Info("Saving post with ID: %s", postId)
+	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
+	defer tx.Abort()
+
+	if err := tx.Start(); err != nil {
+		s.logger.Error("Failed to start transaction: %v", err)
+		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+	}
+
+	postCollection := tx.GetCollection(model.PostCollectionName)
+	// update the viewCount and lastActivity
+	err := postCollection.FindOneAndUpdate(
+		tx.GetContext(),
+		bson.M{"postId": postId, "status": model.PostStatusActive},
+		bson.M{
+			"$inc": bson.M{"saveCount": 1},
+			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
+		},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+	if err != nil {
+		s.logger.Error("Failed to save post: %v", err)
+		return network.NewInternalServerError("Failed to save post", network.DB_ERROR, fmt.Errorf("failed to save post: %v", err))
+	}
+
+	return nil
+}
+
+func (s *postService) SharePost(userId string, postId string) error {
+	s.logger.Info("Sharing post with ID: %s", postId)
+	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
+	defer tx.Abort()
+
+	if err := tx.Start(); err != nil {
+		s.logger.Error("Failed to start transaction: %v", err)
+		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+	}
+
+	postCollection := tx.GetCollection(model.PostCollectionName)
+	// update the viewCount and lastActivity
+	result := postCollection.FindOneAndUpdate(
+		tx.GetContext(),
+		bson.M{"postId": postId, "status": model.PostStatusActive},
+		bson.M{
+			"$inc": bson.M{"shareCount": 1},
+			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
+		},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+	if err := result.Err(); err != nil {
+		s.logger.Error("Failed to share post: %v", err)
+		return network.NewInternalServerError("Failed to share post", network.DB_ERROR, fmt.Errorf("failed to share post: %v", err))
+	}
+
+	return nil
+}
+
+func (s *postService) GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error) {
+	s.logger.Info("Getting posts for user with ID: %s", userId)
+	filter := bson.M{"authorId": userId}
+	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), nil)
+	if err != nil {
+		s.logger.Error("Failed to get posts: %v", err)
+		return nil, 0, network.NewInternalServerError("Failed to get posts", network.DB_ERROR, err)
+	}
+	nPosts, err := s.postQueryBuilder.SingleQuery().FilterCount(filter)
+	if err != nil {
+		s.logger.Error("Failed to count posts: %v", err)
+		return nil, 0, network.NewInternalServerError("Failed to count posts", network.DB_ERROR, err)
+	}
+	s.logger.Info("Posts retrieved successfully for user with ID: %s", userId)
+	return dbPosts, int(nPosts), nil
+}
+
+func (s *postService) GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error) {
+	s.logger.Info("Getting posts for community with ID: %s", communityId)
+	filter := bson.M{"communityId": communityId}
+	options := options.Find().SetSort(bson.D{primitive.E{Key: "createdAt", Value: -1}})
+	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), options)
+	if err != nil {
+		s.logger.Error("Failed to get posts: %v", err)
+		return nil, 0, network.NewInternalServerError("Failed to get posts", network.DB_ERROR, err)
+	}
+	nPosts, err := s.postQueryBuilder.SingleQuery().FilterCount(filter)
+	if err != nil {
+		s.logger.Error("Failed to count posts: %v", err)
+		return nil, 0, network.NewInternalServerError("Failed to count posts", network.DB_ERROR, err)
+	}
+	s.logger.Info("Posts retrieved successfully for community with ID: %s", communityId)
+	return dbPosts, int(nPosts), nil
 }

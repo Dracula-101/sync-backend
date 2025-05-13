@@ -30,6 +30,10 @@ type transaction struct {
 	hasTimeout bool
 }
 
+const DefaultShortTransactionTimeout = 30 * time.Second
+const DefaultTransactionTimeout = 1 * time.Minute
+const DefaultLongTransactionTimeout = 5 * time.Minute
+
 func newTransaction(logger utils.AppLogger, client *mongo.Client, database string, timeout time.Duration) Transaction {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	return &transaction{
