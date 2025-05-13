@@ -29,7 +29,7 @@ func NewAnalyticsService(db mongo.Database) AnalyticsService {
 func (s *analyticsService) ApplyGetPost(postId string) error {
 	// Start a transaction
 	tx := s.transactionBuilder.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
+	defer tx.Commit()
 
 	if err := tx.Start(); err != nil {
 		return err
@@ -81,7 +81,7 @@ func (s *analyticsService) ApplyGetPost(postId string) error {
 func (s *analyticsService) ApplyJoinCommunity(communityId string) error {
 	// Start a transaction
 	tx := s.transactionBuilder.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
+	defer tx.Commit()
 
 	if err := tx.Start(); err != nil {
 		return err
@@ -136,7 +136,7 @@ func (s *analyticsService) ApplyJoinCommunity(communityId string) error {
 func (s *analyticsService) ApplyLeaveCommunity(communityId string) error {
 	// Start a transaction
 	tx := s.transactionBuilder.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
+	defer tx.Commit()
 
 	if err := tx.Start(); err != nil {
 		return err

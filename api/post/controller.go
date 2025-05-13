@@ -38,7 +38,7 @@ func (c *postController) MountRoutes(group *gin.RouterGroup) {
 	group.GET("/get/:postId", c.GetPost)
 	group.POST("/edit/:postId", c.EditPost)
 	group.POST("/like/:postId", c.LikePost)
-	group.POST("/unlike/:postId", c.UnlikePost)
+	group.POST("/dislike/:postId", c.DislikePost)
 	group.POST("/save/:postId", c.SavePost)
 
 	// User post routes
@@ -150,19 +150,19 @@ func (c *postController) LikePost(ctx *gin.Context) {
 	c.Send(ctx).SuccessMsgResponse("Post liked successfully")
 }
 
-func (c *postController) UnlikePost(ctx *gin.Context) {
+func (c *postController) DislikePost(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
 		c.Send(ctx).BadRequestError("Post ID is required", nil)
 		return
 	}
 	userId := c.MustGetUserId(ctx)
-	err := c.postService.UnlikePost(*userId, postId)
+	err := c.postService.DislikePost(*userId, postId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
-	c.Send(ctx).SuccessMsgResponse("Post unliked successfully")
+	c.Send(ctx).SuccessMsgResponse("Post disliked successfully")
 }
 
 func (c *postController) SavePost(ctx *gin.Context) {

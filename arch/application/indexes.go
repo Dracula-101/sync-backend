@@ -14,4 +14,5 @@ func EnsureDbIndexes(db mongo.Database) {
 	go mongo.Document[session.Session](&session.Session{}).EnsureIndexes(db)
 	go mongo.Document[community.Community](&community.Community{}).EnsureIndexes(db)
 	go mongo.Document[post.Post](&post.Post{}).EnsureIndexes(db)
+	go mongo.Document[post.PostInteraction](&post.PostInteraction{}).EnsureIndexes(db)
 }

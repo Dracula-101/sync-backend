@@ -21,7 +21,7 @@ type PostService interface {
 	GetPost(postId string) (*model.Post, error)
 	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, error)
 	LikePost(userId string, postId string) error
-	UnlikePost(userId string, postId string) error
+	DislikePost(userId string, postId string) error
 	SavePost(userId string, postId string) error
 	SharePost(userId string, postId string) error
 
@@ -170,27 +170,55 @@ func (s *postService) LikePost(userId string, postId string) error {
 		s.logger.Error("Failed to start transaction: %v", err)
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
+	postInteractionCollection := tx.GetCollection(model.PostInteractionCollectionName)
+	// check if the user has already liked or disliked the post
+	exists, mongoErr := postInteractionCollection.CountDocuments(
+		tx.GetContext(),
+		bson.M{"postId": postId, "userId": userId, "interactionType": bson.M{"$in": []model.InteractionType{model.InteractionTypeLike, model.InteractionTypeDislike}}},
+	)
+	if mongoErr != nil {
+		s.logger.Error("Failed to check if post is already liked: %v", mongoErr)
+		return network.NewInternalServerError("Failed to check if post is already liked", network.DB_ERROR, mongoErr)
+	}
+	if exists > 0 {
+		s.logger.Warn("Post already liked or disliked by user: %s", postId)
+		return nil
+	}
+
 	postCollection := tx.GetCollection(model.PostCollectionName)
 	// update the viewCount and lastActivity
 	err := postCollection.FindOneAndUpdate(
 		tx.GetContext(),
 		bson.M{"postId": postId, "status": model.PostStatusActive},
 		bson.M{
-			"$inc": bson.M{"likeCount": 1},
+			"$inc": bson.M{"synergy": 1},
 			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
 		},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
-	if err != nil {
-		s.logger.Error("Failed to like post: %v", err)
-		return network.NewInternalServerError("Failed to like post", network.DB_ERROR, fmt.Errorf("failed to like post: %v", err))
+	if err.Err() != nil {
+		s.logger.Error("Failed to like post: %v", err.Err().Error())
+		return network.NewInternalServerError("Failed to like post", network.DB_ERROR, fmt.Errorf("failed to like post: %v", err.Err().Error()))
+	}
+	// insert the interaction
+	postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeLike)
+	_, insertErr := postInteractionCollection.InsertOne(tx.GetContext(), postInteraction)
+	if insertErr != nil {
+		s.logger.Error("Failed to insert post interaction: %v", insertErr)
+		return network.NewInternalServerError("Failed to insert post interaction", network.DB_ERROR, fmt.Errorf("failed to insert post interaction: %v", insertErr))
 	}
 
+	if err := tx.Commit(); err != nil {
+		s.logger.Error("Failed to commit transaction: %v", err)
+		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+	}
+
+	s.logger.Info("Post liked successfully with ID: %s", postId)
 	return nil
 }
 
-func (s *postService) UnlikePost(userId string, postId string) error {
-	s.logger.Info("Unliking post with ID: %s", postId)
+func (s *postService) DislikePost(userId string, postId string) error {
+	s.logger.Info("Disliking post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
 	defer tx.Abort()
 
@@ -198,6 +226,20 @@ func (s *postService) UnlikePost(userId string, postId string) error {
 		s.logger.Error("Failed to start transaction: %v", err)
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
+	postInteractionCollection := tx.GetCollection(model.PostInteractionCollectionName)
+	// check if the user has already disliked the post
+	exists, mongoErr := postInteractionCollection.CountDocuments(
+		tx.GetContext(),
+		bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeDislike},
+	)
+	if mongoErr != nil {
+		s.logger.Error("Failed to check if post is already disliked: %v", mongoErr)
+		return network.NewInternalServerError("Failed to check if post is already disliked", network.DB_ERROR, mongoErr)
+	}
+	if exists > 0 {
+		s.logger.Warn("Post already disliked by user: %s", postId)
+		return nil
+	}
 
 	postCollection := tx.GetCollection(model.PostCollectionName)
 	// update the viewCount and lastActivity
@@ -205,16 +247,30 @@ func (s *postService) UnlikePost(userId string, postId string) error {
 		tx.GetContext(),
 		bson.M{"postId": postId, "status": model.PostStatusActive},
 		bson.M{
-			"$inc": bson.M{"likeCount": -1},
+			"$inc": bson.M{"synergy": -1},
 			"$set": bson.M{"lastActivity": primitive.NewDateTimeFromTime(time.Now())},
 		},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
-	if err != nil {
-		s.logger.Error("Failed to unlike post: %v", err)
-		return network.NewInternalServerError("Failed to unlike post", network.DB_ERROR, fmt.Errorf("failed to unlike post: %v", err))
+	if err.Err() != nil {
+		s.logger.Error("Failed to dislike post: %v", *err)
+		return network.NewInternalServerError("Failed to dislike post", network.DB_ERROR, fmt.Errorf("failed to dislike post: %v", *err))
 	}
 
+	// insert the interaction
+	postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeDislike)
+	_, insertErr := postInteractionCollection.InsertOne(tx.GetContext(), postInteraction)
+	if insertErr != nil {
+		s.logger.Error("Failed to insert post interaction: %v", insertErr)
+		return network.NewInternalServerError("Failed to insert post interaction", network.DB_ERROR, fmt.Errorf("failed to insert post interaction: %v", insertErr))
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.logger.Error("Failed to commit transaction: %v", err)
+		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+	}
+
+	s.logger.Info("Post disliked successfully with ID: %s", postId)
 	return nil
 }
 
@@ -228,6 +284,21 @@ func (s *postService) SavePost(userId string, postId string) error {
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
+	postInteractionCollection := tx.GetCollection(model.PostInteractionCollectionName)
+	// check if the user has already saved the post
+	exists, mongoErr := postInteractionCollection.CountDocuments(
+		tx.GetContext(),
+		bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeSave},
+	)
+	if mongoErr != nil {
+		s.logger.Error("Failed to check if post is already saved: %v", mongoErr)
+		return network.NewInternalServerError("Failed to check if post is already saved", network.DB_ERROR, mongoErr)
+	}
+	if exists > 0 {
+		s.logger.Warn("Post already saved by user: %s", postId)
+		return nil
+	}
+
 	postCollection := tx.GetCollection(model.PostCollectionName)
 	// update the viewCount and lastActivity
 	err := postCollection.FindOneAndUpdate(
@@ -239,11 +310,24 @@ func (s *postService) SavePost(userId string, postId string) error {
 		},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
-	if err != nil {
-		s.logger.Error("Failed to save post: %v", err)
-		return network.NewInternalServerError("Failed to save post", network.DB_ERROR, fmt.Errorf("failed to save post: %v", err))
+	if err.Err() != nil {
+		s.logger.Error("Failed to save post: %v", *err)
+		return network.NewInternalServerError("Failed to save post", network.DB_ERROR, fmt.Errorf("failed to save post: %v", *err))
+	}
+	// insert the interaction
+	postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeSave)
+	_, insertErr := postInteractionCollection.InsertOne(tx.GetContext(), postInteraction)
+	if insertErr != nil {
+		s.logger.Error("Failed to insert post interaction: %v", insertErr)
+		return network.NewInternalServerError("Failed to insert post interaction", network.DB_ERROR, fmt.Errorf("failed to insert post interaction: %v", insertErr))
 	}
 
+	if err := tx.Commit(); err != nil {
+		s.logger.Error("Failed to commit transaction: %v", err)
+		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+	}
+
+	s.logger.Info("Post saved successfully with ID: %s", postId)
 	return nil
 }
 
@@ -273,6 +357,12 @@ func (s *postService) SharePost(userId string, postId string) error {
 		return network.NewInternalServerError("Failed to share post", network.DB_ERROR, fmt.Errorf("failed to share post: %v", err))
 	}
 
+	if err := tx.Commit(); err != nil {
+		s.logger.Error("Failed to commit transaction: %v", err)
+		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+	}
+
+	s.logger.Info("Post shared successfully with ID: %s", postId)
 	return nil
 }
 
