@@ -20,8 +20,8 @@ type PostService interface {
 	CreatePost(title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool) (*model.Post, error)
 	GetPost(postId string) (*model.Post, error)
 	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, error)
-	LikePost(userId string, postId string) error
-	DislikePost(userId string, postId string) error
+	LikePost(userId string, postId string) (*bool, *int, error)
+	DislikePost(userId string, postId string) (*bool, *int, error)
 	SavePost(userId string, postId string) error
 	SharePost(userId string, postId string) error
 
@@ -31,23 +31,25 @@ type PostService interface {
 
 type postService struct {
 	network.BaseService
-	mediaService     media.MediaService
-	userService      user.UserService
-	logger           utils.AppLogger
-	communityService community.CommunityService
-	postQueryBuilder mongo.QueryBuilder[model.Post]
-	transaction      mongo.TransactionBuilder
+	mediaService                media.MediaService
+	userService                 user.UserService
+	logger                      utils.AppLogger
+	communityService            community.CommunityService
+	postQueryBuilder            mongo.QueryBuilder[model.Post]
+	postInteractionQueryBuilder mongo.QueryBuilder[model.PostInteraction]
+	transaction                 mongo.TransactionBuilder
 }
 
 func NewPostService(db mongo.Database, userService user.UserService, communityService community.CommunityService, mediaService media.MediaService) PostService {
 	return &postService{
-		BaseService:      network.NewBaseService(),
-		logger:           utils.NewServiceLogger("PostService"),
-		mediaService:     mediaService,
-		userService:      userService,
-		communityService: communityService,
-		postQueryBuilder: mongo.NewQueryBuilder[model.Post](db, model.PostCollectionName),
-		transaction:      mongo.NewTransactionBuilder(db),
+		BaseService:                 network.NewBaseService(),
+		logger:                      utils.NewServiceLogger("PostService"),
+		mediaService:                mediaService,
+		userService:                 userService,
+		communityService:            communityService,
+		postQueryBuilder:            mongo.NewQueryBuilder[model.Post](db, model.PostCollectionName),
+		postInteractionQueryBuilder: mongo.NewQueryBuilder[model.PostInteraction](db, model.PostInteractionCollectionName),
+		transaction:                 mongo.NewTransactionBuilder(db),
 	}
 }
 
@@ -161,12 +163,94 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 	return nil, nil
 }
 
-func (s *postService) LikePost(userId string, postId string) error {
-	return s.toggleInteraction(userId, postId, model.InteractionTypeLike)
+func (s *postService) LikePost(userId string, postId string) (*bool, *int, error) {
+	err := s.toggleInteraction(userId, postId, model.InteractionTypeLike)
+	if err != nil {
+		s.logger.Error("Failed to toggle like interaction: %v", err)
+		return nil, nil, network.NewInternalServerError("Failed to toggle like interaction", network.DB_ERROR, err)
+	}
+
+	//get post synergy
+	postSynergy, err := s.postQueryBuilder.SingleQuery().FindOne(
+		bson.M{"postId": postId},
+		options.FindOne().SetProjection(bson.M{"synergy": 1}),
+	)
+	if err != nil {
+		s.logger.Error("Failed to get post synergy: %v", err)
+		return nil, nil, network.NewInternalServerError("Failed to get post synergy", network.DB_ERROR, err)
+	}
+	//get post interaction
+	postInteraction, err := s.postInteractionQueryBuilder.SingleQuery().FindOne(
+		bson.M{"postId": postId, "userId": userId},
+		options.FindOne().SetProjection(bson.M{"interactionType": 1}),
+	)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			// user has unliked the post
+			falseValue := false
+			return &falseValue, &postSynergy.Synergy, nil
+		}
+		s.logger.Error("Failed to get post interaction: %v", err)
+		return nil, nil, network.NewInternalServerError("Failed to get post interaction", network.DB_ERROR, err)
+	}
+	var isLiked *bool
+	if postInteraction != nil {
+		if postInteraction.InteractionType == model.InteractionTypeLike {
+			trueValue := true
+			isLiked = &trueValue
+		} else {
+			falseValue := false
+			isLiked = &falseValue
+		}
+	} else {
+		isLiked = nil
+	}
+	return isLiked, &postSynergy.Synergy, nil
 }
 
-func (s *postService) DislikePost(userId string, postId string) error {
-	return s.toggleInteraction(userId, postId, model.InteractionTypeDislike)
+func (s *postService) DislikePost(userId string, postId string) (*bool, *int, error) {
+	err := s.toggleInteraction(userId, postId, model.InteractionTypeDislike)
+	if err != nil {
+		s.logger.Error("Failed to toggle dislike interaction: %v", err)
+		return nil, nil, network.NewInternalServerError("Failed to toggle dislike interaction", network.DB_ERROR, err)
+	}
+	//get post synergy
+	postSynergy, err := s.postQueryBuilder.SingleQuery().FindOne(
+		bson.M{"postId": postId},
+		options.FindOne().SetProjection(bson.M{"synergy": 1}),
+	)
+	if err != nil {
+		s.logger.Error("Failed to get post synergy: %v", err)
+		return nil, nil, network.NewInternalServerError("Failed to get post synergy", network.DB_ERROR, err)
+	}
+	//get post interaction
+	postInteraction, err := s.postInteractionQueryBuilder.SingleQuery().FindOne(
+		bson.M{"postId": postId, "userId": userId},
+		options.FindOne().SetProjection(bson.M{"interactionType": 1}),
+	)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			// user has unliked the post
+			falseValue := false
+			return &falseValue, &postSynergy.Synergy, nil
+		}
+		s.logger.Error("Failed to get post interaction: %v", err)
+		return nil, nil, network.NewInternalServerError("Failed to get post interaction", network.DB_ERROR, err)
+	}
+
+	var isLiked *bool
+	if postInteraction != nil {
+		if postInteraction.InteractionType == model.InteractionTypeLike {
+			trueValue := true
+			isLiked = &trueValue
+		} else {
+			falseValue := false
+			isLiked = &falseValue
+		}
+	} else {
+		isLiked = nil
+	}
+	return isLiked, &postSynergy.Synergy, nil
 }
 
 func (s *postService) toggleInteraction(userId string, postId string, interactionType model.InteractionType) error {

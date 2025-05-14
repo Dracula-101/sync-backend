@@ -141,13 +141,17 @@ func (c *postController) LikePost(ctx *gin.Context) {
 	}
 
 	userId := c.MustGetUserId(ctx)
-	err := c.postService.LikePost(*userId, postId)
+	isLiked, synergy, err := c.postService.LikePost(*userId, postId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
 
-	c.Send(ctx).SuccessMsgResponse("Post liked successfully")
+	c.Send(ctx).SuccessDataResponse("Post liked successfully", dto.LikePostResponse{
+		PostId:  postId,
+		IsLiked: isLiked,
+		Synergy: synergy,
+	})
 }
 
 func (c *postController) DislikePost(ctx *gin.Context) {
@@ -157,12 +161,16 @@ func (c *postController) DislikePost(ctx *gin.Context) {
 		return
 	}
 	userId := c.MustGetUserId(ctx)
-	err := c.postService.DislikePost(*userId, postId)
+	isDisliked, synergy, err := c.postService.DislikePost(*userId, postId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
-	c.Send(ctx).SuccessMsgResponse("Post disliked successfully")
+	c.Send(ctx).SuccessDataResponse("Post disliked successfully", dto.DislikePostResponse{
+		PostId:     postId,
+		IsDisliked: isDisliked,
+		Synergy:    synergy,
+	})
 }
 
 func (c *postController) SavePost(ctx *gin.Context) {
