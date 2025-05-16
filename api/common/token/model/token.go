@@ -1,6 +1,8 @@
 package model
 
 import (
+	"encoding/json"
+
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -26,4 +28,33 @@ type TokenClaims struct {
 	UserID string    `json:"user_id"`
 	Type   TokenType `json:"type"`
 	jwt.StandardClaims
+}
+
+// Valid implements jwt.Claims.
+func (c TokenClaims) Valid() error {
+	if err := c.StandardClaims.Valid(); err != nil {
+		return err
+	}
+	if c.Type != AccessToken && c.Type != RefreshToken {
+		return jwt.NewValidationError("invalid token type", jwt.ValidationErrorClaimsInvalid)
+	}
+	return nil
+}
+
+func (c *TokenClaims) GetUserID() string {
+	return c.UserID
+}
+func (c *TokenClaims) UnmarshalJSON(data []byte) error {
+	type Alias TokenClaims
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(c),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	c.UserID = aux.UserID
+	c.Type = aux.Type
+	return nil
 }
