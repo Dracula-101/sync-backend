@@ -8,23 +8,26 @@ import (
 )
 
 type PublicComment struct {
-	Id             string                    `json:"id"`
-	PostId         string                    `json:"post_id"`
-	ParentId       string                    `json:"parent_id,omitempty"`
-	Author         user.PublicUser           `json:"author"`
-	Community      community.PublicCommunity `json:"community"`
-	Content        string                    `json:"content"`
-	Status         CommentStatus             `json:"status"`
-	Synergy        int                       `json:"synergy"`
-	ReplyCount     int                       `json:"reply_count"`
-	ReactionCount  int                       `json:"reaction_count"`
-	ReactionCounts map[ReactionType]int      `json:"reaction_counts"`
-	Reactions      []Reaction                `json:"reactions"`
-	Level          int                       `json:"level"`
-	IsEdited       bool                      `json:"is_edited"`
-	IsPinned       bool                      `json:"is_pinned"`
-	IsLocked       bool                      `json:"is_locked"`
-	IsArchived     bool                      `json:"is_archived"`
-	IsDeleted      bool                      `json:"is_deleted"`
-	CreatedAt      primitive.DateTime        `json:"created_at"`
+	Id               string                    `json:"id"`
+	PostId           string                    `json:"postId"`
+	ParentId         string                    `json:"parentId,omitempty"`
+	Author           user.PublicUser           `json:"author"`
+	Community        community.PublicCommunity `json:"community"`
+	Content          string                    `json:"content"`
+	FormattedContent string                    `json:"formattedContent,omitempty"`
+	Status           CommentStatus             `json:"status"`
+	Synergy          int                       `json:"synergy"` // Overall score
+	ReplyCount       int                       `json:"replyCount"`
+	ReactionCounts   map[ReactionType]int      `json:"reactionCounts,omitempty"` // Count by reaction type
+	Level            int                       `json:"level"`                    // Nesting level (0 for top-level)
+	IsEdited         bool                      `json:"isEdited"`
+	IsPinned         bool                      `json:"isPinned"`   // Pinned by author
+	IsStickied       bool                      `json:"isStickied"` // Stickied by moderator
+	IsLocked         bool                      `json:"isLocked"`   // Can't be replied to
+	IsDeleted        bool                      `json:"isDeleted"`  // Soft delete by user
+	IsRemoved        bool                      `json:"isRemoved"`  // Removed by moderator
+	HasMedia         bool                      `json:"hasMedia"`
+	Mentions         []string                  `json:"mentions,omitempty"`
+	Path             string                    `json:"path"`
+	CreatedAt        primitive.DateTime        `json:"createdAt"`
 }

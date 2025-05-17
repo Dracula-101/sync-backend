@@ -21,8 +21,8 @@ type CommentService interface {
 	CreatePostComment(userId string, comment *dto.CreatePostCommentRequest) (*model.Comment, network.ApiError)
 	EditPostComment(userId string, commentId string, comment *dto.EditPostCommentRequest) (*model.Comment, network.ApiError)
 	DeletePostComment(userId string, commentId string) network.ApiError
-	GetPostComments(userId string, postId string, page int, limit int) ([]*model.Comment, network.ApiError)
-	GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.Comment, network.ApiError)
+	GetPostComments(userId string, postId string, page int, limit int) ([]*model.PublicComment, network.ApiError)
+	GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.PublicComment, network.ApiError)
 
 	CreatePostCommentReply(userId string, comment *dto.CreateCommentReplyRequest) (*model.Comment, network.ApiError)
 	EditPostCommentReply(userId string, commentId string, comment *dto.EditCommentReplyRequest) (*model.Comment, network.ApiError)
@@ -39,6 +39,7 @@ type commentService struct {
 	commentInteractionQueryBuilder mongo.QueryBuilder[model.CommentInteraction]
 	postQueryBuilder               mongo.QueryBuilder[post.Post]
 	communityQueryBuilder          mongo.QueryBuilder[community.Community]
+	commentAggregateBuilder        mongo.AggregateBuilder[model.Comment, model.PublicComment]
 	transaction                    mongo.TransactionBuilder
 }
 
@@ -50,6 +51,7 @@ func NewCommentService(db mongo.Database) CommentService {
 		commentInteractionQueryBuilder: mongo.NewQueryBuilder[model.CommentInteraction](db, model.CommentInteractionCollectionName),
 		postQueryBuilder:               mongo.NewQueryBuilder[post.Post](db, post.PostCollectionName),
 		communityQueryBuilder:          mongo.NewQueryBuilder[community.Community](db, community.CommunityCollectionName),
+		commentAggregateBuilder:        mongo.NewAggregateBuilder[model.Comment, model.PublicComment](db, model.CommentCollectionName),
 		transaction:                    mongo.NewTransactionBuilder(db),
 	}
 }
@@ -152,52 +154,131 @@ func (s *commentService) DeletePostComment(userId string, commentId string) netw
 	return nil
 }
 
-func (s *commentService) GetPostComments(userId string, postId string, page int, limit int) ([]*model.Comment, network.ApiError) {
-	filter := bson.M{
-		"postId":    postId,
-		"isDeleted": false,
-		"status":    model.CommentStatusActive,
-		"parentId":  bson.M{"$exists": false},
-		"path":      postId,
-	}
-	opts := options.FindOptions{
-		Sort: bson.D{
-			{Key: "createdAt", Value: -1},
-			{Key: "synergy", Value: -1},
+func (s *commentService) GetPostComments(userId string, postId string, page int, limit int) ([]*model.PublicComment, network.ApiError) {
+	s.logger.Debug("GetPostComments - postId: %s, page: %d, limit: %d", postId, page, limit)
+	aggregate := s.commentAggregateBuilder.SingleAggregate()
+	aggregate.Match(bson.M{"postId": postId, "status": model.CommentStatusActive, "isDeleted": false, "parentId": bson.M{"$exists": false}})
+	aggregate.Sort(bson.D{{Key: "createdAt", Value: -1}, {Key: "synergy", Value: -1}})
+	aggregate.Limit(int64(limit))
+	aggregate.Skip(int64((page - 1) * limit))
+	aggregate.Lookup("users", "authorId", "userId", "author")
+	aggregate.Lookup("communities", "communityId", "communityId", "community")
+	aggregate.AddFields(bson.M{
+		"author":    bson.M{"$arrayElemAt": bson.A{"$author", 0}},
+		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
+	})
+	aggregate.Project(bson.M{
+		"id":       "$commentId",
+		"postId":   1,
+		"parentId": 1,
+		"author": bson.M{
+			"userId":     "$author.userId",
+			"username":   "$author.username",
+			"email":      "$author.email",
+			"avatar":     "$author.avatar.profilePic.url",
+			"background": "$author.avatar.background.url",
+			"status":     "$author.status",
 		},
-	}
-	comments, err := s.commentQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), &opts)
+		"community": bson.M{
+			"id":          "$community.communityId",
+			"name":        "$community.name",
+			"description": "$community.description",
+			"avatar":      "$community.media.avatar.url",
+			"background":  "$community.media.background.url",
+			"createdAt":   "$community.metadata.createdAt",
+			"status":      "$community.status",
+		},
+		"content":          1,
+		"formattedContent": 1,
+		"status":           1,
+		"synergy":          1,
+		"replyCount":       1,
+		"reactionCounts":   1,
+		"level":            1,
+		"isEdited":         1,
+		"isPinned":         1,
+		"isStickied":       1,
+		"isLocked":         1,
+		"isDeleted":        1,
+		"isRemoved":        1,
+		"hasMedia":         1,
+		"mentions":         1,
+		"path":             1,
+		"createdAt":        1,
+	})
+
+	comments, err := aggregate.Exec()
 	if err != nil {
 		s.logger.Error("Failed to get post comments - %v", err)
 		return nil, network.NewInternalServerError("Failed to get comments", network.DB_ERROR, err)
 	}
 	if len(comments) == 0 {
-		return []*model.Comment{}, nil
+		return []*model.PublicComment{}, nil
 	} else {
 		return comments, nil
 	}
 }
 
-func (s *commentService) GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.Comment, network.ApiError) {
-	filter := bson.M{
-		"postId":    postId,
-		"parentId":  parentId,
-		"isDeleted": false,
-		"status":    model.CommentStatusActive,
-	}
-	opts := options.FindOptions{
-		Sort: bson.D{
-			{Key: "createdAt", Value: -1},
-			{Key: "synergy", Value: -1},
+func (s *commentService) GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.PublicComment, network.ApiError) {
+	s.logger.Debug("GetPostComments - postId: %s, page: %d, limit: %d", postId, page, limit)
+	aggregate := s.commentAggregateBuilder.SingleAggregate()
+	aggregate.Match(bson.M{"postId": postId, "status": model.CommentStatusActive, "isDeleted": false, "parentId": parentId})
+	aggregate.Sort(bson.D{{Key: "createdAt", Value: -1}, {Key: "synergy", Value: -1}})
+	aggregate.Limit(int64(limit))
+	aggregate.Skip(int64((page - 1) * limit))
+	aggregate.Lookup("users", "authorId", "userId", "author")
+	aggregate.Lookup("communities", "communityId", "communityId", "community")
+	aggregate.AddFields(bson.M{
+		"author":    bson.M{"$arrayElemAt": bson.A{"$author", 0}},
+		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
+	})
+	aggregate.Project(bson.M{
+		"id":       "$commentId",
+		"postId":   1,
+		"parentId": 1,
+		"author": bson.M{
+			"userId":     "$author.userId",
+			"username":   "$author.username",
+			"email":      "$author.email",
+			"avatar":     "$author.avatar.profilePic.url",
+			"background": "$author.avatar.background.url",
+			"status":     "$author.status",
 		},
-	}
-	comments, err := s.commentQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), &opts)
+		"community": bson.M{
+			"id":          "$community.communityId",
+			"name":        "$community.name",
+			"description": "$community.description",
+			"avatar":      "$community.media.avatar.url",
+			"background":  "$community.media.background.url",
+			"createdAt":   "$community.metadata.createdAt",
+			"status":      "$community.status",
+		},
+		"content":          1,
+		"formattedContent": 1,
+		"status":           1,
+		"synergy":          1,
+		"replyCount":       1,
+		"reactionCounts":   1,
+		"level":            1,
+		"isEdited":         1,
+		"isPinned":         1,
+		"isStickied":       1,
+		"isLocked":         1,
+		"isDeleted":        1,
+		"isRemoved":        1,
+		"hasMedia":         1,
+		"mentions":         1,
+		"path":             1,
+		"createdAt":        1,
+	})
+
+	comments, err := aggregate.Exec()
 	if err != nil {
-		s.logger.Error("Failed to get post comment replies - %v", err)
-		return nil, network.NewInternalServerError("Failed to get comment replies", network.DB_ERROR, err)
+		s.logger.Error("Failed to get post comments - %v", err)
+		return nil, network.NewInternalServerError("Failed to get comments", network.DB_ERROR, err)
 	}
 	if len(comments) == 0 {
-		return []*model.Comment{}, nil
+		return []*model.PublicComment{}, nil
 	} else {
 		return comments, nil
 	}
