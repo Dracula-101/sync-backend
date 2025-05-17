@@ -173,7 +173,7 @@ func (s *postService) LikePost(userId string, postId string) (*bool, *int, error
 	//get post synergy
 	postSynergy, err := s.postQueryBuilder.SingleQuery().FindOne(
 		bson.M{"postId": postId},
-		options.FindOne().SetProjection(bson.M{"synergy": 1}),
+		options.FindOne().SetProjection(bson.M{"synergy": -1}),
 	)
 	if err != nil {
 		s.logger.Error("Failed to get post synergy: %v", err)
@@ -217,7 +217,7 @@ func (s *postService) DislikePost(userId string, postId string) (*bool, *int, er
 	//get post synergy
 	postSynergy, err := s.postQueryBuilder.SingleQuery().FindOne(
 		bson.M{"postId": postId},
-		options.FindOne().SetProjection(bson.M{"synergy": 1}),
+		options.FindOne().SetProjection(bson.M{"synergy": -1}),
 	)
 	if err != nil {
 		s.logger.Error("Failed to get post synergy: %v", err)

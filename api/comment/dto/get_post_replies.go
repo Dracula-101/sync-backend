@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	coredto "sync-backend/arch/dto"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -11,14 +12,22 @@ import (
 // ||         GetPostReplies Request         ||
 // ===========================================
 
-type GetPostRepliesRequest struct {
+type GetPostRepliesParams struct {
 	coredto.Pagination
 }
 
-func NewGetPostRepliesRequest() *GetPostRepliesRequest {
-	return &GetPostRepliesRequest{
+func NewGetPostRepliesParams() *GetPostRepliesParams {
+	return &GetPostRepliesParams{
 		Pagination: *coredto.NewPagination(),
 	}
+}
+
+type GetPostRepliesRequest struct {
+	PostId string `json:"post_id" binding:"required" validate:"required"`
+}
+
+func NewGetPostRepliesRequest() *GetPostRepliesRequest {
+	return &GetPostRepliesRequest{}
 }
 
 func (l *GetPostRepliesRequest) GetValue() *GetPostRepliesRequest {

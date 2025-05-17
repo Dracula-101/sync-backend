@@ -37,7 +37,7 @@ func (c *commentController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/post/edit/:commentId", c.EditPostComment)
 	group.POST("/post/delete/:commentId", c.DeletePostComment)
 	group.GET("/post/:postId", c.GetPostComments)
-	// group.GET("/post/:postId/reply/:commentId", c.GetPostCommentReplies)
+	group.GET("/post/:postId/reply/:commentId", c.GetPostCommentReplies)
 
 	group.POST("/post/reply/create", c.locationProvider.Middleware(), c.CreatePostCommentReply)
 	group.POST("/post/reply/edit/:commentId", c.EditPostCommentReply)
@@ -127,28 +127,36 @@ func (c *commentController) GetPostComments(ctx *gin.Context) {
 	c.Send(ctx).SuccessDataResponse("Comments retrieved successfully", comments)
 }
 
-// func (c *commentController) GetPostCommentReplies(ctx *gin.Context) {
-// 	commentId := ctx.Param("commentId")
-// 	if commentId == "" {
-// 		c.logger.Error("Comment ID is required")
-// 		c.Send(ctx).BadRequestError("Comment ID is required", nil)
-// 		return
-// 	}
-// 	params, err := network.ReqQuery(ctx, dto.NewGetPostRepliesRequest())
-// 	if err != nil {
-// 		c.logger.Error("Failed to parse query parameters: %v", err)
-// 		return
-// 	}
-// 	userId := c.MustGetUserId(ctx)
-// 	replies, err := c.commentService.GetPostCommentReplies(*userId, commentId, params.Pagination.Page, params.Pagination.Limit)
-// 	if err != nil {
-// 		c.logger.Error("Failed to get post comment replies: %v", err)
-// 		c.Send(ctx).MixedError(err)
-// 		return
-// 	}
+func (c *commentController) GetPostCommentReplies(ctx *gin.Context) {
+	commentId := ctx.Param("commentId")
+	if commentId == "" {
+		c.logger.Error("Comment ID is required")
+		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		return
+	}
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.logger.Error("Post ID is required")
+		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		return
+	}
 
-// 	c.Send(ctx).SuccessDataResponse("Replies retrieved successfully", replies)
-// }
+	params, err := network.ReqQuery(ctx, dto.NewGetPostRepliesParams())
+	if err != nil {
+		c.logger.Error("Failed to parse query parameters: %v", err)
+		return
+	}
+
+	userId := c.MustGetUserId(ctx)
+	replies, err := c.commentService.GetPostCommentReplies(*userId, postId, commentId, params.Page, params.Limit)
+	if err != nil {
+		c.logger.Error("Failed to get post comment replies: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Replies retrieved successfully", replies)
+}
 
 func (c *commentController) CreatePostCommentReply(ctx *gin.Context) {
 	body, err := network.ReqBody(ctx, dto.NewCreateCommentReplyRequest())

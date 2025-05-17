@@ -37,8 +37,8 @@ func (s *LikePostRequest) ValidateErrors(errs validator.ValidationErrors) ([]str
 // ======================================
 
 type LikePostResponse struct {
-	PostId  string `json:"postId" validate:"required"`
-	IsLiked *bool  `json:"isLiked,omitempty"`
+	PostId  string `json:"post_id" validate:"required"`
+	IsLiked *bool  `json:"is_liked,omitempty"`
 	Synergy *int   `json:"synergy,omitempty"`
 }
 

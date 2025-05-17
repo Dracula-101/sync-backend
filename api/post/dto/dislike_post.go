@@ -37,8 +37,8 @@ func (s *DislikePostRequest) ValidateErrors(errs validator.ValidationErrors) ([]
 // ========================================
 
 type DislikePostResponse struct {
-	PostId     string `json:"postId" validate:"required"`
-	IsDisliked *bool  `json:"isDisliked,omitempty"`
+	PostId     string `json:"post_id" validate:"required"`
+	IsDisliked *bool  `json:"is_disliked,omitempty"`
 	Synergy    *int   `json:"synergy,omitempty"`
 }
 

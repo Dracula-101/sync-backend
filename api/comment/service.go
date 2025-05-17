@@ -22,7 +22,8 @@ type CommentService interface {
 	EditPostComment(userId string, commentId string, comment *dto.EditPostCommentRequest) (*model.Comment, network.ApiError)
 	DeletePostComment(userId string, commentId string) network.ApiError
 	GetPostComments(userId string, postId string, page int, limit int) ([]*model.Comment, network.ApiError)
-	// GetPostCommentReplies(userId string, postId string, commentId string, page int, limit int) ([]*model.Comment, network.ApiError)
+	GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.Comment, network.ApiError)
+
 	CreatePostCommentReply(userId string, comment *dto.CreateCommentReplyRequest) (*model.Comment, network.ApiError)
 	EditPostCommentReply(userId string, commentId string, comment *dto.EditCommentReplyRequest) (*model.Comment, network.ApiError)
 	DeletePostCommentReply(userId string, commentId string) network.ApiError
@@ -162,13 +163,38 @@ func (s *commentService) GetPostComments(userId string, postId string, page int,
 	opts := options.FindOptions{
 		Sort: bson.D{
 			{Key: "createdAt", Value: -1},
-			{Key: "synergy", Value: 1},
+			{Key: "synergy", Value: -1},
 		},
 	}
 	comments, err := s.commentQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), &opts)
 	if err != nil {
 		s.logger.Error("Failed to get post comments - %v", err)
 		return nil, network.NewInternalServerError("Failed to get comments", network.DB_ERROR, err)
+	}
+	if len(comments) == 0 {
+		return []*model.Comment{}, nil
+	} else {
+		return comments, nil
+	}
+}
+
+func (s *commentService) GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.Comment, network.ApiError) {
+	filter := bson.M{
+		"postId":    postId,
+		"parentId":  parentId,
+		"isDeleted": false,
+		"status":    model.CommentStatusActive,
+	}
+	opts := options.FindOptions{
+		Sort: bson.D{
+			{Key: "createdAt", Value: -1},
+			{Key: "synergy", Value: -1},
+		},
+	}
+	comments, err := s.commentQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), &opts)
+	if err != nil {
+		s.logger.Error("Failed to get post comment replies - %v", err)
+		return nil, network.NewInternalServerError("Failed to get comment replies", network.DB_ERROR, err)
 	}
 	if len(comments) == 0 {
 		return []*model.Comment{}, nil
@@ -333,7 +359,7 @@ func (s *commentService) LikePostComment(userId string, commentId string) (*bool
 
 	commentSynergy, mongoErr := s.commentQueryBuilder.SingleQuery().FindOne(
 		bson.M{"commentId": commentId},
-		options.FindOne().SetProjection(bson.M{"synergy": 1}),
+		options.FindOne().SetProjection(bson.M{"synergy": -1}),
 	)
 	if mongoErr != nil {
 		s.logger.Error("Failed to get comment synergy - %v", err)
@@ -378,7 +404,7 @@ func (s *commentService) DislikePostComment(userId string, commentId string) (*b
 
 	commentSynergy, mongoErr := s.commentQueryBuilder.SingleQuery().FindOne(
 		bson.M{"commentId": commentId},
-		options.FindOne().SetProjection(bson.M{"synergy": 1}),
+		options.FindOne().SetProjection(bson.M{"synergy": -1}),
 	)
 	if mongoErr != nil {
 		s.logger.Error("Failed to get comment synergy - %v", err)
