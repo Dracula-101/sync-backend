@@ -73,14 +73,16 @@ All authenticated routes require a valid JWT token in the Authorization header:
 - [ ] `POST /community/:communityId/invites/:inviteId/accept` - Accept community invite
 
 ### Comments
-- [ ] `GET /comment/post/:postId` - Get comments for post
-- [ ] `POST /comment/post/:postId` - Add comment to post
+- [X] `GET /comment/post/:postId` - Get comments for post
+- [X] `POST /comment/post/create` - Add comment to post
 - [ ] `GET /comment/:commentId` - Get specific comment
-- [ ] `PUT /comment/:commentId` - Update comment
-- [ ] `DELETE /comment/:commentId` - Delete comment
-- [ ] `POST /comment/:commentId/reply` - Reply to comment
-- [ ] `POST /comment/:commentId/like` - Like a comment
-- [ ] `POST /comment/:commentId/dislike` - Dislike a comment
+- [X] `POST /comment/post/edit/:commentId` - Update comment
+- [X] `POST /comment/post/delete/:commentId` - Delete comment
+- [X] `POST /comment/post/reply/create` - Reply to comment
+- [X] `POST /comment/post/reply/edit/:commentId` - Edit comment reply
+- [X] `POST /comment/post/reply/delete/:commentId` - Delete comment reply
+- [X] `POST /comment/like/:commentId` - Like a comment
+- [X] `POST /comment/dislike/:commentId` - Dislike a comment
 - [ ] `GET /comment/user` - Get comments by current user
 
 ### Messaging
