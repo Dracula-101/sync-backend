@@ -37,7 +37,7 @@ func (s *LikePostCommentRequest) ValidateErrors(errs validator.ValidationErrors)
 // ============================================
 
 type LikePostCommentResponse struct {
-	IsLiked bool `json:"isLiked"`
+	IsLiked bool `json:"is_liked"`
 	Synergy int  `json:"synergy"`
 }
 

@@ -37,7 +37,7 @@ func (s *DislikePostCommentRequest) ValidateErrors(errs validator.ValidationErro
 // ===============================================
 
 type DislikePostCommentResponse struct {
-	IsDisliked bool `json:"isDisliked"`
+	IsDisliked bool `json:"is_disliked"`
 	Synergy    int  `json:"synergy"`
 }
 
