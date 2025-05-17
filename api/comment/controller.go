@@ -14,16 +14,18 @@ type commentController struct {
 	network.BaseController
 	common.ContextPayload
 	authenticatorProvider network.AuthenticationProvider
+	locationProvider      network.LocationProvider
 	logger                utils.AppLogger
 	commentService        CommentService
 }
 
-func NewCommentController(authenticatorProvider network.AuthenticationProvider, commentService CommentService) network.Controller {
+func NewCommentController(authenticatorProvider network.AuthenticationProvider, locationProvider network.LocationProvider, commentService CommentService) *commentController {
 	return &commentController{
 		BaseController:        network.NewBaseController("/api/v1/comment", authenticatorProvider),
 		ContextPayload:        common.NewContextPayload(),
 		logger:                utils.NewServiceLogger("CommentController"),
 		authenticatorProvider: authenticatorProvider,
+		locationProvider:      locationProvider,
 		commentService:        commentService,
 	}
 }
@@ -31,9 +33,15 @@ func NewCommentController(authenticatorProvider network.AuthenticationProvider, 
 func (c *commentController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting comment routes")
 	group.Use(c.authenticatorProvider.Middleware())
-	group.POST("/post/create", c.CreatePostComment)
+	group.POST("/post/create", c.locationProvider.Middleware(), c.CreatePostComment)
 	group.POST("/post/edit/:commentId", c.EditPostComment)
 	group.POST("/post/delete/:commentId", c.DeletePostComment)
+	group.GET("/post/:postId", c.GetPostComments)
+	// group.GET("/post/:postId/reply/:commentId", c.GetPostCommentReplies)
+
+	group.POST("/post/reply/create", c.locationProvider.Middleware(), c.CreatePostCommentReply)
+	group.POST("/post/reply/edit/:commentId", c.EditPostCommentReply)
+	group.POST("/post/reply/delete/:commentId", c.DeletePostCommentReply)
 }
 
 func (c *commentController) CreatePostComment(ctx *gin.Context) {
@@ -43,6 +51,8 @@ func (c *commentController) CreatePostComment(ctx *gin.Context) {
 	}
 
 	userId := c.MustGetUserId(ctx)
+	c.SetRequestDeviceDetails(ctx, &body.BaseDeviceRequest)
+	c.SetRequestLocationDetails(ctx, &body.BaseLocationRequest)
 	_, err = c.commentService.CreatePostComment(*userId, body)
 	if err != nil {
 		c.logger.Error("Failed to create post comment: %v", err)
@@ -55,6 +65,12 @@ func (c *commentController) CreatePostComment(ctx *gin.Context) {
 
 func (c *commentController) EditPostComment(ctx *gin.Context) {
 	commentId := ctx.Param("commentId")
+	if commentId == "" {
+		c.logger.Error("Comment ID is required")
+		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		return
+	}
+
 	body, err := network.ReqBody(ctx, dto.NewEditPostCommentRequest())
 	if err != nil {
 		return
@@ -72,6 +88,110 @@ func (c *commentController) EditPostComment(ctx *gin.Context) {
 }
 
 func (c *commentController) DeletePostComment(ctx *gin.Context) {
+	commentId := ctx.Param("commentId")
+	userId := c.MustGetUserId(ctx)
+
+	err := c.commentService.DeletePostComment(*userId, commentId)
+	if err != nil {
+		c.logger.Error("Failed to delete post comment: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessMsgResponse("Comment deleted successfully")
+}
+
+func (c *commentController) GetPostComments(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.logger.Error("Post ID is required")
+		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		return
+	}
+	params, err := network.ReqQuery(ctx, dto.NewGetPostComentRequest())
+	if err != nil {
+		c.logger.Error("Failed to parse query parameters: %v", err)
+		return
+	}
+	userId := c.MustGetUserId(ctx)
+	comments, err := c.commentService.GetPostComments(*userId, postId, params.Pagination.Page, params.Pagination.Limit)
+	if err != nil {
+		c.logger.Error("Failed to get post comments: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Comments retrieved successfully", comments)
+}
+
+// func (c *commentController) GetPostCommentReplies(ctx *gin.Context) {
+// 	commentId := ctx.Param("commentId")
+// 	if commentId == "" {
+// 		c.logger.Error("Comment ID is required")
+// 		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+// 		return
+// 	}
+// 	params, err := network.ReqQuery(ctx, dto.NewGetPostRepliesRequest())
+// 	if err != nil {
+// 		c.logger.Error("Failed to parse query parameters: %v", err)
+// 		return
+// 	}
+// 	userId := c.MustGetUserId(ctx)
+// 	replies, err := c.commentService.GetPostCommentReplies(*userId, commentId, params.Pagination.Page, params.Pagination.Limit)
+// 	if err != nil {
+// 		c.logger.Error("Failed to get post comment replies: %v", err)
+// 		c.Send(ctx).MixedError(err)
+// 		return
+// 	}
+
+// 	c.Send(ctx).SuccessDataResponse("Replies retrieved successfully", replies)
+// }
+
+func (c *commentController) CreatePostCommentReply(ctx *gin.Context) {
+	body, err := network.ReqBody(ctx, dto.NewCreateCommentReplyRequest())
+	if err != nil {
+		return
+	}
+
+	userId := c.MustGetUserId(ctx)
+	c.SetRequestDeviceDetails(ctx, &body.BaseDeviceRequest)
+	c.SetRequestLocationDetails(ctx, &body.BaseLocationRequest)
+
+	_, err = c.commentService.CreatePostCommentReply(*userId, body)
+	if err != nil {
+		c.logger.Error("Failed to create post comment reply: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessMsgResponse("Comment reply created successfully")
+}
+
+func (c *commentController) EditPostCommentReply(ctx *gin.Context) {
+	commentId := ctx.Param("commentId")
+	if commentId == "" {
+		c.logger.Error("Comment ID is required")
+		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		return
+	}
+
+	body, err := network.ReqBody(ctx, dto.NewEditCommentReplyRequest())
+	if err != nil {
+		return
+	}
+
+	userId := c.MustGetUserId(ctx)
+	_, err = c.commentService.EditPostCommentReply(*userId, commentId, body)
+	if err != nil {
+		c.logger.Error("Failed to edit post comment reply: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessMsgResponse("Comment reply edited successfully")
+
+}
+
+func (c *commentController) DeletePostCommentReply(ctx *gin.Context) {
 	commentId := ctx.Param("commentId")
 	userId := c.MustGetUserId(ctx)
 

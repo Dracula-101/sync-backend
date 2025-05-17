@@ -29,15 +29,6 @@ const (
 	CommentStatusFlagged  CommentStatus = "flagged" // Flagged for review
 )
 
-// VoteType represents the type of vote a user has cast on a comment
-type VoteType int
-
-const (
-	Downvote VoteType = -1
-	NoVote   VoteType = 0
-	Upvote   VoteType = 1
-)
-
 // Metadata represents common metadata fields for the comment
 type Metadata struct {
 	CreatedBy  string         `bson:"createdBy" json:"createdBy"`
@@ -72,20 +63,20 @@ type Reaction struct {
 
 // DeviceInfo represents information about the device used to create the comment
 type DeviceInfo struct {
-	DeviceId   string `bson:"deviceId,omitempty" json:"-"`
-	DeviceType string `bson:"deviceType,omitempty" json:"-"`
-	DeviceOS   string `bson:"deviceOS,omitempty" json:"-"`
-	AppVersion string `bson:"appVersion,omitempty" json:"-"`
+	DeviceId   string `bson:"deviceId" json:"-"`
+	DeviceType string `bson:"deviceType" json:"-"`
+	DeviceOS   string `bson:"deviceOS" json:"-"`
+	AppVersion string `bson:"appVersion" json:"-"`
 }
 
 // LocationInfo represents geographical information about where the comment was created
 type LocationInfo struct {
-	Country   string  `bson:"country,omitempty" json:"-"`
-	City      string  `bson:"city,omitempty" json:"-"`
-	Latitude  float64 `bson:"latitude,omitempty" json:"-"`
-	Longitude float64 `bson:"longitude,omitempty" json:"-"`
-	IpAddress string  `bson:"ipAddress,omitempty" json:"-"`
-	Timezone  string  `bson:"timezone,omitempty" json:"-"`
+	Country   string  `bson:"country" json:"-"`
+	City      string  `bson:"city" json:"-"`
+	Latitude  float64 `bson:"latitude" json:"-"`
+	Longitude float64 `bson:"longitude" json:"-"`
+	IpAddress string  `bson:"ipAddress" json:"-"`
+	Timezone  string  `bson:"timezone" json:"-"`
 }
 
 // ModerationInfo represents moderation-related information for a comment
@@ -103,8 +94,8 @@ type ModerationInfo struct {
 type Comment struct {
 	Id               primitive.ObjectID   `bson:"_id,omitempty" json:"-"`
 	CommentId        string               `bson:"commentId" json:"id"`
-	PostId           string               `bson:"postId" json:"postId" validate:"required"` // ID of the post this comment belongs to
-	ParentId         string               `bson:"parentId,omitempty" json:"parentId"`       // For nested comments/replies
+	PostId           string               `bson:"postId" json:"postId" validate:"required"`     // ID of the post this comment belongs to
+	ParentId         string               `bson:"parentId,omitempty" json:"parentId,omitempty"` // For nested comments/replies
 	AuthorId         string               `bson:"authorId" json:"authorId" validate:"required"`
 	CommunityId      string               `bson:"communityId" json:"communityId" validate:"required"` // Important for community-specific moderation
 	Content          string               `bson:"content" json:"content" validate:"required,max=10000"`
@@ -115,8 +106,7 @@ type Comment struct {
 	ReplyCount       int                  `bson:"replyCount" json:"replyCount"`
 	ReactionCounts   map[ReactionType]int `bson:"reactionCounts,omitempty" json:"reactionCounts,omitempty"` // Count by reaction type
 	Reactions        []Reaction           `bson:"reactions,omitempty" json:"-"`
-	Voters           map[string]VoteType  `bson:"voters,omitempty" json:"-"` // Map of userId to vote type
-	Level            int                  `bson:"level" json:"level"`        // Nesting level (0 for top-level)
+	Level            int                  `bson:"level" json:"level"` // Nesting level (0 for top-level)
 	IsEdited         bool                 `bson:"isEdited" json:"isEdited"`
 	IsPinned         bool                 `bson:"isPinned" json:"isPinned"`     // Pinned by author
 	IsStickied       bool                 `bson:"isStickied" json:"isStickied"` // Stickied by moderator
@@ -126,8 +116,8 @@ type Comment struct {
 	HasMedia         bool                 `bson:"hasMedia" json:"hasMedia"`
 	Mentions         []string             `bson:"mentions,omitempty" json:"mentions,omitempty"` // User IDs mentioned in the comment
 	Metadata         Metadata             `bson:"metadata" json:"-"`
-	DeviceInfo       DeviceInfo           `bson:"deviceInfo,omitempty" json:"-"`
-	LocationInfo     *LocationInfo        `bson:"locationInfo,omitempty" json:"-"`
+	DeviceInfo       DeviceInfo           `bson:"deviceInfo" json:"-"`
+	LocationInfo     LocationInfo         `bson:"locationInfo" json:"-"`
 	ModerationInfo   ModerationInfo       `bson:"moderationInfo,omitempty" json:"-"`
 	Path             string               `bson:"path" json:"path"` // Path for efficient tree traversal (e.g., "root.123.456")
 	CreatedAt        primitive.DateTime   `bson:"createdAt" json:"createdAt"`
@@ -185,7 +175,6 @@ func NewComment(postId string, authorId string, communityId string, content stri
 		IsLocked:       false,
 		IsDeleted:      false,
 		IsRemoved:      false,
-		Voters:         make(map[string]VoteType),
 		ReactionCounts: make(map[ReactionType]int),
 		Path:           path,
 		Metadata: Metadata{
@@ -202,14 +191,16 @@ func NewComment(postId string, authorId string, communityId string, content stri
 }
 
 func (c *Comment) AddDeviceInfo(deviceId string, deviceType string, deviceOS string, appVersion string) {
-	c.DeviceInfo.DeviceId = deviceId
-	c.DeviceInfo.DeviceType = deviceType
-	c.DeviceInfo.DeviceOS = deviceOS
-	c.DeviceInfo.AppVersion = appVersion
+	c.DeviceInfo = DeviceInfo{
+		DeviceId:   deviceId,
+		DeviceType: deviceType,
+		DeviceOS:   deviceOS,
+		AppVersion: appVersion,
+	}
 }
 
 func (c *Comment) AddLocationInfo(country string, city string, latitude float64, longitude float64, ip string, timezone string) {
-	c.LocationInfo = &LocationInfo{
+	c.LocationInfo = LocationInfo{
 		Country:   country,
 		City:      city,
 		Latitude:  latitude,

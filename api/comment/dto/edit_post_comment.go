@@ -11,10 +11,8 @@ import (
 // ============================================
 
 type EditPostCommentRequest struct {
-	CommentId string `json:"comment_id" binding:"required" validate:"required"`
-	Comment   string `json:"comment" binding:"required" validate:"required"`
-	ParentId  string `json:"parent_id" binding:"omitempty" validate:"omitempty"`
-	PostId    string `json:"post_id" binding:"required" validate:"required"`
+	Comment  string `json:"comment" binding:"required" validate:"required"`
+	ParentId string `json:"parent_id" binding:"omitempty" validate:"omitempty"`
 }
 
 func NewEditPostCommentRequest() *EditPostCommentRequest {

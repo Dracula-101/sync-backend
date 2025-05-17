@@ -55,7 +55,7 @@ func (m *appModule) Controllers() []network.Controller {
 		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.CommunityService),
 		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.LocationService),
 		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService),
-		comment.NewCommentController(m.AuthenticationProvider(), m.CommentService),
+		comment.NewCommentController(m.AuthenticationProvider(), m.LocationProvider(), m.CommentService),
 	}
 }
 
