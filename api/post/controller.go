@@ -37,6 +37,9 @@ func (c *postController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/create", c.uploadProvider.Middleware("media"), c.CreatePost)
 	group.GET("/get/:postId", c.GetPost)
 	group.POST("/edit/:postId", c.EditPost)
+	group.POST("/like/:postId", c.LikePost)
+	group.POST("/dislike/:postId", c.DislikePost)
+	group.POST("/save/:postId", c.SavePost)
 
 	// User post routes
 	group.GET("/get/user", c.UserPosts)
@@ -52,8 +55,6 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 	}
 	userId := c.MustGetUserId(ctx)
 	files := c.uploadProvider.GetUploadedFiles(ctx, "media")
-
-	c.logger.Info("Creating post with title: %s", body.Title)
 	var filesList []string
 	if files != nil && len(files.Files) > 0 {
 		for _, file := range files.Files {
@@ -61,7 +62,10 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 			filesList = append(filesList, file.Path)
 		}
 	}
-	// TODO: add media service which uploads the images
+	if len(filesList) > 10 {
+		c.Send(ctx).BadRequestError("You can only upload a maximum of 10 files", nil)
+		return
+	}
 	post, err := c.postService.CreatePost(
 		body.Title,
 		body.Content,
@@ -127,6 +131,61 @@ func (c *postController) EditPost(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessMsgResponse("Post edited successfully")
+}
+
+func (c *postController) LikePost(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		return
+	}
+
+	userId := c.MustGetUserId(ctx)
+	isLiked, synergy, err := c.postService.LikePost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Post liked successfully", dto.LikePostResponse{
+		PostId:  postId,
+		IsLiked: isLiked,
+		Synergy: synergy,
+	})
+}
+
+func (c *postController) DislikePost(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		return
+	}
+	userId := c.MustGetUserId(ctx)
+	isDisliked, synergy, err := c.postService.DislikePost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("Post disliked successfully", dto.DislikePostResponse{
+		PostId:     postId,
+		IsDisliked: isDisliked,
+		Synergy:    synergy,
+	})
+}
+
+func (c *postController) SavePost(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		return
+	}
+	userId := c.MustGetUserId(ctx)
+	err := c.postService.SavePost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessMsgResponse("Post saved successfully")
 }
 
 func (c *postController) UserPosts(ctx *gin.Context) {

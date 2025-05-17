@@ -20,8 +20,8 @@ type SignUpRequest struct {
 	UserName           string                `form:"username" binding:"required" validate:"required,min=3,max=50"`
 	Email              string                `form:"email" binding:"required,email" validate:"email"`
 	Password           string                `form:"password" binding:"required" validate:"required,min=6,max=100"`
-	ProfilePhoto       *multipart.FileHeader `form:"profile_photo" binding:"omitempty" validate:"omitempty"`
-	BackgroundPhoto    *multipart.FileHeader `form:"background_photo" binding:"omitempty" validate:"omitempty"`
+	ProfilePhoto       *multipart.FileHeader `form:"profile_photo" binding:"omitempty"`
+	BackgroundPhoto    *multipart.FileHeader `form:"background_photo" binding:"omitempty"`
 	ProfileFilePath    string
 	BackgroundFilePath string
 }
@@ -46,6 +46,8 @@ func (s *SignUpRequest) ValidateErrors(errs validator.ValidationErrors) ([]strin
 			msgs = append(msgs, fmt.Sprintf("%s must be at most %s characters", err.Field(), err.Param()))
 		case "email":
 			msgs = append(msgs, fmt.Sprintf("%s is not a valid email", err.Field()))
+		case "dive":
+			msgs = append(msgs, fmt.Sprintf("%s must be a valid file", err.Field()))
 		default:
 			msgs = append(msgs, fmt.Sprintf("%s is invalid", err.Field()))
 		}

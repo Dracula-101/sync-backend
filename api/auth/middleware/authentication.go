@@ -59,7 +59,7 @@ func (p *authenticationProvider) Middleware() gin.HandlerFunc {
 
 		tokenString := tokenSplit[len(tokenSplit)-1]
 
-		token, claims, err := p.tokenService.ValidateToken(tokenString)
+		token, claims, err := p.tokenService.ValidateToken(tokenString, true)
 		if err != nil {
 			p.logger.Error("Failed to validate token: %v %v", tokenString, err)
 			p.Send(ctx).UnauthorizedError("Invalid or expired token", err)

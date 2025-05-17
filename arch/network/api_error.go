@@ -43,6 +43,8 @@ const (
 	CACHE_ERROR                      = "CACHE_ERROR"
 	FORBIDDEN_ERROR                  = "FORBIDDEN_ERROR"
 	UnknownErrorCode                 = "UNKNOWN_ERROR"
+
+	MEDIA_ERROR = "MEDIA_ERROR"
 )
 
 func (e *apiError) GetStatusCode() int {

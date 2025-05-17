@@ -17,28 +17,28 @@ import (
 const UserCollectionName = "users"
 
 type User struct {
-	Id                primitive.ObjectID `bson:"_id,omitempty" json:"-"`
-	UserId            string             `bson:"userId" json:"id"`
-	Username          string             `bson:"username" json:"username"`
-	Email             string             `bson:"email" json:"email"`
-	PasswordHash      string             `bson:"passwordHash" json:"-"`
-	Bio               string             `bson:"bio" json:"bio"`
-	VerifiedEmail     bool               `bson:"verifiedEmail" json:"verifiedEmail"`
-	Status            UserStatus         `bson:"status" json:"status"`
-	Avatar            UserAvatar         `bson:"avatar" json:"avatar"`
-	Synergy           UserSynergy        `bson:"synergy" json:"synergy"`
-	Providers         []Provider         `bson:"providers" json:"providers"`
-	JoinedWavelengths []string           `bson:"joinedWavelengths" json:"joinedWavelengths"`
-	ModeratorOf       []string           `bson:"moderatorOf" json:"moderatorOf"`
-	Follows           []string           `bson:"follows" json:"follows"`
-	Followers         []string           `bson:"followers" json:"followers"`
-	Preferences       UserPreferences    `bson:"preferences" json:"preferences"`
-	DeviceTokens      []DeviceToken      `bson:"deviceTokens" json:"-"`
-	LoginHistory      []LoginHistory     `bson:"loginHistory" json:"-"`
-	LastSeen          primitive.DateTime `bson:"lastSeen" json:"lastSeen"`
-	CreatedAt         primitive.DateTime `bson:"createdAt" json:"createdAt"`
-	UpdatedAt         primitive.DateTime `bson:"updatedAt" json:"updatedAt"`
-	DeletedAt         primitive.DateTime `bson:"deletedAt" json:"-"`
+	Id                primitive.ObjectID  `bson:"_id,omitempty" json:"-"`
+	UserId            string              `bson:"userId" json:"id"`
+	Username          string              `bson:"username" json:"username"`
+	Email             string              `bson:"email" json:"email"`
+	PasswordHash      string              `bson:"passwordHash" json:"-"`
+	Bio               string              `bson:"bio" json:"bio"`
+	VerifiedEmail     bool                `bson:"verifiedEmail" json:"verifiedEmail"`
+	Status            UserStatus          `bson:"status" json:"status"`
+	Avatar            UserAvatar          `bson:"avatar" json:"avatar"`
+	Synergy           UserSynergy         `bson:"synergy" json:"synergy"`
+	Providers         []Provider          `bson:"providers" json:"providers"`
+	JoinedWavelengths []string            `bson:"joinedWavelengths" json:"joinedWavelengths"`
+	ModeratorOf       []string            `bson:"moderatorOf" json:"moderatorOf"`
+	Follows           []string            `bson:"follows" json:"follows"`
+	Followers         []string            `bson:"followers" json:"followers"`
+	Preferences       UserPreferences     `bson:"preferences" json:"preferences"`
+	DeviceTokens      []DeviceToken       `bson:"deviceTokens" json:"-"`
+	LoginHistory      []LoginHistory      `bson:"loginHistory" json:"-"`
+	LastSeen          primitive.DateTime  `bson:"lastSeen" json:"lastSeen"`
+	CreatedAt         primitive.DateTime  `bson:"createdAt" json:"createdAt"`
+	UpdatedAt         primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
+	DeletedAt         *primitive.DateTime `bson:"deletedAt" json:"-"`
 }
 
 type UserStatus string
@@ -102,7 +102,7 @@ func NewUser(
 		LastSeen:     primitive.NewDateTimeFromTime(now),
 		CreatedAt:    primitive.NewDateTimeFromTime(now),
 		UpdatedAt:    primitive.NewDateTimeFromTime(now),
-		DeletedAt:    primitive.NewDateTimeFromTime(now),
+		DeletedAt:    nil,
 	}
 	if err := u.Validate(); err != nil {
 		return nil, err
@@ -213,6 +213,6 @@ func (*User) EnsureIndexes(db mongo.Database) {
 			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60).SetName("ttl_user_deleted"),
 		},
 	}
-	mongo.NewQueryBuilder[User](db, UserCollectionName).Query(context.Background()).CreateIndexes(indexes)
+	mongo.NewQueryBuilder[User](db, UserCollectionName).Query(context.Background()).CheckIndexes(indexes)
 
 }

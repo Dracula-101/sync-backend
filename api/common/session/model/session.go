@@ -124,5 +124,5 @@ func (*Session) EnsureIndexes(db mongo.Database) {
 		},
 	}
 
-	mongo.NewQueryBuilder[Session](db, SessionCollectionName).Query(context.Background()).CreateIndexes(indexes)
+	mongo.NewQueryBuilder[Session](db, SessionCollectionName).Query(context.Background()).CheckIndexes(indexes)
 }

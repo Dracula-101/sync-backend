@@ -143,7 +143,13 @@ func (a *aggregator[T, R]) GetPipeline() []bson.D {
 }
 
 // addStage adds a stage to the pipeline, replacing existing stage of the same type if overwriteExisting is true
-func (a *aggregator[T, R]) addStage(stageType StageType, operator string, value interface{}, overwriteExisting bool) {
+func (a *aggregator[T, R]) addStage(stageType StageType, operator string, value any, overwriteExisting bool) {
+	// Special handling for lookup stages - we should allow multiple lookups
+	if stageType == StageLookup {
+		a.pipeline = append(a.pipeline, bson.D{{Key: operator, Value: value}})
+		return
+	}
+
 	if pos, exists := a.stageMap[stageType]; exists && overwriteExisting {
 		// Replace existing stage
 		a.pipeline[pos] = bson.D{{Key: operator, Value: value}}

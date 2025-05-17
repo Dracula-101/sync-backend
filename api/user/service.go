@@ -260,6 +260,19 @@ func (s *userService) FindUserById(userId string) (*model.User, error) {
 		s.log.Error("Error getting user by ID: %v", err)
 		return nil, err
 	}
+	if user.Status == model.Deleted {
+		s.log.Error("User is deleted: %s", userId)
+		return nil, errors.New("user is deleted")
+	}
+	if user.Status == model.Inactive {
+		s.log.Error("User is inactive: %s", userId)
+		return nil, errors.New("user is inactive")
+	}
+	if user.Status == model.Banned {
+		s.log.Error("User is banned: %s", userId)
+		return nil, errors.New("user is banned")
+	}
+
 	s.log.Debug("User found by ID: %s", user.UserId)
 	return user, nil
 }
@@ -274,6 +287,18 @@ func (s *userService) FindUserByEmail(email string) (*model.User, error) {
 		s.log.Error("Error finding user by email: %v", err)
 		return nil, err
 	}
+	if user.Status == model.Deleted {
+		s.log.Error("User is deleted: %s", email)
+		return nil, errors.New("user is deleted")
+	}
+	if user.Status == model.Inactive {
+		s.log.Error("User is inactive: %s", email)
+		return nil, errors.New("user is inactive")
+	}
+	if user.Status == model.Banned {
+		s.log.Error("User is banned: %s", email)
+		return nil, errors.New("user is banned")
+	}
 	s.log.Debug("User found: %s", user.Email)
 	return user, nil
 }
@@ -287,6 +312,18 @@ func (s *userService) FindUserByUsername(username string) (*model.User, error) {
 		}
 		s.log.Error("Error finding user by username: %v", err)
 		return nil, err
+	}
+	if user.Status == model.Deleted {
+		s.log.Error("User is deleted: %s", username)
+		return nil, errors.New("user is deleted")
+	}
+	if user.Status == model.Inactive {
+		s.log.Error("User is inactive: %s", username)
+		return nil, errors.New("user is inactive")
+	}
+	if user.Status == model.Banned {
+		s.log.Error("User is banned: %s", username)
+		return nil, errors.New("user is banned")
 	}
 	s.log.Debug("User found: %s", user.Username)
 	return user, nil

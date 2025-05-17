@@ -308,21 +308,49 @@ func (s *authService) RefreshToken(refreshTokenRequest *dto.RefreshTokenRequest)
 	if err != nil {
 		return nil, network.NewInternalServerError("Error getting session", ERR_SESSION, err)
 	}
-	if session == nil {
-		return nil, network.NewNotFoundError("Session not found", nil)
+	userId, err := s.tokenService.GetUserIdFromToken(refreshTokenRequest.RefreshToken)
+	if err != nil {
+		return nil, network.NewInternalServerError("Error getting user ID from access token", ERR_TOKEN, err)
 	}
-	if session.IsExpired() {
-		return nil, network.NewUnauthorizedError("Session expired", nil)
-	}
-	token, err := s.tokenService.GenerateTokenPair(session.UserID)
+	var accessToken, refreshToken string
+	token, err := s.tokenService.GenerateTokenPair(userId)
 	if err != nil {
 		return nil, network.NewInternalServerError("Error generating token", ERR_TOKEN, err)
 	}
-	_, err = s.sessionService.UpdateSession(session.SessionID, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time())
-	if err != nil {
-		return nil, network.NewInternalServerError("Error updating session", ERR_SESSION_INVALID, err)
+	if session != nil {
+		_, err = s.sessionService.UpdateSession(session.SessionID, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time())
+		if err != nil {
+			return nil, network.NewInternalServerError("Error updating session", ERR_SESSION_INVALID, err)
+		}
+		accessToken = token.AccessToken
+		refreshToken = token.RefreshToken
+	} else {
+		deviceInfo := sessionModels.DeviceInfo{
+			DeviceId:        refreshTokenRequest.DeviceId,
+			DeviceName:      refreshTokenRequest.DeviceName,
+			DeviceType:      refreshTokenRequest.DeviceType,
+			DeviceOS:        refreshTokenRequest.DeviceOS,
+			DeviceModel:     refreshTokenRequest.DeviceModel,
+			DeviceVersion:   refreshTokenRequest.DeviceVersion,
+			DeviceUserAgent: refreshTokenRequest.DeviceUserAgent,
+		}
+		locationInfo := sessionModels.LocationInfo{
+			Country:    refreshTokenRequest.Country,
+			City:       refreshTokenRequest.City,
+			Latitude:   refreshTokenRequest.Latitude,
+			Longitude:  refreshTokenRequest.Longitude,
+			LocaleCode: refreshTokenRequest.Locale,
+			Timezone:   refreshTokenRequest.TimeZone,
+			GmtOffset:  refreshTokenRequest.GMTOffset,
+			IpAddress:  refreshTokenRequest.IpAddress,
+		}
+		session, err := s.sessionService.CreateSession(userId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
+		if err != nil {
+			return nil, network.NewInternalServerError("Error creating session", ERR_SESSION, err)
+		}
+		accessToken = session.Token
+		refreshToken = session.RefreshToken
 	}
-	refreshTokenResponse := dto.NewRefreshTokenResponse(token.AccessToken, token.RefreshToken)
 	s.logger.Success("Tokens refreshed successfully")
-	return refreshTokenResponse, nil
+	return dto.NewRefreshTokenResponse(accessToken, refreshToken), nil
 }

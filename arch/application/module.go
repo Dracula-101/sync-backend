@@ -5,6 +5,7 @@ import (
 
 	"sync-backend/api/auth"
 	authMW "sync-backend/api/auth/middleware"
+	"sync-backend/api/comment"
 	"sync-backend/api/common/location"
 	"sync-backend/api/common/media"
 	"sync-backend/api/common/session"
@@ -41,6 +42,7 @@ type appModule struct {
 	AuthService      auth.AuthService
 	CommunityService community.CommunityService
 	PostService      post.PostService
+	CommentService   comment.CommentService
 }
 
 func (m *appModule) GetInstance() *appModule {
@@ -53,6 +55,7 @@ func (m *appModule) Controllers() []network.Controller {
 		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.CommunityService),
 		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.LocationService),
 		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService),
+		comment.NewCommentController(m.AuthenticationProvider(), m.LocationProvider(), m.CommentService),
 	}
 }
 
@@ -88,6 +91,7 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 	authService := auth.NewAuthService(config, userService, sessionService, tokenService)
 	communityService := community.NewCommunityService(db, mediaService)
 	postService := post.NewPostService(db, userService, communityService, mediaService)
+	commentService := comment.NewCommentService(db)
 	return &appModule{
 		Context: context,
 		Env:     env,
@@ -107,5 +111,6 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 		AuthService:      authService,
 		CommunityService: communityService,
 		PostService:      postService,
+		CommentService:   commentService,
 	}
 }

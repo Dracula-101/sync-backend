@@ -41,6 +41,15 @@ type Community struct {
 	Metadata    Metadata           `bson:"metadata" json:"metadata"`
 }
 
+type CommunityStatus string
+
+const (
+	CommunityStatusActive   CommunityStatus = "active"
+	CommunityStatusInactive CommunityStatus = "inactive"
+	CommunityStatusDeleted  CommunityStatus = "deleted"
+	CommunityStatusBanned   CommunityStatus = "banned"
+)
+
 type CommunityMedia struct {
 	Avatar       Image   `bson:"avatar" json:"avatar"`
 	Background   Image   `bson:"background" json:"background"`
@@ -363,7 +372,6 @@ func (c *Community) Validate() error {
 	validate := validator.New()
 	return validate.Struct(c)
 }
-
 func (c *Community) EnsureIndexes(db mongo.Database) {
 	indexes := []mongod.IndexModel{
 		{
@@ -413,5 +421,143 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 		},
 	}
 
-	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CreateIndexes(indexes)
+	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CheckIndexes(indexes)
+
+	searchIndexes := []mongod.SearchIndexModel{
+		{
+			Definition: bson.D{
+				{Key: "mappings", Value: bson.D{
+					{Key: "dynamic", Value: false},
+					{Key: "fields", Value: bson.D{
+						{Key: "name", Value: bson.D{
+							{Key: "type", Value: "string"},
+							{Key: "analyzer", Value: "standard_lowercase"},
+							{Key: "searchAnalyzer", Value: "standard_lowercase"},
+						}},
+						{Key: "slug", Value: bson.D{
+							{Key: "type", Value: "string"},
+							{Key: "analyzer", Value: "standard_lowercase"},
+							{Key: "searchAnalyzer", Value: "standard_lowercase"},
+						}},
+						{Key: "shortDesc", Value: bson.D{
+							{Key: "type", Value: "string"},
+							{Key: "analyzer", Value: "standard_lowercase"},
+							{Key: "searchAnalyzer", Value: "standard_lowercase"},
+						}},
+						{Key: "description", Value: bson.D{
+							{Key: "type", Value: "string"},
+							{Key: "analyzer", Value: "standard_lowercase"},
+							{Key: "searchAnalyzer", Value: "standard_lowercase"},
+						}},
+						{Key: "tags", Value: bson.D{
+							{Key: "type", Value: "document"},
+							{Key: "fields", Value: bson.D{
+								{Key: "name", Value: bson.D{
+									{Key: "type", Value: "string"},
+									{Key: "analyzer", Value: "standard_lowercase"},
+									{Key: "searchAnalyzer", Value: "standard_lowercase"},
+								}},
+							}},
+						}},
+						{Key: "isPrivate", Value: bson.D{
+							{Key: "type", Value: "boolean"},
+						}},
+						{Key: "status", Value: bson.D{
+							{Key: "type", Value: "string"},
+						}},
+						{Key: "settings", Value: bson.D{
+							{Key: "type", Value: "document"},
+							{Key: "fields", Value: bson.D{
+								{Key: "showInDiscovery", Value: bson.D{
+									{Key: "type", Value: "boolean"},
+								}},
+							}},
+						}},
+						{Key: "stats", Value: bson.D{
+							{Key: "type", Value: "document"},
+							{Key: "fields", Value: bson.D{
+								{Key: "popularityScore", Value: bson.D{
+									{Key: "type", Value: "number"},
+								}},
+							}},
+						}},
+						{Key: "memberCount", Value: bson.D{
+							{Key: "type", Value: "number"},
+						}},
+					}},
+				}},
+				{Key: "analyzers", Value: bson.A{
+					bson.D{
+						{Key: "name", Value: "standard_lowercase"},
+						{Key: "charFilters", Value: bson.A{}},
+						{Key: "tokenizer", Value: bson.D{
+							{Key: "type", Value: "standard"},
+						}},
+						{Key: "tokenFilters", Value: bson.A{
+							bson.D{
+								{Key: "type", Value: "lowercase"},
+							},
+							bson.D{
+								{Key: "type", Value: "edgeGram"},
+								{Key: "minGram", Value: 2},
+								{Key: "maxGram", Value: 20},
+							},
+						}},
+					},
+				}},
+			},
+			Options: options.SearchIndexes().SetName("community_search"),
+		},
+		{
+			Definition: bson.D{
+				{Key: "mappings", Value: bson.D{
+					{Key: "dynamic", Value: false},
+					{Key: "fields", Value: bson.D{
+						{Key: "name", Value: bson.D{
+							{Key: "type", Value: "autocomplete"},
+							{Key: "tokenization", Value: "edgeGram"},
+							{Key: "minGrams", Value: 2},
+							{Key: "maxGrams", Value: 20},
+							{Key: "foldDiacritics", Value: true},
+						}},
+						{Key: "description", Value: bson.D{
+							{Key: "type", Value: "string"},
+							{Key: "analyzer", Value: "lucene.standard"},
+						}},
+						{Key: "shortDesc", Value: bson.D{
+							{Key: "type", Value: "string"},
+							{Key: "analyzer", Value: "lucene.standard"},
+						}},
+						{Key: "tags", Value: bson.D{
+							{Key: "type", Value: "document"},
+							{Key: "fields", Value: bson.D{
+								{Key: "name", Value: bson.D{
+									{Key: "type", Value: "autocomplete"},
+									{Key: "tokenization", Value: "edgeGram"},
+									{Key: "minGrams", Value: 2},
+									{Key: "maxGrams", Value: 15},
+									{Key: "foldDiacritics", Value: true},
+								}},
+								{Key: "description", Value: bson.D{
+									{Key: "type", Value: "string"},
+									{Key: "analyzer", Value: "lucene.standard"},
+								}},
+							}},
+						}},
+						{Key: "status", Value: bson.D{
+							{Key: "type", Value: "string"},
+						}},
+						{Key: "isPrivate", Value: bson.D{
+							{Key: "type", Value: "boolean"},
+						}},
+					}},
+				}},
+				{Key: "analyzer", Value: "lucene.standard"},
+				{Key: "searchAnalyzer", Value: "lucene.standard"},
+			},
+			Options: options.SearchIndexes().SetName("community_autocomplete"),
+		},
+	}
+
+	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CheckSearchIndexes(searchIndexes)
 }

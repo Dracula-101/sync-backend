@@ -1,6 +1,7 @@
 package application
 
 import (
+	comment "sync-backend/api/comment/model"
 	session "sync-backend/api/common/session/model"
 	community "sync-backend/api/community/model"
 	post "sync-backend/api/post/model"
@@ -14,4 +15,7 @@ func EnsureDbIndexes(db mongo.Database) {
 	go mongo.Document[session.Session](&session.Session{}).EnsureIndexes(db)
 	go mongo.Document[community.Community](&community.Community{}).EnsureIndexes(db)
 	go mongo.Document[post.Post](&post.Post{}).EnsureIndexes(db)
+	go mongo.Document[post.PostInteraction](&post.PostInteraction{}).EnsureIndexes(db)
+	go mongo.Document[comment.Comment](&comment.Comment{}).EnsureIndexes(db)
+	go mongo.Document[comment.CommentInteraction](&comment.CommentInteraction{}).EnsureIndexes(db)
 }

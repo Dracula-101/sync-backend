@@ -52,7 +52,7 @@ func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/google", c.locationProvider.Middleware(), c.GoogleLogin)
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
 	group.POST("/forgot-password", c.ForgotPassword)
-	group.POST("/refresh-token", c.RefreshToken)
+	group.POST("/refresh-token", c.locationProvider.Middleware(), c.RefreshToken)
 }
 
 func (c *authController) SignUp(ctx *gin.Context) {
@@ -162,6 +162,8 @@ func (c *authController) RefreshToken(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
+	c.SetRequestDeviceDetails(ctx, &body.BaseDeviceRequest)
+	c.SetRequestLocationDetails(ctx, &body.BaseLocationRequest)
 	data, err := c.authService.RefreshToken(body)
 	if err != nil {
 		c.Send(ctx).MixedError(err)

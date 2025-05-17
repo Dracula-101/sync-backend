@@ -14,7 +14,8 @@ import (
 // TokenService defines the interface for token operations
 type TokenService interface {
 	GenerateTokenPair(userId string) (*model.TokenPair, error)
-	ValidateToken(tokenString string) (*jwt.Token, *model.TokenClaims, error)
+	GetUserIdFromToken(tokenString string) (string, error)
+	ValidateToken(tokenString string, checkExpiry bool) (*jwt.Token, *model.TokenClaims, error)
 	RefreshTokens(refreshToken string) (*model.TokenPair, error)
 }
 
@@ -70,6 +71,20 @@ func (s *tokenService) generateToken(userId string, tokenType model.TokenType, e
 	return signedToken, nil
 }
 
+func (s *tokenService) GetUserIdFromToken(tokenString string) (string, error) {
+	token, claims, err := s.ValidateToken(tokenString, false)
+	if err != nil {
+		return "", fmt.Errorf("token validation failed: %w", err)
+	}
+	if claims.UserID == "" {
+		return "", fmt.Errorf("user ID is empty in token claims")
+	}
+	if !token.Valid {
+		return "", fmt.Errorf("token is not valid")
+	}
+	return claims.UserID, nil
+}
+
 func (s *tokenService) GenerateTokenPair(userId string) (*model.TokenPair, error) {
 	accessToken, err := s.generateToken(userId, model.AccessToken, s.accessTokenExpiry)
 	if err != nil {
@@ -89,44 +104,33 @@ func (s *tokenService) GenerateTokenPair(userId string) (*model.TokenPair, error
 	}, nil
 }
 
-func (s *tokenService) ValidateToken(tokenString string) (*jwt.Token, *model.TokenClaims, error) {
-	token, err := jwt.ParseWithClaims(
-		tokenString,
-		&model.TokenClaims{},
-		func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
-			return s.secretKey, nil
-		},
-	)
+func (s *tokenService) ValidateToken(tokenString string, checkExpiry bool) (*jwt.Token, *model.TokenClaims, error) {
+	claims := &model.TokenClaims{}
+	parser := jwt.Parser{
+		UseJSONNumber:        true,
+		ValidMethods:         []string{"HS256"},
+		SkipClaimsValidation: !checkExpiry,
+	}
+	token, err := parser.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return s.secretKey, nil
+	})
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid token: %s - %w", tokenString, err)
+		return nil, nil, fmt.Errorf("failed to parse token: %w", err)
 	}
 
-	if !token.Valid {
-		return nil, nil, fmt.Errorf("token validation failed")
-	}
-
-	claims, ok := token.Claims.(*model.TokenClaims)
-	if !ok {
-		return nil, nil, fmt.Errorf("invalid token claims format")
-	}
-
-	if claims.Issuer != s.issuer {
-		return nil, nil, fmt.Errorf("invalid token issuer")
-	}
-
-	if claims.Audience != s.audience {
-		return nil, nil, fmt.Errorf("invalid token audience")
+	if checkExpiry && claims.ExpiresAt < time.Now().Unix() {
+		return nil, nil, fmt.Errorf("token has expired")
 	}
 
 	return token, claims, nil
 }
 
 func (s *tokenService) RefreshTokens(refreshToken string) (*model.TokenPair, error) {
-	_, claims, err := s.ValidateToken(refreshToken)
+	_, claims, err := s.ValidateToken(refreshToken, false)
 	if err != nil {
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
