@@ -18,7 +18,7 @@ import (
 
 type PostService interface {
 	CreatePost(title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool) (*model.Post, error)
-	GetPost(postId string) (*model.Post, error)
+	GetPost(postId string) (*model.PublicPost, error)
 	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, error)
 	LikePost(userId string, postId string) (*bool, *int, error)
 	DislikePost(userId string, postId string) (*bool, *int, error)
@@ -37,6 +37,7 @@ type postService struct {
 	communityService            community.CommunityService
 	postQueryBuilder            mongo.QueryBuilder[model.Post]
 	postInteractionQueryBuilder mongo.QueryBuilder[model.PostInteraction]
+	getPostAggregateBuilder     mongo.AggregateBuilder[model.Post, model.PublicPost]
 	transaction                 mongo.TransactionBuilder
 }
 
@@ -49,6 +50,7 @@ func NewPostService(db mongo.Database, userService user.UserService, communitySe
 		communityService:            communityService,
 		postQueryBuilder:            mongo.NewQueryBuilder[model.Post](db, model.PostCollectionName),
 		postInteractionQueryBuilder: mongo.NewQueryBuilder[model.PostInteraction](db, model.PostInteractionCollectionName),
+		getPostAggregateBuilder:     mongo.NewAggregateBuilder[model.Post, model.PublicPost](db, model.PostCollectionName),
 		transaction:                 mongo.NewTransactionBuilder(db),
 	}
 }
@@ -92,20 +94,68 @@ func (s *postService) CreatePost(
 	return post, nil
 }
 
-func (s *postService) GetPost(postId string) (*model.Post, error) {
+func (s *postService) GetPost(postId string) (*model.PublicPost, error) {
 	s.logger.Info("Getting post with ID: %s", postId)
-	filter := bson.M{"postId": postId}
-	post, err := s.postQueryBuilder.SingleQuery().FindOne(filter, nil)
-	if err != nil && !mongo.IsNoDocumentFoundError(err) {
+	// use aggregation to get the post with author and community details
+	aggregate := s.getPostAggregateBuilder.SingleAggregate()
+	aggregate.Match(bson.M{"postId": postId, "status": model.PostStatusActive})
+	aggregate.Sort(bson.D{primitive.E{Key: "createdAt", Value: -1}, primitive.E{Key: "synergy", Value: -1}})
+	aggregate.Lookup("users", "authorId", "userId", "author")
+	aggregate.Lookup("communities", "communityId", "communityId", "community")
+	aggregate.AddFields(bson.M{
+		"author":    bson.M{"$arrayElemAt": bson.A{"$author", 0}},
+		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
+	})
+	aggregate.Project(bson.M{
+		"id":      "$postId",
+		"title":   1,
+		"content": 1,
+		"author": bson.M{
+			"userId":     "$author.userId",
+			"username":   "$author.username",
+			"email":      "$author.email",
+			"avatar":     "$author.avatar.profilePic.url",
+			"background": "$author.avatar.background.url",
+			"status":     "$author.status",
+		},
+		"community": bson.M{
+			"id":          "$community.communityId",
+			"name":        "$community.name",
+			"description": "$community.description",
+			"avatar":      "$community.media.avatar.url",
+			"background":  "$community.media.background.url",
+			"createdAt":   "$community.metadata.createdAt",
+			"status":      "$community.status",
+		},
+		"type":         1,
+		"status":       1,
+		"media":        1,
+		"tags":         1,
+		"synergy":      1,
+		"commentCount": 1,
+		"viewCount":    1,
+		"shareCount":   1,
+		"saveCount":    1,
+		"voters":       1,
+		"isNSFW":       1,
+		"isSpoiler":    1,
+		"isStickied":   1,
+		"isLocked":     1,
+		"isArchived":   1,
+		"createdAt":    1,
+	})
+	// execute the aggregation
+	posts, err := aggregate.Exec()
+	if err != nil {
 		s.logger.Error("Failed to get post: %v", err)
 		return nil, network.NewInternalServerError("Failed to get post", network.DB_ERROR, err)
 	}
-	if post == nil {
+	if len(posts) == 0 {
 		s.logger.Error("Post not found")
 		return nil, network.NewNotFoundError("Post not found", fmt.Errorf("post with ID %s not found", postId))
 	}
-	s.logger.Info("Post retrieved successfully with ID: %s", post.PostId)
-	return post, nil
+	s.logger.Info("Post retrieved successfully with ID: %s", postId)
+	return posts[0], nil
 }
 
 func (s *postService) EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (newPostId *string, err error) {
@@ -118,7 +168,7 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 		s.logger.Error("Cannot edit inactive post with ID: %s", postId)
 		return nil, network.NewForbiddenError("Cannot edit inactive post", fmt.Errorf("post with ID %s is not active", postId))
 	}
-	if post.AuthorId != userId {
+	if post.Author.UserId != userId {
 		s.logger.Error("User is not the author of the post: %s", postId)
 		return nil, network.NewForbiddenError("User is not the author of the post", fmt.Errorf("user with ID %s is not the author of post %s", userId, postId))
 	}

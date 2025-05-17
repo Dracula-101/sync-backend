@@ -41,6 +41,15 @@ type Community struct {
 	Metadata    Metadata           `bson:"metadata" json:"metadata"`
 }
 
+type CommunityStatus string
+
+const (
+	CommunityStatusActive   CommunityStatus = "active"
+	CommunityStatusInactive CommunityStatus = "inactive"
+	CommunityStatusDeleted  CommunityStatus = "deleted"
+	CommunityStatusBanned   CommunityStatus = "banned"
+)
+
 type CommunityMedia struct {
 	Avatar       Image   `bson:"avatar" json:"avatar"`
 	Background   Image   `bson:"background" json:"background"`
