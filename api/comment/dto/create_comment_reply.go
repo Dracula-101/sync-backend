@@ -14,7 +14,7 @@ import (
 type CreateCommentReplyRequest struct {
 	coredto.BaseDeviceRequest
 	coredto.BaseLocationRequest
-	CommentId string `json:"commentId" validate:"required"`
+	CommentId string `json:"comment_id" validate:"required"`
 	Reply     string `json:"reply" validate:"required"`
 }
 

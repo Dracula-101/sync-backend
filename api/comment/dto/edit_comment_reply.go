@@ -11,7 +11,7 @@ import (
 // =============================================
 
 type EditCommentReplyRequest struct {
-	CommentId string `json:"commentId" binding:"required" validate:"required"`
+	CommentId string `json:"comment_id" binding:"required" validate:"required"`
 	Reply     string `json:"reply" binding:"required" validate:"required"`
 }
 

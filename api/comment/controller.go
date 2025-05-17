@@ -42,6 +42,9 @@ func (c *commentController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/post/reply/create", c.locationProvider.Middleware(), c.CreatePostCommentReply)
 	group.POST("/post/reply/edit/:commentId", c.EditPostCommentReply)
 	group.POST("/post/reply/delete/:commentId", c.DeletePostCommentReply)
+
+	group.POST("/like/:commentId", c.LikePostComment)
+	group.POST("/dislike/:commentId", c.DislikePostComment)
 }
 
 func (c *commentController) CreatePostComment(ctx *gin.Context) {
@@ -203,4 +206,32 @@ func (c *commentController) DeletePostCommentReply(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessMsgResponse("Comment deleted successfully")
+}
+
+func (c *commentController) LikePostComment(ctx *gin.Context) {
+	commentId := ctx.Param("commentId")
+	userId := c.MustGetUserId(ctx)
+
+	isLiked, synergy, err := c.commentService.LikePostComment(*userId, commentId)
+	if err != nil {
+		c.logger.Error("Failed to like post comment: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Comment liked successfully", dto.NewLikePostCommentResponse(*isLiked, *synergy))
+}
+
+func (c *commentController) DislikePostComment(ctx *gin.Context) {
+	commentId := ctx.Param("commentId")
+	userId := c.MustGetUserId(ctx)
+
+	isDisliked, synergy, err := c.commentService.DislikePostComment(*userId, commentId)
+	if err != nil {
+		c.logger.Error("Failed to dislike post comment: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Comment disliked successfully", dto.NewDislikePostCommentResponse(*isDisliked, *synergy))
 }
