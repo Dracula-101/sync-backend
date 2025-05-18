@@ -290,7 +290,7 @@ func (s *postService) DislikePost(userId string, postId string) (*bool, *int, er
 
 	var isLiked *bool
 	if postInteraction != nil {
-		if postInteraction.InteractionType == model.InteractionTypeLike {
+		if postInteraction.InteractionType == model.InteractionTypeDislike {
 			trueValue := true
 			isLiked = &trueValue
 		} else {

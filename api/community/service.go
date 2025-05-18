@@ -184,7 +184,7 @@ func (s *communityService) SearchCommunities(query string, page int, limit int, 
 
 	matchStage := bson.M{
 		"$and": []bson.M{
-			{"status": "active"},
+			{"status": model.CommunityStatusActive},
 			{"$or": []bson.M{
 				{"isPrivate": showPrivate},
 				{"settings.showInDiscovery": true},

@@ -40,6 +40,7 @@ func (c *postController) MountRoutes(group *gin.RouterGroup) {
 	group.POST("/like/:postId", c.LikePost)
 	group.POST("/dislike/:postId", c.DislikePost)
 	group.POST("/save/:postId", c.SavePost)
+	group.POST("/share/:postId", c.SharePost)
 
 	// User post routes
 	group.GET("/get/user", c.UserPosts)
@@ -186,6 +187,22 @@ func (c *postController) SavePost(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessMsgResponse("Post saved successfully")
+}
+
+func (c *postController) SharePost(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		return
+	}
+
+	userId := c.MustGetUserId(ctx)
+	err := c.postService.SharePost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessMsgResponse("Post shared successfully")
 }
 
 func (c *postController) UserPosts(ctx *gin.Context) {
