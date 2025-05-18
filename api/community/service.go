@@ -314,42 +314,6 @@ func (s *communityService) SearchCommunities(query string, page int, limit int, 
 		return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, err)
 	}
 
-	if len(communitiesResults) == 0 && query != "" {
-		s.logger.Info("No communities found for query: %s, trying fuzzy search", query)
-
-		backupAggregator := s.communitySearchPipeline.
-			Aggregate(s.Context()).
-			AllowDiskUse(true)
-
-		backupSearchQuery := bson.M{
-			"index": "community_search",
-			"text": bson.M{
-				"query": query,
-				"path":  []string{"name", "slug", "shortDesc", "tags.name"},
-				"fuzzy": bson.M{"maxEdits": 2},
-			},
-			"highlight": bson.M{
-				"path": []string{"name", "description", "shortDesc", "tags.name", "slug"},
-			},
-		}
-
-		backupResults, backupErr := backupAggregator.
-			Search("community_search", backupSearchQuery).
-			Match(bson.M{"status": "active"}).
-			Sort(bson.M{"score": -1, "memberCount": -1}).
-			Skip(int64((page - 1) * limit)).
-			Limit(int64(limit)).
-			Exec()
-
-		backupAggregator.Close()
-		if backupErr == nil {
-			communitiesResults = backupResults
-		} else {
-			s.logger.Error("Error executing backup community search: %v", backupErr)
-			return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, backupErr)
-		}
-	}
-
 	aggregator.Close()
 	return communitiesResults, nil
 }

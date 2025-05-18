@@ -273,11 +273,6 @@ func (c *commentController) GetUserComments(ctx *gin.Context) {
 
 func (c *commentController) GetMyUserComments(ctx *gin.Context) {
 	userId := c.MustGetUserId(ctx)
-	if userId == nil {
-		c.logger.Error("User ID is required")
-		c.Send(ctx).BadRequestError("User ID is required", nil)
-		return
-	}
 
 	params, err := network.ReqQuery(ctx, dto.NewGetMyCommentsRequest())
 	if err != nil {
