@@ -30,6 +30,8 @@ type CommentService interface {
 
 	LikePostComment(userId string, commentId string) (*bool, *int, network.ApiError)
 	DislikePostComment(userId string, commentId string) (*bool, *int, network.ApiError)
+
+	GetUserComments(userId string, page int, limit int) ([]*model.PublicComment, network.ApiError)
 }
 
 type commentService struct {
@@ -681,4 +683,70 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 
 	s.logger.Info("Comment interaction updated successfully for comment ID: %s", commentId)
 	return nil
+}
+
+func (s *commentService) GetUserComments(userId string, page int, limit int) ([]*model.PublicComment, network.ApiError) {
+	s.logger.Debug("GetMyUserComments - userId: %s, page: %d, limit: %d", userId, page, limit)
+	aggregate := s.commentAggregateBuilder.SingleAggregate()
+	aggregate.Match(bson.M{"authorId": userId})
+	aggregate.Sort(bson.D{{Key: "createdAt", Value: -1}, {Key: "synergy", Value: -1}})
+	aggregate.Limit(int64(limit))
+	aggregate.Skip(int64((page - 1) * limit))
+	aggregate.Lookup("users", "authorId", "userId", "author")
+	aggregate.Lookup("communities", "communityId", "communityId", "community")
+	aggregate.AddFields(bson.M{
+		"author":    bson.M{"$arrayElemAt": bson.A{"$author", 0}},
+		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
+	})
+	aggregate.Project(bson.M{
+		"id":       "$commentId",
+		"postId":   1,
+		"parentId": 1,
+		"author": bson.M{
+			"userId":     "$author.userId",
+			"username":   "$author.username",
+			"email":      "$author.email",
+			"avatar":     "$author.avatar.profilePic.url",
+			"background": "$author.avatar.background.url",
+			"status":     "$author.status",
+		},
+		"community": bson.M{
+			"id":          "$community.communityId",
+			"name":        "$community.name",
+			"description": "$community.description",
+			"avatar":      "$community.media.avatar.url",
+			"background":  "$community.media.background.url",
+			"createdAt":   "$community.metadata.createdAt",
+			"status":      "$community.status",
+		},
+
+		"content":          1,
+		"formattedContent": 1,
+		"status":           1,
+		"synergy":          1,
+		"replyCount":       1,
+		"reactionCounts":   1,
+		"level":            1,
+		"isEdited":         1,
+		"isPinned":         1,
+		"isStickied":       1,
+		"isLocked":         1,
+		"isDeleted":        1,
+		"isRemoved":        1,
+		"hasMedia":         1,
+		"mentions":         1,
+		"path":             1,
+		"createdAt":        1,
+	})
+	comments, err := aggregate.Exec()
+	if err != nil {
+		s.logger.Error("Failed to get my comments - %v", err)
+		return nil, network.NewInternalServerError("Failed to get comments", network.DB_ERROR, err)
+	}
+
+	if len(comments) == 0 {
+		return []*model.PublicComment{}, nil
+	} else {
+		return comments, nil
+	}
 }

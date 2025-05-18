@@ -45,6 +45,9 @@ func (c *commentController) MountRoutes(group *gin.RouterGroup) {
 
 	group.POST("/like/:commentId", c.LikePostComment)
 	group.POST("/dislike/:commentId", c.DislikePostComment)
+
+	group.GET("/user/:userId", c.GetUserComments)
+	group.GET("/user", c.GetMyUserComments)
 }
 
 func (c *commentController) CreatePostComment(ctx *gin.Context) {
@@ -242,4 +245,52 @@ func (c *commentController) DislikePostComment(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessDataResponse("Comment disliked successfully", dto.NewDislikePostCommentResponse(*isDisliked, *synergy))
+}
+
+func (c *commentController) GetUserComments(ctx *gin.Context) {
+	userId := ctx.Param("userId")
+	if userId == "" {
+		c.logger.Error("User ID is required")
+		c.Send(ctx).BadRequestError("User ID is required", nil)
+		return
+	}
+
+	params, err := network.ReqQuery(ctx, dto.NewGetUserCommentRequest())
+	if err != nil {
+		c.logger.Error("Failed to parse query parameters: %v", err)
+		return
+	}
+
+	comments, err := c.commentService.GetUserComments(userId, params.Pagination.Page, params.Pagination.Limit)
+	if err != nil {
+		c.logger.Error("Failed to get user comments: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Comments retrieved successfully", comments)
+}
+
+func (c *commentController) GetMyUserComments(ctx *gin.Context) {
+	userId := c.MustGetUserId(ctx)
+	if userId == nil {
+		c.logger.Error("User ID is required")
+		c.Send(ctx).BadRequestError("User ID is required", nil)
+		return
+	}
+
+	params, err := network.ReqQuery(ctx, dto.NewGetMyCommentsRequest())
+	if err != nil {
+		c.logger.Error("Failed to parse query parameters: %v", err)
+		return
+	}
+
+	comments, err := c.commentService.GetUserComments(*userId, params.Pagination.Page, params.Pagination.Limit)
+	if err != nil {
+		c.logger.Error("Failed to get my comments: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Comments retrieved successfully", comments)
 }
