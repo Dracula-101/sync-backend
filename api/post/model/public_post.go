@@ -28,6 +28,8 @@ type PublicPost struct {
 	IsStickied   bool                      `json:"isStickied"`
 	IsLocked     bool                      `json:"isLocked"`
 	IsArchived   bool                      `json:"isArchived"`
+	IsLiked      bool                      `json:"isLiked"`
+	IsDisliked   bool                      `json:"isDisliked"`
 	CreatedAt    primitive.DateTime        `json:"createdAt"`
 }
 

@@ -165,11 +165,48 @@ func (s *commentService) GetPostComments(userId string, postId string, page int,
 	aggregate.Skip(int64((page - 1) * limit))
 	aggregate.Lookup("users", "authorId", "userId", "author")
 	aggregate.Lookup("communities", "communityId", "communityId", "community")
+
+	// Lookup user's interaction with these comments if userId is provided
+	if userId != "" {
+		aggregate.Lookup(
+			model.CommentInteractionCollectionName,
+			"commentId",
+			"commentId",
+			"interactions",
+		)
+	}
+
 	aggregate.AddFields(bson.M{
 		"author":    bson.M{"$arrayElemAt": bson.A{"$author", 0}},
 		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
 	})
-	aggregate.Project(bson.M{
+
+	// If userId is provided, filter interactions for this specific user
+	if userId != "" {
+		aggregate.AddFields(bson.M{
+			"userInteractions": bson.M{
+				"$filter": bson.M{
+					"input": "$interactions",
+					"as":    "interaction",
+					"cond": bson.M{
+						"$and": bson.A{
+							bson.M{"$eq": bson.A{"$$interaction.userId", userId}},
+							bson.M{"$in": bson.A{
+								"$$interaction.interactionType",
+								bson.A{model.CommentInteractionTypeLike, model.CommentInteractionTypeDislike},
+							}},
+						},
+					},
+				},
+			},
+		})
+		aggregate.AddFields(bson.M{
+			"userInteraction": bson.M{"$arrayElemAt": bson.A{"$userInteractions", 0}},
+		})
+	}
+
+	// Project fields including conditional isLiked/isDisliked fields when userId is provided
+	projectFields := bson.M{
 		"id":       "$commentId",
 		"postId":   1,
 		"parentId": 1,
@@ -207,7 +244,32 @@ func (s *commentService) GetPostComments(userId string, postId string, page int,
 		"mentions":         1,
 		"path":             1,
 		"createdAt":        1,
-	})
+	}
+
+	if userId != "" {
+		projectFields["isLiked"] = bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.CommentInteractionTypeLike}},
+				}},
+				true,
+				false,
+			},
+		}
+		projectFields["isDisliked"] = bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.CommentInteractionTypeDislike}},
+				}},
+				true,
+				false,
+			},
+		}
+	}
+
+	aggregate.Project(projectFields)
 
 	comments, err := aggregate.Exec()
 	if err != nil {
@@ -230,11 +292,48 @@ func (s *commentService) GetPostCommentReplies(userId string, postId string, par
 	aggregate.Skip(int64((page - 1) * limit))
 	aggregate.Lookup("users", "authorId", "userId", "author")
 	aggregate.Lookup("communities", "communityId", "communityId", "community")
+
+	// Lookup user's interaction with these comment replies if userId is provided
+	if userId != "" {
+		aggregate.Lookup(
+			model.CommentInteractionCollectionName,
+			"commentId",
+			"commentId",
+			"interactions",
+		)
+	}
+
 	aggregate.AddFields(bson.M{
 		"author":    bson.M{"$arrayElemAt": bson.A{"$author", 0}},
 		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
 	})
-	aggregate.Project(bson.M{
+
+	// If userId is provided, filter interactions for this specific user
+	if userId != "" {
+		aggregate.AddFields(bson.M{
+			"userInteractions": bson.M{
+				"$filter": bson.M{
+					"input": "$interactions",
+					"as":    "interaction",
+					"cond": bson.M{
+						"$and": bson.A{
+							bson.M{"$eq": bson.A{"$$interaction.userId", userId}},
+							bson.M{"$in": bson.A{
+								"$$interaction.interactionType",
+								bson.A{model.CommentInteractionTypeLike, model.CommentInteractionTypeDislike},
+							}},
+						},
+					},
+				},
+			},
+		})
+		aggregate.AddFields(bson.M{
+			"userInteraction": bson.M{"$arrayElemAt": bson.A{"$userInteractions", 0}},
+		})
+	}
+
+	// Project fields including conditional isLiked/isDisliked fields
+	projectFields := bson.M{
 		"id":       "$commentId",
 		"postId":   1,
 		"parentId": 1,
@@ -272,7 +371,32 @@ func (s *commentService) GetPostCommentReplies(userId string, postId string, par
 		"mentions":         1,
 		"path":             1,
 		"createdAt":        1,
-	})
+	}
+
+	if userId != "" {
+		projectFields["isLiked"] = bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.CommentInteractionTypeLike}},
+				}},
+				true,
+				false,
+			},
+		}
+		projectFields["isDisliked"] = bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.CommentInteractionTypeDislike}},
+				}},
+				true,
+				false,
+			},
+		}
+	}
+
+	aggregate.Project(projectFields)
 
 	comments, err := aggregate.Exec()
 	if err != nil {
@@ -694,10 +818,42 @@ func (s *commentService) GetUserComments(userId string, page int, limit int) ([]
 	aggregate.Skip(int64((page - 1) * limit))
 	aggregate.Lookup("users", "authorId", "userId", "author")
 	aggregate.Lookup("communities", "communityId", "communityId", "community")
+
+	// Include the user's own interactions with their comments
+	aggregate.Lookup(
+		model.CommentInteractionCollectionName,
+		"commentId",
+		"commentId",
+		"interactions",
+	)
+
 	aggregate.AddFields(bson.M{
 		"author":    bson.M{"$arrayElemAt": bson.A{"$author", 0}},
 		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
 	})
+
+	// Filter interactions for this specific user
+	aggregate.AddFields(bson.M{
+		"userInteractions": bson.M{
+			"$filter": bson.M{
+				"input": "$interactions",
+				"as":    "interaction",
+				"cond": bson.M{
+					"$and": bson.A{
+						bson.M{"$eq": bson.A{"$$interaction.userId", userId}},
+						bson.M{"$in": bson.A{
+							"$$interaction.interactionType",
+							bson.A{model.CommentInteractionTypeLike, model.CommentInteractionTypeDislike},
+						}},
+					},
+				},
+			},
+		},
+	})
+
+	aggregate.AddFields(bson.M{
+		"userInteraction": bson.M{"$arrayElemAt": bson.A{"$userInteractions", 0}},
+	}) // Project fields including isLiked/isDisliked flags
 	aggregate.Project(bson.M{
 		"id":       "$commentId",
 		"postId":   1,
@@ -719,7 +875,26 @@ func (s *commentService) GetUserComments(userId string, page int, limit int) ([]
 			"createdAt":   "$community.metadata.createdAt",
 			"status":      "$community.status",
 		},
-
+		"isLiked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.CommentInteractionTypeLike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isDisliked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.CommentInteractionTypeDislike}},
+				}},
+				true,
+				false,
+			},
+		},
 		"content":          1,
 		"formattedContent": 1,
 		"status":           1,

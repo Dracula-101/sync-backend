@@ -29,5 +29,7 @@ type PublicComment struct {
 	HasMedia         bool                      `json:"hasMedia"`
 	Mentions         []string                  `json:"mentions,omitempty"`
 	Path             string                    `json:"path"`
+	IsLiked          bool                      `json:"isLiked"`
+	IsDisliked       bool                      `json:"isDisliked"`
 	CreatedAt        primitive.DateTime        `json:"createdAt"`
 }

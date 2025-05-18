@@ -94,7 +94,9 @@ func (c *postController) GetPost(ctx *gin.Context) {
 		c.Send(ctx).BadRequestError("Post ID is required", nil)
 		return
 	}
-	post, err := c.postService.GetPost(postId)
+
+	userId := c.MustGetUserId(ctx)
+	post, err := c.postService.GetPost(postId, *userId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return

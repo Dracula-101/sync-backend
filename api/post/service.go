@@ -18,7 +18,7 @@ import (
 
 type PostService interface {
 	CreatePost(title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool) (*model.Post, error)
-	GetPost(postId string) (*model.PublicPost, error)
+	GetPost(postId string, userId string) (*model.PublicPost, error)
 	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, error)
 	LikePost(userId string, postId string) (*bool, *int, error)
 	DislikePost(userId string, postId string) (*bool, *int, error)
@@ -94,7 +94,7 @@ func (s *postService) CreatePost(
 	return post, nil
 }
 
-func (s *postService) GetPost(postId string) (*model.PublicPost, error) {
+func (s *postService) GetPost(postId string, userId string) (*model.PublicPost, error) {
 	s.logger.Info("Getting post with ID: %s", postId)
 	// use aggregation to get the post with author and community details
 	aggregate := s.getPostAggregateBuilder.SingleAggregate()
@@ -102,9 +102,28 @@ func (s *postService) GetPost(postId string) (*model.PublicPost, error) {
 	aggregate.Sort(bson.D{primitive.E{Key: "createdAt", Value: -1}, primitive.E{Key: "synergy", Value: -1}})
 	aggregate.Lookup("users", "authorId", "userId", "author")
 	aggregate.Lookup("communities", "communityId", "communityId", "community")
+	aggregate.Lookup(model.PostInteractionCollectionName, "postId", "postId", "interactions")
 	aggregate.AddFields(bson.M{
 		"author":    bson.M{"$arrayElemAt": bson.A{"$author", 0}},
 		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
+		"userInteractions": bson.M{
+			"$filter": bson.M{
+				"input": "$interactions",
+				"as":    "interaction",
+				"cond": bson.M{
+					"$and": bson.A{
+						bson.M{"$eq": bson.A{"$$interaction.userId", userId}},
+						bson.M{"$in": bson.A{
+							"$$interaction.interactionType",
+							bson.A{model.InteractionTypeLike, model.InteractionTypeDislike},
+						}},
+					},
+				},
+			},
+		},
+	}) // Calculate isLiked and isDisliked flags
+	aggregate.AddFields(bson.M{
+		"userInteraction": bson.M{"$arrayElemAt": bson.A{"$userInteractions", 0}},
 	})
 	aggregate.Project(bson.M{
 		"id":      "$postId",
@@ -126,6 +145,26 @@ func (s *postService) GetPost(postId string) (*model.PublicPost, error) {
 			"background":  "$community.media.background.url",
 			"createdAt":   "$community.metadata.createdAt",
 			"status":      "$community.status",
+		},
+		"isLiked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeLike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isDisliked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeDislike}},
+				}},
+				true,
+				false,
+			},
 		},
 		"type":         1,
 		"status":       1,
@@ -160,7 +199,7 @@ func (s *postService) GetPost(postId string) (*model.PublicPost, error) {
 
 func (s *postService) EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (newPostId *string, err error) {
 	s.logger.Info("Editing post with ID: %s", postId)
-	post, err := s.GetPost(postId)
+	post, err := s.GetPost(postId, userId)
 	if err != nil {
 		return nil, err
 	}
