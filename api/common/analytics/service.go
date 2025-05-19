@@ -33,7 +33,7 @@ func (s *analyticsService) ApplyGetPost(postId string) error {
 		return err
 	}
 
-	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
 		postCollection := session.Collection(post.PostCollectionName)
 		communityCollection := session.Collection(community.CommunityCollectionName)
 
@@ -74,7 +74,7 @@ func (s *analyticsService) ApplyJoinCommunity(communityId string) error {
 		return err
 	}
 
-	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
 		communityCollection := session.Collection(community.CommunityCollectionName)
 
 		// Update the community stats
@@ -121,7 +121,7 @@ func (s *analyticsService) ApplyLeaveCommunity(communityId string) error {
 		return err
 	}
 
-	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
 		communityCollection := session.Collection(community.CommunityCollectionName)
 		// Get current community data for calculating growth rate
 		var communityData community.Community

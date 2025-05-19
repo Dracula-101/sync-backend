@@ -249,12 +249,12 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 
 	// Start a transaction for consistent state
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	if err := tx.Start(); err != nil {
-		s.logger.Error("Failed to start transaction: %v", err)
-		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	}
+	// if err := tx.Start(); err != nil {
+	// 	s.logger.Error("Failed to start transaction: %v", err)
+	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+	// }
 
-	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
 		communityCollection := session.Collection(model.CommunityCollectionName)
 		now := time.Now()
 		ptNow := primitive.NewDateTimeFromTime(now)
@@ -316,7 +316,7 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
-	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
 		communityCollection := session.Collection(model.CommunityCollectionName)
 		now := time.Now()
 		ptNow := primitive.NewDateTimeFromTime(now)

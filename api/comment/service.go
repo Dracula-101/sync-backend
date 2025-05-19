@@ -661,7 +661,7 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
-	err := tx.PerformTransaction(func(sessionCtx mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(sessionCtx mongo.DatabaseSession) error {
 		commentCollection := sessionCtx.Collection(model.CommentCollectionName)
 
 		var commentDoc model.Comment

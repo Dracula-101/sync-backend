@@ -350,12 +350,12 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 	s.logger.Info("%s post with ID: %s by user: %s", action, postId, userId)
 
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	if err := tx.Start(); err != nil {
-		s.logger.Error("Failed to start transaction: %v", err)
-		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	}
+	// if err := tx.Start(); err != nil {
+	// 	s.logger.Error("Failed to start transaction: %v", err)
+	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+	// }
 
-	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
 		postInteractionCollection := session.Collection(model.PostInteractionCollectionName)
 		cursor, err := postInteractionCollection.Find(
 			bson.M{
@@ -486,12 +486,12 @@ func (s *postService) SavePost(userId string, postId string) error {
 	s.logger.Info("Saving post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
 
-	if err := tx.Start(); err != nil {
-		s.logger.Error("Failed to start transaction: %v", err)
-		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	}
+	// if err := tx.Start(); err != nil {
+	// 	s.logger.Error("Failed to start transaction: %v", err)
+	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+	// }
 
-	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
 		postInteractionCollection := session.Collection(model.PostInteractionCollectionName)
 		// check if the user has already saved the post
 		exists, mongoErr := postInteractionCollection.CountDocuments(
@@ -546,12 +546,12 @@ func (s *postService) SavePost(userId string, postId string) error {
 func (s *postService) SharePost(userId string, postId string) error {
 	s.logger.Info("Sharing post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	if err := tx.Start(); err != nil {
-		s.logger.Error("Failed to start transaction: %v", err)
-		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	}
+	// if err := tx.Start(); err != nil {
+	// 	s.logger.Error("Failed to start transaction: %v", err)
+	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+	// }
 
-	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
 		postCollection := session.Collection(model.PostCollectionName)
 		// update the viewCount and lastActivityAt
 		result := postCollection.FindOneAndUpdate(
