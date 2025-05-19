@@ -441,7 +441,7 @@ func (s *userService) FollowUser(userId string, followUserId string) error {
 		s.log.Error("Error starting transaction: %v", err)
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
-	err = transaction.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		userCollection := session.Collection(model.UserCollectionName)
 		_, err = userCollection.UpdateOne(
 			bson.M{"userId": userId},
@@ -501,7 +501,7 @@ func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
-	err = transaction.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		userCollection := session.Collection(model.UserCollectionName)
 		_, err = userCollection.UpdateOne(
 			bson.M{"userId": userId},
@@ -560,7 +560,7 @@ func (s *userService) BlockUser(userId string, blockUserId string) error {
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
-	err = transaction.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		userCollection := session.Collection(model.UserCollectionName)
 		_, err = userCollection.UpdateOne(
 			bson.M{"userId": userId},
@@ -605,7 +605,7 @@ func (s *userService) UnblockUser(userId string, unblockUserId string) error {
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
-	err = transaction.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		userCollection := session.Collection(model.UserCollectionName)
 		_, err = userCollection.UpdateOne(
 			bson.M{"userId": userId},

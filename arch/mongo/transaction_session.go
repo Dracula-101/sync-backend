@@ -5,9 +5,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// DatabaseSession represents an abstracted MongoDB session for transactions
+// TransactionSession represents an abstracted MongoDB session for transactions
 // It provides access to collections without requiring MongoDB-specific dependencies
-type DatabaseSession interface {
+type TransactionSession interface {
 	// Collection returns a handle to a collection in the default database
 	Collection(name string) CollectionHandle
 	// Client returns a handle to the database client
@@ -28,7 +28,9 @@ type CollectionHandle interface {
 	InsertOne(document interface{}) (interface{}, error)
 	// InsertMany inserts multiple documents and returns their IDs
 	InsertMany(documents []interface{}) ([]interface{}, error)
+
 	// UpdateOne updates a single document and returns the number of modified documents
+	UpsertOne(filter interface{}, update interface{}) (int64, error)
 	UpdateOne(filter interface{}, update interface{}) (int64, error)
 	// UpdateMany updates multiple documents and returns the number of modified documents
 	UpdateMany(filter interface{}, update interface{}) (int64, error)
@@ -89,7 +91,7 @@ type sessionContextAdapter struct {
 	database string
 }
 
-func newSessionContextAdapter(ctx mongo.SessionContext, database string) DatabaseSession {
+func newSessionContextAdapter(ctx mongo.SessionContext, database string) TransactionSession {
 	return &sessionContextAdapter{
 		ctx:      ctx,
 		database: database,
@@ -139,6 +141,15 @@ func (c *collectionAdapter) InsertMany(documents []interface{}) ([]interface{}, 
 		return nil, err
 	}
 	return result.InsertedIDs, nil
+}
+
+func (c *collectionAdapter) UpsertOne(filter interface{}, update interface{}) (int64, error) {
+	opts := options.Update().SetUpsert(true)
+	result, err := c.coll.UpdateOne(c.ctx, filter, update, opts)
+	if err != nil {
+		return 0, err
+	}
+	return result.ModifiedCount, nil
 }
 
 func (c *collectionAdapter) UpdateOne(filter interface{}, update interface{}) (int64, error) {

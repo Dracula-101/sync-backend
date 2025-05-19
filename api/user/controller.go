@@ -220,7 +220,7 @@ func (c *userController) LeaveCommunity(ctx *gin.Context) {
 		return
 	}
 
-	err = c.userService.LeaveCommunity(*userId, communityId)
+	err = c.communityService.LeaveCommunity(*userId, communityId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return

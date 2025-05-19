@@ -8,16 +8,41 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type TransactionCallback func(sessionCtx DatabaseSession) error
+type TransactionCallback func(sessionCtx TransactionSession) error
 
 type Transaction interface {
 	Start() error
 	Abort() error
-	PerformSingleTransaction(callback TransactionCallback) error
+	Commit() error
 	IsDone() bool
+
+	/* INSERT OPERATIONS */
+	InsertOne(collectionName string, document interface{}) (interface{}, error)
+	InsertMany(collectionName string, documents []interface{}) ([]interface{}, error)
+
+	/* FINDING OPERATIONS */
+	FindOne(collectionName string, filter interface{}, result interface{}) error
+	FindMany(collectionName string, filter interface{}, result interface{}) error
+
+	/* UDPATE OPERATIONS */
+	UpdateOne(collectionName string, filter interface{}, update interface{}) (int64, error)
+	UpdateMany(collectionName string, filter interface{}, update interface{}) (int64, error)
+
+	/* DELETE OPERATIONS */
+	DeleteOne(collectionName string, filter interface{}) (int64, error)
+	DeleteMany(collectionName string, filter interface{}) (int64, error)
+
+	/* FIND AND UPDATE OPERATIONS */
+	FindOneAndUpdate(collectionName string, filter interface{}, update interface{}, result interface{}) error
+	FindOneAndDelete(collectionName string, filter interface{}, result interface{}) error
+
+	/* COUNT */
+	CountDocuments(collectionName string, filter interface{}) (int64, error)
+
+	/* SINGLE TRANSACTION */
+	PerformSingleTransaction(callback TransactionCallback) error
 }
 
 type transaction struct {
@@ -47,12 +72,9 @@ func newTransaction(logger utils.AppLogger, client *mongo.Client, database strin
 }
 
 func (t *transaction) Start() error {
-	t.logger.Info("[ MONGO ] - Starting transaction")
-
-	// Check if the context is already done (timed out)
-	if t.IsDone() {
-		t.logger.Error("[ MONGO ] - Cannot start transaction: context deadline exceeded")
-		return fmt.Errorf("cannot start transaction: context deadline exceeded")
+	if t.session != nil {
+		t.logger.Info("[ MONGO ] - Transaction already started")
+		return nil
 	}
 
 	var err error
@@ -62,18 +84,11 @@ func (t *transaction) Start() error {
 		return fmt.Errorf("failed to start session: %w", err)
 	}
 
-	err = t.session.Client().Ping(t.context, readpref.Primary())
-	if err != nil {
-		t.logger.Error("[ MONGO ] - Failed to ping primary: %v", err)
-		t.session.EndSession(t.context)
-		return fmt.Errorf("failed to ping primary: %w", err)
-	}
-
-	err = t.session.StartTransaction(options.Transaction())
-	// Set the transaction options as needed
+	err = t.session.StartTransaction()
 	if err != nil {
 		t.logger.Error("[ MONGO ] - Failed to start transaction: %v", err)
 		t.session.EndSession(t.context)
+		t.session = nil
 		return fmt.Errorf("failed to start transaction: %w", err)
 	}
 
@@ -82,40 +97,39 @@ func (t *transaction) Start() error {
 }
 
 func (t *transaction) Abort() error {
-	t.logger.Info("[ MONGO ] - Aborting transaction")
-	defer t.cleanup() // Ensure the context is canceled and session is ended
-
 	if t.session == nil {
-		t.logger.Error("[ MONGO ] - Cannot abort: no active session")
-		return fmt.Errorf("cannot abort: no active session")
+		t.logger.Info("[ MONGO ] - No active transaction to abort (already aborted or committed)")
+		return nil
 	}
 
-	// Even if the context is done, we should try to abort the transaction
 	err := t.session.AbortTransaction(t.context)
 	if err != nil {
 		t.logger.Error("[ MONGO ] - Failed to abort transaction: %v", err)
 		return fmt.Errorf("failed to abort transaction: %w", err)
 	}
 
+	t.session.EndSession(t.context)
+	t.session = nil
 	t.logger.Info("[ MONGO ] - Transaction aborted successfully")
 	return nil
 }
 
-// cleanup ensures that the context is canceled and the session is ended
-func (t *transaction) cleanup() {
-	if t.cancel != nil {
-		t.cancel()
-		t.cancel = nil
+func (t *transaction) Commit() error {
+	if t.session == nil {
+		t.logger.Error("[ MONGO ] - No active transaction to commit")
+		return fmt.Errorf("no active transaction to commit")
 	}
 
-	if t.session != nil {
-		t.session.EndSession(context.Background()) // Use a new context in case the original is already done
-		t.session = nil
+	err := t.session.CommitTransaction(t.context)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - Failed to commit transaction: %v", err)
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
-}
 
-func (t *transaction) GetContext() context.Context {
-	return t.context
+	t.session.EndSession(t.context)
+	t.session = nil
+	t.logger.Info("[ MONGO ] - Transaction committed successfully")
+	return nil
 }
 
 // IsDone checks if the transaction's context is already done (timed out or canceled)
@@ -136,7 +150,7 @@ func (t *transaction) PerformSingleTransaction(callback TransactionCallback) err
 	}
 	defer newSession.EndSession(t.context)
 
-	result, err := newSession.WithTransaction(t.context, func(sessionCtx mongo.SessionContext) (interface{}, error) {
+	_, err = newSession.WithTransaction(t.context, func(sessionCtx mongo.SessionContext) (interface{}, error) {
 		t.logger.Info("[ MONGO ] - Executing transaction callback")
 		sessionAdapter := newSessionContextAdapter(sessionCtx, t.database)
 		if sessionAdapter == nil {
@@ -158,6 +172,147 @@ func (t *transaction) PerformSingleTransaction(callback TransactionCallback) err
 		t.logger.Error("[ MONGO ] - Transaction failed: %v", err)
 	}
 
-	t.logger.Info("[ MONGO ] - Transaction completed successfully: %v", result)
+	t.logger.Info("[ MONGO ] - Transaction completed successfully")
 	return err
+}
+
+/* INSERT OPERATIONS */
+func (t *transaction) InsertOne(collectionName string, document interface{}) (interface{}, error) {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	results, err := collection.InsertOne(t.context, document)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to insert document: %v", err)
+		return nil, fmt.Errorf("failed to insert document: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document inserted successfully: %v", results.InsertedID)
+	return results.InsertedID, nil
+}
+
+func (t *transaction) InsertMany(collectionName string, documents []interface{}) ([]interface{}, error) {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	results, err := collection.InsertMany(t.context, documents)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to insert documents: %v", err)
+		return nil, fmt.Errorf("failed to insert documents: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Documents inserted successfully: %v", results.InsertedIDs)
+	return results.InsertedIDs, nil
+}
+
+func (t *transaction) FindOne(collectionName string, filter interface{}, result interface{}) error {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	err := collection.FindOne(t.context, filter).Decode(result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			t.logger.Info("[ MONGO ] - [ TRANSACTION ] No document found for filter: %v", filter)
+			return nil
+		}
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find document: %v", err)
+		return fmt.Errorf("failed to find document: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document found successfully: %v", result)
+	return nil
+}
+
+func (t *transaction) FindMany(collectionName string, filter interface{}, result interface{}) error {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	cursor, err := collection.Find(t.context, filter)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find documents: %v", err)
+		return fmt.Errorf("failed to find documents: %w", err)
+	}
+	defer cursor.Close(t.context)
+	err = cursor.All(t.context, result)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to decode documents: %v", err)
+		return fmt.Errorf("failed to decode documents: %w", err)
+	}
+
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Documents found successfully: %v", result)
+	return nil
+}
+
+func (t *transaction) UpdateOne(collectionName string, filter interface{}, update interface{}) (int64, error) {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	result, err := collection.UpdateOne(t.context, filter, update)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to update document: %v", err)
+		return 0, fmt.Errorf("failed to update document: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document updated successfully: %v", result.ModifiedCount)
+	return result.ModifiedCount, nil
+}
+
+func (t *transaction) UpdateMany(collectionName string, filter interface{}, update interface{}) (int64, error) {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	result, err := collection.UpdateMany(t.context, filter, update)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to update documents: %v", err)
+		return 0, fmt.Errorf("failed to update documents: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Documents updated successfully: %v", result.ModifiedCount)
+	return result.ModifiedCount, nil
+}
+
+func (t *transaction) DeleteOne(collectionName string, filter interface{}) (int64, error) {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	result, err := collection.DeleteOne(t.context, filter)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to delete document: %v", err)
+		return 0, fmt.Errorf("failed to delete document: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document deleted successfully: %v", result.DeletedCount)
+	return result.DeletedCount, nil
+}
+
+func (t *transaction) DeleteMany(collectionName string, filter interface{}) (int64, error) {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	result, err := collection.DeleteMany(t.context, filter)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to delete documents: %v", err)
+		return 0, fmt.Errorf("failed to delete documents: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Documents deleted successfully: %v", result.DeletedCount)
+	return result.DeletedCount, nil
+}
+
+func (t *transaction) FindOneAndUpdate(collectionName string, filter interface{}, update interface{}, result interface{}) error {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	err := collection.FindOneAndUpdate(t.context, filter, update).Decode(result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			t.logger.Info("[ MONGO ] - [ TRANSACTION ] No document found for filter: %v", filter)
+			return nil
+		}
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find and update document: %v", err)
+		return fmt.Errorf("failed to find and update document: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document found and updated successfully: %v", result)
+	return nil
+}
+
+func (t *transaction) FindOneAndDelete(collectionName string, filter interface{}, result interface{}) error {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	err := collection.FindOneAndDelete(t.context, filter).Decode(result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			t.logger.Info("[ MONGO ] - [ TRANSACTION ] No document found for filter: %v", filter)
+			return nil
+		}
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find and delete document: %v", err)
+		return fmt.Errorf("failed to find and delete document: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document found and deleted successfully: %v", result)
+	return nil
+}
+
+func (t *transaction) CountDocuments(collectionName string, filter interface{}) (int64, error) {
+	collection := t.session.Client().Database(t.database).Collection(collectionName)
+	count, err := collection.CountDocuments(t.context, filter)
+	if err != nil {
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to count documents: %v", err)
+		return 0, fmt.Errorf("failed to count documents: %w", err)
+	}
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document count: %v", count)
+	return count, nil
 }

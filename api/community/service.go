@@ -249,12 +249,8 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 
 	// Start a transaction for consistent state
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	// if err := tx.Start(); err != nil {
-	// 	s.logger.Error("Failed to start transaction: %v", err)
-	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	// }
 
-	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		communityCollection := session.Collection(model.CommunityCollectionName)
 		now := time.Now()
 		ptNow := primitive.NewDateTimeFromTime(now)
@@ -277,7 +273,7 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 		}
 
 		communityInteractionCollection := session.Collection(model.CommunityInteractionsCollectionName)
-		communityInteraction := model.NewCommunityInteraction(userId, communityId, model.CommunityInteractionTypeJoin)
+		communityInteraction := model.NewCommunityInteraction(userId, communityId, model.CommunityInteractionTypeJoin, model.CommunityInteractionStatusActive)
 		_, insertErr := communityInteractionCollection.InsertOne(communityInteraction)
 		if insertErr != nil {
 			if mongo.IsDuplicateKeyError(insertErr) {
@@ -293,7 +289,7 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 
 	if err != nil {
 		if network.IsApiError(err) {
-			s.logger.Error("Failed to save post: %v", err)
+			s.logger.Error("Failed to join community: %v", err)
 			return network.AsApiError(err)
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)
@@ -309,14 +305,8 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 
 	// Start a transaction for consistent state
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
 
-	if err := tx.Start(); err != nil {
-		s.logger.Error("Failed to start transaction: %v", err)
-		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	}
-
-	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		communityCollection := session.Collection(model.CommunityCollectionName)
 		now := time.Now()
 		ptNow := primitive.NewDateTimeFromTime(now)
@@ -343,8 +333,10 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 			bson.M{"userId": userId, "communityId": communityId, "interactionType": model.CommunityInteractionTypeJoin},
 			bson.M{
 				"$set": bson.M{
+					"status":          model.CommunityInteractionStatusInactive,
 					"interactionType": model.CommunityInteractionTypeLeave,
 					"updatedAt":       ptNow,
+					"deletedAt":       ptNow,
 				},
 			},
 		)
@@ -375,7 +367,7 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 
 	if err != nil {
 		if network.IsApiError(err) {
-			s.logger.Error("Failed to save post: %v", err)
+			s.logger.Error("Failed to leave community: %v", err)
 			return network.AsApiError(err)
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)

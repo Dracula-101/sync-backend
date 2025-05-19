@@ -355,7 +355,7 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	// }
 
-	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		postInteractionCollection := session.Collection(model.PostInteractionCollectionName)
 		cursor, err := postInteractionCollection.Find(
 			bson.M{
@@ -491,7 +491,7 @@ func (s *postService) SavePost(userId string, postId string) error {
 	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	// }
 
-	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		postInteractionCollection := session.Collection(model.PostInteractionCollectionName)
 		// check if the user has already saved the post
 		exists, mongoErr := postInteractionCollection.CountDocuments(
@@ -551,7 +551,7 @@ func (s *postService) SharePost(userId string, postId string) error {
 	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	// }
 
-	err := tx.PerformSingleTransaction(func(session mongo.DatabaseSession) error {
+	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		postCollection := session.Collection(model.PostCollectionName)
 		// update the viewCount and lastActivityAt
 		result := postCollection.FindOneAndUpdate(

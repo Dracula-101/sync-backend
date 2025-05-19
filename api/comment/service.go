@@ -661,143 +661,148 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
-	err := tx.PerformSingleTransaction(func(sessionCtx mongo.DatabaseSession) error {
-		commentCollection := sessionCtx.Collection(model.CommentCollectionName)
-
-		var commentDoc model.Comment
-		err := commentCollection.FindOne(
-			bson.M{"commentId": commentId, "status": model.CommentStatusActive},
-		).Decode(&commentDoc)
-		if err != nil {
-			if mongo.IsNoDocumentFoundError(err) {
-				s.logger.Error("Comment not found or not active: %v", err)
-				return network.NewNotFoundError("Comment not found or not active", err)
-			}
-			s.logger.Error("Failed to get comment: %v", err)
-			return network.NewInternalServerError("Failed to get comment", network.DB_ERROR, err)
-		}
-
-		commentInterationCollection := sessionCtx.Collection(model.CommentInteractionCollectionName)
-		data, err := commentInterationCollection.Find(
-			bson.M{
-				"commentId": commentId,
-				"userId":    userId,
-				"interactionType": bson.M{"$in": []model.CommentInteractionType{
-					model.CommentInteractionTypeLike,
-					model.CommentInteractionTypeDislike,
-				}},
-			},
-		)
-		if err != nil {
-			s.logger.Error("Failed to get comment interactions: %v", err)
-			return network.NewInternalServerError("Failed to get comment interactions", network.DB_ERROR, err)
-		}
-
-		var existingInteractions []model.CommentInteraction
-		if err := data.Decode(&existingInteractions); err != nil {
-			s.logger.Error("Failed to decode comment interactions: %v", err)
-			return network.NewInternalServerError("Failed to decode comment interactions", network.DB_ERROR, err)
-		}
-
-		synergyChange := 0
-		needToInsert := true
-		needToRemove := false
-		removeID := ""
-
-		if len(existingInteractions) == 0 {
-			// First interaction
-			if interactionType == model.CommentInteractionTypeLike {
-				synergyChange = 1
-			} else {
-				synergyChange = -1
-			}
-		} else if len(existingInteractions) == 1 {
-			existing := existingInteractions[0]
-			needToRemove = true
-			removeID = existing.Id.Hex()
-
-			if existing.InteractionType == interactionType {
-				// Toggle off the same interaction
-				needToInsert = false
-				if interactionType == model.CommentInteractionTypeLike {
-					synergyChange = -1
-				} else {
-					synergyChange = 1
-				}
-			} else {
-				// Switching between like and dislike
-				if interactionType == model.CommentInteractionTypeLike {
-					synergyChange = 2
-				} else {
-					synergyChange = -2
-				}
+	var txErr error
+	defer func() {
+		if txErr != nil {
+			if abortErr := tx.Abort(); abortErr != nil {
+				s.logger.Error("Failed to abort transaction: %v", abortErr)
 			}
 		} else {
-			// Clean up duplicate interactions
-			s.logger.Warn("Multiple interactions found for user %s on comment %s - cleaning up", userId, commentId)
-			_, deleteErr := commentInterationCollection.DeleteMany(
-				bson.M{"commentId": commentId, "userId": userId},
-			)
-			if deleteErr != nil {
-				s.logger.Error("Failed to clean up duplicate interactions: %v", deleteErr)
-				return network.NewInternalServerError("Failed to clean up interactions", network.DB_ERROR, deleteErr)
+			if commitErr := tx.Commit(); commitErr != nil {
+				s.logger.Error("Failed to commit transaction: %v", commitErr)
+				txErr = commitErr
 			}
+		}
+	}()
 
+	var commentDoc model.Comment
+	txErr = tx.FindOne(
+		model.CommentCollectionName,
+		bson.M{"commentId": commentId, "status": model.CommentStatusActive},
+		commentDoc,
+	)
+	if txErr != nil {
+		if mongo.IsNoDocumentFoundError(txErr) {
+			s.logger.Error("Comment not found or not active: %v", txErr)
+			return network.NewNotFoundError("Comment not found or not active", txErr)
+		}
+		s.logger.Error("Failed to get comment: %v", txErr)
+		return network.NewInternalServerError("Failed to get comment", network.DB_ERROR, txErr)
+	}
+
+	existingInteractions := []model.CommentInteraction{}
+	txErr = tx.FindMany(
+		model.CommentInteractionCollectionName,
+		bson.M{
+			"commentId": commentId,
+			"userId":    userId,
+			"interactionType": bson.M{"$in": []model.CommentInteractionType{
+				model.CommentInteractionTypeLike,
+				model.CommentInteractionTypeDislike,
+			}},
+		},
+		&existingInteractions,
+	)
+	if txErr != nil {
+		s.logger.Error("Failed to get comment interactions: %v", txErr)
+		return network.NewInternalServerError("Failed to get comment interactions", network.DB_ERROR, txErr)
+	}
+
+	synergyChange := 0
+	needToInsert := true
+	needToRemove := false
+	removeID := ""
+
+	if len(existingInteractions) == 0 {
+		// First interaction
+		if interactionType == model.CommentInteractionTypeLike {
+			synergyChange = 1
+		} else {
+			synergyChange = -1
+		}
+	} else if len(existingInteractions) == 1 {
+		existing := existingInteractions[0]
+		needToRemove = true
+		removeID = existing.Id.Hex()
+
+		if existing.InteractionType == interactionType {
+			// Toggle off the same interaction
+			needToInsert = false
 			if interactionType == model.CommentInteractionTypeLike {
-				synergyChange = 1
-			} else {
 				synergyChange = -1
+			} else {
+				synergyChange = 1
+			}
+		} else {
+			// Switching between like and dislike
+			if interactionType == model.CommentInteractionTypeLike {
+				synergyChange = 2
+			} else {
+				synergyChange = -2
 			}
 		}
-
-		// Update the comment synergy score
-		updateResult := commentCollection.FindOneAndUpdate(
-			bson.M{"commentId": commentId, "status": model.CommentStatusActive},
-			bson.M{
-				"$set": bson.M{"updatedAt": primitive.NewDateTimeFromTime(time.Now())},
-				"$inc": bson.M{"synergy": synergyChange},
-			},
+	} else {
+		// Clean up duplicate interactions
+		s.logger.Warn("Multiple interactions found for user %s on comment %s - cleaning up", userId, commentId)
+		_, txErr = tx.DeleteMany(
+			model.CommentInteractionCollectionName,
+			bson.M{"commentId": commentId, "userId": userId},
 		)
-
-		if updateResult.Err() != nil {
-			s.logger.Error("Failed to update comment synergy: %v", updateResult.Err())
-			return network.NewInternalServerError("Failed to update comment", network.DB_ERROR, updateResult.Err())
+		if txErr != nil {
+			s.logger.Error("Failed to clean up duplicate interactions: %v", txErr)
+			return network.NewInternalServerError("Failed to clean up interactions", network.DB_ERROR, txErr)
 		}
 
-		// Remove existing interaction if needed
-		if needToRemove && removeID != "" {
-			objID, _ := primitive.ObjectIDFromHex(removeID)
-			_, deleteErr := commentInterationCollection.DeleteOne(
-				bson.M{"_id": objID},
-			)
-			if deleteErr != nil {
-				s.logger.Error("Failed to remove existing interaction: %v", deleteErr)
-				return network.NewInternalServerError("Failed to update interaction", network.DB_ERROR, deleteErr)
+		if interactionType == model.CommentInteractionTypeLike {
+			synergyChange = 1
+		} else {
+			synergyChange = -1
+		}
+	}
+
+	// Update the comment synergy score
+	updateResult := tx.FindOneAndUpdate(
+		model.CommentCollectionName,
+		bson.M{"commentId": commentId, "status": model.CommentStatusActive},
+		bson.M{
+			"$set": bson.M{"updatedAt": primitive.NewDateTimeFromTime(time.Now())},
+			"$inc": bson.M{"synergy": synergyChange},
+		},
+		model.Comment{},
+	)
+
+	if updateResult != nil {
+		s.logger.Error("Failed to update comment synergy: %v", updateResult)
+		txErr = updateResult
+		return network.NewInternalServerError("Failed to update comment", network.DB_ERROR, updateResult)
+	}
+
+	// Remove existing interaction if needed
+	if needToRemove && removeID != "" {
+		objID, _ := primitive.ObjectIDFromHex(removeID)
+		_, txErr = tx.DeleteOne(
+			model.CommentInteractionCollectionName,
+			bson.M{"_id": objID},
+		)
+		if txErr != nil {
+			s.logger.Error("Failed to remove existing interaction: %v", txErr)
+			return network.NewInternalServerError("Failed to update interaction", network.DB_ERROR, txErr)
+		}
+	}
+
+	// Insert new interaction if needed
+	if needToInsert {
+		commentInteraction := model.NewCommentInteraction(userId, commentId, interactionType)
+		_, txErr := tx.InsertOne(model.CommentInteractionCollectionName, commentInteraction)
+		if txErr != nil {
+			if mongo.IsDuplicateKeyError(txErr) {
+				s.logger.Warn("Comment interaction already exists (race condition): %v", txErr)
+				txErr = nil
+			} else {
+				s.logger.Error("Failed to insert comment interaction: %v", txErr)
+				return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, txErr)
 			}
 		}
-
-		// Insert new interaction if needed
-		if needToInsert {
-			commentInteraction := model.NewCommentInteraction(userId, commentId, interactionType)
-			_, insertErr := commentInterationCollection.InsertOne(commentInteraction)
-			if insertErr != nil {
-				if mongo.IsDuplicateKeyError(insertErr) {
-					s.logger.Warn("Comment interaction already exists (race condition): %v", insertErr)
-				} else {
-					s.logger.Error("Failed to insert comment interaction: %v", insertErr)
-					return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, insertErr)
-				}
-			}
-		}
-		return nil
-	})
-
-	if err != nil {
-		s.logger.Error("Transaction failed: %v", err)
-		if network.IsApiError(err) {
-			return network.AsApiError(err)
-		}
-		return network.NewInternalServerError("Transaction failed", network.DB_ERROR, err)
 	}
 
 	s.logger.Info("Comment interaction updated successfully for comment ID: %s", commentId)

@@ -25,22 +25,29 @@ const (
 
 // CommunityInteraction represents a user interaction with a community
 type CommunityInteraction struct {
-	Id              primitive.ObjectID       `bson:"_id,omitempty" json:"-"`
-	InteractionId   string                   `bson:"interactionId" json:"id"`
-	CommunityId     string                   `bson:"communityId" json:"communityId" validate:"required"`
-	UserId          string                   `bson:"userId" json:"userId" validate:"required"`
-	InteractionType CommunityInteractionType `bson:"interactionType" json:"interactionType" validate:"required,oneof=join leave"`
-	CreatedAt       primitive.DateTime       `bson:"createdAt" json:"createdAt"`
-	UpdatedAt       primitive.DateTime       `bson:"updatedAt" json:"updatedAt"`
-	DeletedAt       *primitive.DateTime      `bson:"deletedAt,omitempty" json:"-"`
+	Id              primitive.ObjectID         `bson:"_id,omitempty" json:"-"`
+	InteractionId   string                     `bson:"interactionId" json:"id"`
+	CommunityId     string                     `bson:"communityId" json:"communityId" validate:"required"`
+	UserId          string                     `bson:"userId" json:"userId" validate:"required"`
+	InteractionType CommunityInteractionType   `bson:"interactionType" json:"interactionType" validate:"required,oneof=join leave"`
+	Status          CommunityInteractionStatus `bson:"status" json:"status" validate:"required,oneof=active inactive"`
+	CreatedAt       primitive.DateTime         `bson:"createdAt" json:"createdAt"`
+	UpdatedAt       primitive.DateTime         `bson:"updatedAt" json:"updatedAt"`
+	DeletedAt       *primitive.DateTime        `bson:"deletedAt,omitempty" json:"-"`
 }
 
-func NewCommunityInteraction(userId string, communityId string, interactionType CommunityInteractionType) *CommunityInteraction {
+type CommunityInteractionStatus string
+
+const CommunityInteractionStatusActive CommunityInteractionStatus = "active"
+const CommunityInteractionStatusInactive CommunityInteractionStatus = "inactive"
+
+func NewCommunityInteraction(userId string, communityId string, interactionType CommunityInteractionType, status CommunityInteractionStatus) *CommunityInteraction {
 	return &CommunityInteraction{
 		InteractionId:   uuid.NewString(),
 		UserId:          userId,
 		CommunityId:     communityId,
 		InteractionType: interactionType,
+		Status:          status,
 		CreatedAt:       primitive.NewDateTimeFromTime(time.Now()),
 		UpdatedAt:       primitive.NewDateTimeFromTime(time.Now()),
 	}
@@ -71,18 +78,19 @@ func (*CommunityInteraction) EnsureIndexes(db mongo.Database) {
 			Keys: bson.D{
 				{Key: "communityId", Value: 1},
 				{Key: "userId", Value: 1},
+				{Key: "status", Value: 1},
 				{Key: "interactionType", Value: 1},
-				{Key: "createdAt", Value: -1},
 			},
-			Options: options.Index().SetName("idx_community_interaction_lookup"),
+			Options: options.Index().SetUnique(true).SetName("idx_community_interaction_community_unique"),
 		},
 		{
 			Keys: bson.D{
 				{Key: "communityId", Value: 1},
 				{Key: "userId", Value: 1},
 				{Key: "interactionType", Value: 1},
+				{Key: "createdAt", Value: -1},
 			},
-			Options: options.Index().SetUnique(true).SetName("idx_community_interaction_community_unique"),
+			Options: options.Index().SetName("idx_community_interaction_lookup"),
 		},
 		{
 			Keys: bson.D{
@@ -103,7 +111,7 @@ func (*CommunityInteraction) EnsureIndexes(db mongo.Database) {
 			Keys: bson.D{
 				{Key: "deletedAt", Value: 1},
 			},
-			Options: options.Index().SetName("idx_community_interaction_deleted").SetExpireAfterSeconds(0),
+			Options: options.Index().SetName("idx_community_interaction_deleted").SetExpireAfterSeconds(3600),
 		},
 	}
 	mongo.NewQueryBuilder[CommunityInteraction](db, CommunityInteractionsCollectionName).Query(context.Background()).CheckIndexes(indexes)
