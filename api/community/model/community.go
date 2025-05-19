@@ -360,6 +360,15 @@ func randomString(length int) string {
 	return string(result)
 }
 
+func (c *Community) IsUserInCommunity(userId string) bool {
+	for _, member := range c.Members {
+		if member == userId {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *Community) GetCollectionName() string {
 	return CommunityCollectionName
 }
