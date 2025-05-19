@@ -108,7 +108,7 @@ func (t *transactionBuilder) GetClient() *mongo.Client {
 }
 
 func (t *transactionBuilder) GetTransaction(timeout time.Duration) Transaction {
-	return newTransaction(t.logger, t.client, t.database, timeout)
+	return NewDefaultTransaction(t.logger, t.client, t.database, timeout)
 }
 
 func NewTransactionBuilder(db Database) TransactionBuilder {

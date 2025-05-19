@@ -437,32 +437,44 @@ func (s *userService) FollowUser(userId string, followUserId string) error {
 	}
 
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
+	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
-	userCollection := transaction.GetCollection(model.UserCollectionName)
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
-		"$addToSet": bson.M{
-			"follows": followUserId,
-		}})
+	err = transaction.PerformTransaction(func(session mongo.DatabaseSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$addToSet": bson.M{
+					"follows": followUserId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error following user: %v", err)
+			return fmt.Errorf("error following user: %v", err)
+		}
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": followUserId},
+			bson.M{
+				"$addToSet": bson.M{
+					"followers": userId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error following user: %v", err)
+			return fmt.Errorf("error following user: %v", err)
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.log.Error("error following user: %v", err)
+		s.log.Error("Error following user: %v", err)
 		return fmt.Errorf("error following user: %v", err)
 	}
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": followUserId}, bson.M{
-		"$addToSet": bson.M{
-			"followers": userId,
-		}})
-	if err != nil {
-		s.log.Error("error following user: %v", err)
-		return fmt.Errorf("error following user: %v", err)
-	}
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
+
 	s.log.Debug("User %s followed user %s successfully", userId, followUserId)
 	return nil
 }
@@ -484,33 +496,45 @@ func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
 	}
 
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
+	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
-	userCollection := transaction.GetCollection(model.UserCollectionName)
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
-		"$pull": bson.M{
-			"follows": unfollowUserId,
-		}})
+	err = transaction.PerformTransaction(func(session mongo.DatabaseSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$pull": bson.M{
+					"follows": unfollowUserId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error unfollowing user: %v", err)
+			return fmt.Errorf("error unfollowing user: %v", err)
+		}
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": unfollowUserId},
+			bson.M{
+				"$pull": bson.M{
+					"followers": userId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error unfollowing user: %v", err)
+			return fmt.Errorf("error unfollowing user: %v", err)
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.log.Error("error unfollowing user: %v", err)
-		return fmt.Errorf("error unfollowing user: %v", err)
+		s.log.Error("Error unfollowing user: %v", err)
+		return err
 	}
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": unfollowUserId}, bson.M{
-		"$pull": bson.M{
-			"followers": userId,
-		}})
-	if err != nil {
-		s.log.Error("error unfollowing user: %v", err)
-		return fmt.Errorf("error unfollowing user: %v", err)
-	}
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
+
 	s.log.Debug("User %s unfollowed user %s successfully", userId, unfollowUserId)
 	return nil
 }
@@ -531,25 +555,31 @@ func (s *userService) BlockUser(userId string, blockUserId string) error {
 		return errors.New("cannot block self")
 	}
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
+	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
-	userCollection := transaction.GetCollection(model.UserCollectionName)
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
-		"$addToSet": bson.M{
-			"preferences.blockList": blockUserId,
-		}})
+	err = transaction.PerformTransaction(func(session mongo.DatabaseSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{"$addToSet": bson.M{
+				"preferences.blockList": blockUserId,
+			},
+			},
+		)
+		if err != nil {
+			s.log.Error("error blocking user: %v", err)
+			return fmt.Errorf("error blocking user: %v", err)
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.log.Error("error blocking user: %v", err)
-		return fmt.Errorf("error blocking user: %v", err)
+		return err
 	}
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
+
 	s.log.Debug("User %s blocked user %s successfully", userId, blockUserId)
 	return nil
 }
@@ -570,25 +600,33 @@ func (s *userService) UnblockUser(userId string, unblockUserId string) error {
 		return errors.New("cannot block self")
 	}
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
+	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
 		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
-	userCollection := transaction.GetCollection(model.UserCollectionName)
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
-		"$pull": bson.M{
-			"preferences.blockList": unblockUserId,
-		}})
+	err = transaction.PerformTransaction(func(session mongo.DatabaseSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$pull": bson.M{
+					"preferences.blockList": unblockUserId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error unblocking user: %v", err)
+			return fmt.Errorf("error unblocking user: %v", err)
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.log.Error("error unblocking user: %v", err)
-		return fmt.Errorf("error unblocking user: %v", err)
+		s.log.Error("Error unblocking user: %v", err)
+		return err
 	}
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
+
 	s.log.Debug("User %s unblocked user %s successfully", userId, unblockUserId)
 	return nil
 }

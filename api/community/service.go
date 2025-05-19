@@ -249,67 +249,53 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 
 	// Start a transaction for consistent state
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
-
 	if err := tx.Start(); err != nil {
 		s.logger.Error("Failed to start transaction: %v", err)
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
-	communityCollection := tx.GetCollection(model.CommunityCollectionName)
-	var community model.Community
-	err := communityCollection.FindOne(
-		tx.GetContext(),
-		bson.M{"communityId": communityId},
-	).Decode(&community)
+	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+		communityCollection := session.Collection(model.CommunityCollectionName)
+		now := time.Now()
+		ptNow := primitive.NewDateTimeFromTime(now)
 
-	if err != nil {
-		if mongo.IsNoDocumentFoundError(err) {
-			s.logger.Error("Community not found: %v", err)
-			return network.NewNotFoundError("Community not found", err)
-		}
-		s.logger.Error("Error fetching community: %v", err)
-		return network.NewInternalServerError("Error fetching community", network.DB_ERROR, err)
-	}
-
-	now := time.Now()
-	ptNow := primitive.NewDateTimeFromTime(now)
-
-	_, err = communityCollection.UpdateOne(
-		tx.GetContext(),
-		bson.M{"communityId": communityId},
-		bson.M{
-			"$inc": bson.M{
-				"memberCount":              1,
-				"stats.dailyActiveUsers":   1,
-				"stats.weeklyActiveUsers":  1,
-				"stats.monthlyActiveUsers": 1,
+		mongoErr := communityCollection.FindOneAndUpdate(
+			bson.M{"communityId": communityId, "status": model.CommunityStatusActive},
+			bson.M{
+				"$inc": bson.M{"memberCount": 1},
+				"$set": bson.M{"metadata.updatedAt": ptNow},
 			},
-			"$set": bson.M{
-				"metadata.updatedAt": ptNow,
-			},
-		},
-	)
+		)
 
-	if err != nil {
-		s.logger.Error("Error updating community: %v", err)
-		return network.NewInternalServerError("Error updating community", network.DB_ERROR, err)
-	}
-
-	communityInteraction := model.NewCommunityInteraction(userId, communityId, model.CommunityInteractionTypeJoin)
-	communityInteractionCollection := tx.GetCollection(model.CommunityInteractionsCollectionName)
-
-	_, err = communityInteractionCollection.InsertOne(tx.GetContext(), communityInteraction)
-	if err != nil {
-		if mongo.IsDuplicateKeyError(err) {
-			s.logger.Warn("Community interaction already exists (race condition): %v", err)
-		} else {
-			s.logger.Error("Failed to insert community interaction: %v", err)
-			return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, err)
+		if mongoErr.Err() != nil {
+			if mongo.IsNoDocumentFoundError(mongoErr.Err()) {
+				s.logger.Error("Community with id %s not found: %v", communityId, mongoErr.Err())
+				return network.NewNotFoundError("Community not found", mongoErr.Err())
+			}
+			s.logger.Error("Error updating community: %v", mongoErr.Err())
+			return network.NewInternalServerError("Error updating community", network.DB_ERROR, mongoErr.Err())
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
+		communityInteractionCollection := session.Collection(model.CommunityInteractionsCollectionName)
+		communityInteraction := model.NewCommunityInteraction(userId, communityId, model.CommunityInteractionTypeJoin)
+		_, insertErr := communityInteractionCollection.InsertOne(communityInteraction)
+		if insertErr != nil {
+			if mongo.IsDuplicateKeyError(insertErr) {
+				s.logger.Warn("Community interaction already exists (race condition): %v", insertErr)
+				return network.NewConflictError("User has already joined the community", insertErr)
+			} else {
+				s.logger.Error("Failed to insert community interaction: %v", insertErr)
+				return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, insertErr)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		if network.IsApiError(err) {
+			s.logger.Error("Failed to save post: %v", err)
+			return network.AsApiError(err)
+		}
 		s.logger.Error("Failed to commit transaction: %v", err)
 		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
 	}
@@ -330,83 +316,68 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
-	communityCollection := tx.GetCollection(model.CommunityCollectionName)
-	var community model.Community
-	err := communityCollection.FindOne(
-		tx.GetContext(),
-		bson.M{"communityId": communityId},
-	).Decode(&community)
+	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+		communityCollection := session.Collection(model.CommunityCollectionName)
+		now := time.Now()
+		ptNow := primitive.NewDateTimeFromTime(now)
 
-	if err != nil {
-		if mongo.IsNoDocumentFoundError(err) {
-			s.logger.Error("Community not found: %v", err)
-			return network.NewNotFoundError("Community not found", err)
-		}
-		s.logger.Error("Error fetching community: %v", err)
-		return network.NewInternalServerError("Error fetching community", network.DB_ERROR, err)
-	}
-
-	// Check if user is the owner - owners cannot leave their community
-	if community.OwnerId == userId {
-		s.logger.Error("Owner cannot leave their community")
-		return network.NewBadRequestError("Owner cannot leave their community", nil)
-	}
-
-	now := time.Now()
-	ptNow := primitive.NewDateTimeFromTime(now)
-
-	_, err = communityCollection.UpdateOne(
-		tx.GetContext(),
-		bson.M{"communityId": communityId},
-		bson.M{
-			"$inc": bson.M{
-				"memberCount":              -1,
-				"stats.dailyActiveUsers":   -1,
-				"stats.weeklyActiveUsers":  -1,
-				"stats.monthlyActiveUsers": -1,
+		updateErr := communityCollection.FindOneAndUpdate(
+			bson.M{"communityId": communityId, "status": model.CommunityStatusActive},
+			bson.M{
+				"$inc": bson.M{"memberCount": -1},
+				"$set": bson.M{"metadata.updatedAt": ptNow},
 			},
-			"$set": bson.M{
-				"metadata.updatedAt": ptNow,
-			},
-		},
-	)
+		)
 
-	if err != nil {
-		s.logger.Error("Error updating community: %v", err)
-		return network.NewInternalServerError("Error updating community", network.DB_ERROR, err)
-	}
-
-	communityInteraction := model.NewCommunityInteraction(userId, communityId, model.CommunityInteractionTypeLeave)
-	communityInteractionCollection := tx.GetCollection(model.CommunityInteractionsCollectionName)
-
-	_, err = communityInteractionCollection.InsertOne(tx.GetContext(), communityInteraction)
-	if err != nil {
-		if mongo.IsDuplicateKeyError(err) {
-			s.logger.Warn("Community interaction already exists (race condition): %v", err)
-		} else {
-			s.logger.Error("Failed to insert community interaction: %v", err)
-			return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, err)
+		if updateErr.Err() != nil {
+			if mongo.IsNoDocumentFoundError(updateErr.Err()) {
+				s.logger.Error("Community with id %s not found: %v", communityId, updateErr.Err())
+				return network.NewNotFoundError("Community not found", updateErr.Err())
+			}
+			s.logger.Error("Error updating community: %v", updateErr.Err())
+			return network.NewInternalServerError("Error updating community", network.DB_ERROR, updateErr.Err())
 		}
-	}
 
-	// Also remove the user from moderators list if they are a moderator
-	if slices.Contains(community.Moderators, userId) {
-		_, err = communityCollection.UpdateOne(
-			tx.GetContext(),
+		communityInteractionCollection := session.Collection(model.CommunityInteractionsCollectionName)
+		insertErr := communityInteractionCollection.FindOneAndUpdate(
+			bson.M{"userId": userId, "communityId": communityId, "interactionType": model.CommunityInteractionTypeJoin},
+			bson.M{
+				"$set": bson.M{
+					"interactionType": model.CommunityInteractionTypeLeave,
+					"updatedAt":       ptNow,
+				},
+			},
+		)
+		if insertErr.Err() != nil {
+			if mongo.IsNoDocumentFoundError(insertErr.Err()) {
+				// user hasnt joined the community yet
+				s.logger.Error("Community interaction not found: %v", insertErr.Err())
+				return network.NewNotFoundError("User hasn't joined the community", insertErr.Err())
+			}
+			s.logger.Error("Failed to update community interaction: %v", insertErr.Err())
+			return network.NewInternalServerError("Failed to update community interaction", network.DB_ERROR, insertErr.Err())
+		}
+
+		// Also remove the user from moderators list if they are a moderator
+		_, removeErr := communityCollection.UpdateOne(
 			bson.M{"communityId": communityId},
 			bson.M{
 				"$pull": bson.M{"moderators": userId},
 			},
 		)
-
-		if err != nil {
-			s.logger.Error("Error updating community moderators: %v", err)
-			return network.NewInternalServerError("Error updating community moderators", network.DB_ERROR, err)
+		if removeErr != nil {
+			s.logger.Error("Failed to remove user from moderators list: %v", removeErr)
+			return network.NewInternalServerError("Failed to remove user from moderators list", network.DB_ERROR, removeErr)
 		}
-	}
 
-	// Commit the transaction
-	if err := tx.Commit(); err != nil {
+		return nil
+	})
+
+	if err != nil {
+		if network.IsApiError(err) {
+			s.logger.Error("Failed to save post: %v", err)
+			return network.AsApiError(err)
+		}
 		s.logger.Error("Failed to commit transaction: %v", err)
 		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
 	}

@@ -350,130 +350,130 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 	s.logger.Info("%s post with ID: %s by user: %s", action, postId, userId)
 
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
-
 	if err := tx.Start(); err != nil {
 		s.logger.Error("Failed to start transaction: %v", err)
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
-	postInteractionCollection := tx.GetCollection(model.PostInteractionCollectionName)
-	cursor, err := postInteractionCollection.Find(
-		tx.GetContext(),
-		bson.M{
-			"postId": postId,
-			"userId": userId,
-			"interactionType": bson.M{"$in": []model.InteractionType{
-				model.InteractionTypeLike,
-				model.InteractionTypeDislike,
-			}},
-		},
-	)
-	if err != nil {
-		s.logger.Error("Failed to get post interactions: %v", err)
-		return network.NewInternalServerError("Failed to get post interactions", network.DB_ERROR, err)
-	}
-
-	var existingInteractions []model.PostInteraction
-	if err := cursor.All(tx.GetContext(), &existingInteractions); err != nil {
-		s.logger.Error("Failed to decode post interactions: %v", err)
-		return network.NewInternalServerError("Failed to decode post interactions", network.DB_ERROR, err)
-	}
-
-	synergyChange := 0
-	needToInsert := true
-	needToRemove := false
-	removeID := ""
-
-	if len(existingInteractions) == 0 {
-		// First interaction
-		if interactionType == model.InteractionTypeLike {
-			synergyChange = 1
-		} else {
-			synergyChange = -1
+	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+		postInteractionCollection := session.Collection(model.PostInteractionCollectionName)
+		cursor, err := postInteractionCollection.Find(
+			bson.M{
+				"postId": postId,
+				"userId": userId,
+				"interactionType": bson.M{"$in": []model.InteractionType{
+					model.InteractionTypeLike,
+					model.InteractionTypeDislike,
+				}},
+			},
+		)
+		if err != nil {
+			s.logger.Error("Failed to get post interactions: %v", err)
+			return network.NewInternalServerError("Failed to get post interactions", network.DB_ERROR, err)
 		}
-	} else if len(existingInteractions) == 1 {
-		existing := existingInteractions[0]
-		needToRemove = true
-		removeID = existing.Id.Hex()
 
-		if existing.InteractionType == interactionType {
-			// Toggle off the same interaction
-			needToInsert = false
+		var existingInteractions []model.PostInteraction
+		if err := cursor.All(&existingInteractions); err != nil {
+			s.logger.Error("Failed to decode post interactions: %v", err)
+			return network.NewInternalServerError("Failed to decode post interactions", network.DB_ERROR, err)
+		}
+
+		synergyChange := 0
+		needToInsert := true
+		needToRemove := false
+		removeID := ""
+
+		if len(existingInteractions) == 0 {
+			// First interaction
 			if interactionType == model.InteractionTypeLike {
-				synergyChange = -1
-			} else {
 				synergyChange = 1
+			} else {
+				synergyChange = -1
+			}
+		} else if len(existingInteractions) == 1 {
+			existing := existingInteractions[0]
+			needToRemove = true
+			removeID = existing.Id.Hex()
+
+			if existing.InteractionType == interactionType {
+				// Toggle off the same interaction
+				needToInsert = false
+				if interactionType == model.InteractionTypeLike {
+					synergyChange = -1
+				} else {
+					synergyChange = 1
+				}
+			} else {
+				// Switching between like and dislike
+				if interactionType == model.InteractionTypeLike {
+					synergyChange = 2
+				} else {
+					synergyChange = -2
+				}
 			}
 		} else {
-			// Switching between like and dislike
+			// Clean up duplicate interactions
+			s.logger.Warn("Multiple interactions found for user %s on post %s - cleaning up", userId, postId)
+			_, deleteErr := postInteractionCollection.DeleteMany(
+				bson.M{"postId": postId, "userId": userId},
+			)
+			if deleteErr != nil {
+				s.logger.Error("Failed to clean up duplicate interactions: %v", deleteErr)
+				return network.NewInternalServerError("Failed to clean up interactions", network.DB_ERROR, deleteErr)
+			}
+
 			if interactionType == model.InteractionTypeLike {
-				synergyChange = 2
+				synergyChange = 1
 			} else {
-				synergyChange = -2
+				synergyChange = -1
 			}
 		}
-	} else {
-		// Clean up duplicate interactions
-		s.logger.Warn("Multiple interactions found for user %s on post %s - cleaning up", userId, postId)
-		_, deleteErr := postInteractionCollection.DeleteMany(
-			tx.GetContext(),
-			bson.M{"postId": postId, "userId": userId},
+
+		postCollection := session.Collection(model.PostCollectionName)
+		updateResult := postCollection.FindOneAndUpdate(
+			bson.M{"postId": postId, "status": model.PostStatusActive},
+			bson.M{
+				"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
+				"$inc": bson.M{"synergy": synergyChange},
+			},
 		)
-		if deleteErr != nil {
-			s.logger.Error("Failed to clean up duplicate interactions: %v", deleteErr)
-			return network.NewInternalServerError("Failed to clean up interactions", network.DB_ERROR, deleteErr)
+
+		if updateResult.Err() != nil {
+			s.logger.Error("Failed to update post synergy: %v", updateResult.Err())
+			return network.NewInternalServerError("Failed to update post", network.DB_ERROR, updateResult.Err())
 		}
 
-		if interactionType == model.InteractionTypeLike {
-			synergyChange = 1
-		} else {
-			synergyChange = -1
-		}
-	}
-
-	postCollection := tx.GetCollection(model.PostCollectionName)
-	updateResult := postCollection.FindOneAndUpdate(
-		tx.GetContext(),
-		bson.M{"postId": postId, "status": model.PostStatusActive},
-		bson.M{
-			"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
-			"$inc": bson.M{"synergy": synergyChange},
-		},
-		options.FindOneAndUpdate().SetReturnDocument(options.After),
-	)
-
-	if updateResult.Err() != nil {
-		s.logger.Error("Failed to update post synergy: %v", updateResult.Err())
-		return network.NewInternalServerError("Failed to update post", network.DB_ERROR, updateResult.Err())
-	}
-
-	if needToRemove && removeID != "" {
-		objID, _ := primitive.ObjectIDFromHex(removeID)
-		_, deleteErr := postInteractionCollection.DeleteOne(
-			tx.GetContext(),
-			bson.M{"_id": objID},
-		)
-		if deleteErr != nil {
-			s.logger.Error("Failed to remove existing interaction: %v", deleteErr)
-			return network.NewInternalServerError("Failed to update interaction", network.DB_ERROR, deleteErr)
-		}
-	}
-
-	if needToInsert {
-		postInteraction := model.NewPostInteraction(userId, postId, interactionType)
-		_, insertErr := postInteractionCollection.InsertOne(tx.GetContext(), postInteraction)
-		if insertErr != nil {
-			if mongo.IsDuplicateKeyError(insertErr) {
-				s.logger.Warn("Post interaction already exists (race condition): %v", insertErr)
-			} else {
-				s.logger.Error("Failed to insert post interaction: %v", insertErr)
-				return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, insertErr)
+		if needToRemove && removeID != "" {
+			objID, _ := primitive.ObjectIDFromHex(removeID)
+			_, deleteErr := postInteractionCollection.DeleteOne(
+				bson.M{"_id": objID},
+			)
+			if deleteErr != nil {
+				s.logger.Error("Failed to remove existing interaction: %v", deleteErr)
+				return network.NewInternalServerError("Failed to update interaction", network.DB_ERROR, deleteErr)
 			}
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
+		if needToInsert {
+			postInteraction := model.NewPostInteraction(userId, postId, interactionType)
+			_, insertErr := postInteractionCollection.InsertOne(postInteraction)
+			if insertErr != nil {
+				if mongo.IsDuplicateKeyError(insertErr) {
+					s.logger.Warn("Post interaction already exists (race condition): %v", insertErr)
+				} else {
+					s.logger.Error("Failed to insert post interaction: %v", insertErr)
+					return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, insertErr)
+				}
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		if network.IsApiError(err) {
+			s.logger.Error("Failed to toggle interaction: %v", err)
+			return network.AsApiError(err)
+		}
 		s.logger.Error("Failed to commit transaction: %v", err)
 		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
 	}
@@ -485,52 +485,56 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 func (s *postService) SavePost(userId string, postId string) error {
 	s.logger.Info("Saving post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
 
 	if err := tx.Start(); err != nil {
 		s.logger.Error("Failed to start transaction: %v", err)
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
-	postInteractionCollection := tx.GetCollection(model.PostInteractionCollectionName)
-	// check if the user has already saved the post
-	exists, mongoErr := postInteractionCollection.CountDocuments(
-		tx.GetContext(),
-		bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeSave},
-	)
-	if mongoErr != nil {
-		s.logger.Error("Failed to check if post is already saved: %v", mongoErr)
-		return network.NewInternalServerError("Failed to check if post is already saved", network.DB_ERROR, mongoErr)
-	}
-	if exists > 0 {
-		s.logger.Warn("Post already saved by user: %s", postId)
+	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+		postInteractionCollection := session.Collection(model.PostInteractionCollectionName)
+		// check if the user has already saved the post
+		exists, mongoErr := postInteractionCollection.CountDocuments(
+			bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeSave},
+		)
+		if mongoErr != nil {
+			s.logger.Error("Failed to check if post is already saved: %v", mongoErr)
+			return network.NewInternalServerError("Failed to check if post is already saved", network.DB_ERROR, mongoErr)
+		}
+		if exists > 0 {
+			s.logger.Warn("Post already saved by user: %s", postId)
+			return nil
+		}
+
+		postCollection := session.Collection(model.PostCollectionName)
+		// update the viewCount and lastActivityAt
+		err := postCollection.FindOneAndUpdate(
+			bson.M{"postId": postId, "status": model.PostStatusActive},
+			bson.M{
+				"$inc": bson.M{"saveCount": 1},
+				"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
+			},
+		)
+		if err.Err() != nil {
+			s.logger.Error("Failed to save post: %v", err)
+			return network.NewInternalServerError("Failed to save post", network.DB_ERROR, fmt.Errorf("failed to save post: %v", err))
+		}
+		// insert the interaction
+		postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeSave)
+		_, insertErr := postInteractionCollection.InsertOne(postInteraction)
+		if insertErr != nil {
+			s.logger.Error("Failed to insert post interaction: %v", insertErr)
+			return network.NewInternalServerError("Failed to insert post interaction", network.DB_ERROR, fmt.Errorf("failed to insert post interaction: %v", insertErr))
+		}
+
 		return nil
-	}
+	})
 
-	postCollection := tx.GetCollection(model.PostCollectionName)
-	// update the viewCount and lastActivityAt
-	err := postCollection.FindOneAndUpdate(
-		tx.GetContext(),
-		bson.M{"postId": postId, "status": model.PostStatusActive},
-		bson.M{
-			"$inc": bson.M{"saveCount": 1},
-			"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
-		},
-		options.FindOneAndUpdate().SetReturnDocument(options.After),
-	)
-	if err.Err() != nil {
-		s.logger.Error("Failed to save post: %v", *err)
-		return network.NewInternalServerError("Failed to save post", network.DB_ERROR, fmt.Errorf("failed to save post: %v", *err))
-	}
-	// insert the interaction
-	postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeSave)
-	_, insertErr := postInteractionCollection.InsertOne(tx.GetContext(), postInteraction)
-	if insertErr != nil {
-		s.logger.Error("Failed to insert post interaction: %v", insertErr)
-		return network.NewInternalServerError("Failed to insert post interaction", network.DB_ERROR, fmt.Errorf("failed to insert post interaction: %v", insertErr))
-	}
-
-	if err := tx.Commit(); err != nil {
+	if err != nil {
+		if network.IsApiError(err) {
+			s.logger.Error("Failed to save post: %v", err)
+			return err
+		}
 		s.logger.Error("Failed to commit transaction: %v", err)
 		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
 	}
@@ -542,30 +546,33 @@ func (s *postService) SavePost(userId string, postId string) error {
 func (s *postService) SharePost(userId string, postId string) error {
 	s.logger.Info("Sharing post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	defer tx.Abort()
-
 	if err := tx.Start(); err != nil {
 		s.logger.Error("Failed to start transaction: %v", err)
 		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
 	}
 
-	postCollection := tx.GetCollection(model.PostCollectionName)
-	// update the viewCount and lastActivityAt
-	result := postCollection.FindOneAndUpdate(
-		tx.GetContext(),
-		bson.M{"postId": postId, "status": model.PostStatusActive},
-		bson.M{
-			"$inc": bson.M{"shareCount": 1},
-			"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
-		},
-		options.FindOneAndUpdate().SetReturnDocument(options.After),
-	)
-	if err := result.Err(); err != nil {
-		s.logger.Error("Failed to share post: %v", err)
-		return network.NewInternalServerError("Failed to share post", network.DB_ERROR, fmt.Errorf("failed to share post: %v", err))
-	}
+	err := tx.PerformTransaction(func(session mongo.DatabaseSession) error {
+		postCollection := session.Collection(model.PostCollectionName)
+		// update the viewCount and lastActivityAt
+		result := postCollection.FindOneAndUpdate(
+			bson.M{"postId": postId, "status": model.PostStatusActive},
+			bson.M{
+				"$inc": bson.M{"shareCount": 1},
+				"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
+			},
+		)
+		if err := result.Err(); err != nil {
+			s.logger.Error("Failed to share post: %v", err)
+			return network.NewInternalServerError("Failed to share post", network.DB_ERROR, fmt.Errorf("failed to share post: %v", err))
+		}
+		return nil
+	})
 
-	if err := tx.Commit(); err != nil {
+	if err != nil {
+		if network.IsApiError(err) {
+			s.logger.Error("Failed to share post: %v", err)
+			return err
+		}
 		s.logger.Error("Failed to commit transaction: %v", err)
 		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
 	}

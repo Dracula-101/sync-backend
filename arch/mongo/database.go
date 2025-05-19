@@ -108,6 +108,7 @@ func (db *database) Connect() {
 }
 
 func (db *database) Disconnect() {
+	// end the session
 	db.logger.Debug("Disconnecting from mongo...")
 	err := db.Client().Disconnect(db.context)
 	if err != nil {

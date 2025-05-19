@@ -59,6 +59,33 @@ func (e *apiError) GetMessage() string {
 	return e.Message
 }
 
+func IsApiError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(*apiError)
+	return ok
+}
+
+func AsApiError(err error) (ApiError) {
+	// panic
+	if err == nil {
+		return nil
+	}
+	if apiErr, ok := err.(*apiError); ok {
+		return apiErr
+	}
+	if apiErr, ok := err.(ApiError); ok {
+		return apiErr
+	}
+	return &apiError{
+		StatusCode: http.StatusInternalServerError,
+		ErrorCode:  UnknownErrorCode,
+		Message:    err.Error(),
+		Err:        err,
+	}
+}
+
 func (e *apiError) Error() string {
 	if e.Err == nil {
 		return e.Message

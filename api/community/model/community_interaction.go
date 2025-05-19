@@ -26,33 +26,13 @@ const (
 // CommunityInteraction represents a user interaction with a community
 type CommunityInteraction struct {
 	Id              primitive.ObjectID       `bson:"_id,omitempty" json:"-"`
-	InteractionId   string                   `bson:"interactionId" json:"interactionId"`
+	InteractionId   string                   `bson:"interactionId" json:"id"`
 	CommunityId     string                   `bson:"communityId" json:"communityId" validate:"required"`
 	UserId          string                   `bson:"userId" json:"userId" validate:"required"`
 	InteractionType CommunityInteractionType `bson:"interactionType" json:"interactionType" validate:"required,oneof=join leave"`
-	DeviceInfo      DeviceInfo               `bson:"deviceInfo,omitempty" json:"deviceInfo,omitempty"`
-	LocationInfo    *LocationInfo            `bson:"locationInfo,omitempty" json:"locationInfo,omitempty"`
 	CreatedAt       primitive.DateTime       `bson:"createdAt" json:"createdAt"`
 	UpdatedAt       primitive.DateTime       `bson:"updatedAt" json:"updatedAt"`
 	DeletedAt       *primitive.DateTime      `bson:"deletedAt,omitempty" json:"-"`
-}
-
-// DeviceInfo represents information about the user's device
-type DeviceInfo struct {
-	DeviceId   string `bson:"deviceId,omitempty" json:"deviceId,omitempty"`
-	DeviceType string `bson:"deviceType,omitempty" json:"deviceType,omitempty"`
-	DeviceOS   string `bson:"deviceOS,omitempty" json:"deviceOS,omitempty"`
-	AppVersion string `bson:"appVersion,omitempty" json:"appVersion,omitempty"`
-}
-
-// LocationInfo represents information about the user's location
-type LocationInfo struct {
-	Country   string  `bson:"country,omitempty" json:"country,omitempty"`
-	City      string  `bson:"city,omitempty" json:"city,omitempty"`
-	Latitude  float64 `bson:"latitude,omitempty" json:"latitude,omitempty"`
-	Longitude float64 `bson:"longitude,omitempty" json:"longitude,omitempty"`
-	IpAddress string  `bson:"ipAddress,omitempty" json:"ipAddress,omitempty"`
-	Timezone  string  `bson:"timezone,omitempty" json:"timezone,omitempty"`
 }
 
 func NewCommunityInteraction(userId string, communityId string, interactionType CommunityInteractionType) *CommunityInteraction {
@@ -99,9 +79,10 @@ func (*CommunityInteraction) EnsureIndexes(db mongo.Database) {
 		{
 			Keys: bson.D{
 				{Key: "communityId", Value: 1},
+				{Key: "userId", Value: 1},
 				{Key: "interactionType", Value: 1},
 			},
-			Options: options.Index().SetName("idx_community_interaction_community"),
+			Options: options.Index().SetUnique(true).SetName("idx_community_interaction_community_unique"),
 		},
 		{
 			Keys: bson.D{

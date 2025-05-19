@@ -32,13 +32,14 @@ func NewUserController(
 	locationService location.LocationService,
 ) network.Controller {
 	return &userController{
-		logger:          utils.NewServiceLogger("UserController"),
-		BaseController:  network.NewBaseController("/api/v1/user", nil),
-		ContextPayload:  common.NewContextPayload(),
-		authProvider:    authProvider,
-		uploadProvider:  uploadProvider,
-		userService:     userService,
-		locationService: locationService,
+		logger:           utils.NewServiceLogger("UserController"),
+		BaseController:   network.NewBaseController("/api/v1/user", nil),
+		ContextPayload:   common.NewContextPayload(),
+		authProvider:     authProvider,
+		uploadProvider:   uploadProvider,
+		userService:      userService,
+		communityService: communityService,
+		locationService:  locationService,
 	}
 }
 
@@ -190,12 +191,7 @@ func (c *userController) JoinCommunity(ctx *gin.Context) {
 		return
 	}
 
-	if user.IsInCommunity(communityId) {
-		c.Send(ctx).BadRequestError("Already in community", nil)
-		return
-	}
-
-	err = c.communityService.JoinCommunity(communityId, *userId)
+	err = c.communityService.JoinCommunity(*userId, communityId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
@@ -221,11 +217,6 @@ func (c *userController) LeaveCommunity(ctx *gin.Context) {
 
 	if user == nil {
 		c.Send(ctx).NotFoundError("User not found", nil)
-		return
-	}
-
-	if !user.IsInCommunity(communityId) {
-		c.Send(ctx).BadRequestError("Not in community", nil)
 		return
 	}
 
