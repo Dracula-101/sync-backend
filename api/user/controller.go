@@ -196,6 +196,11 @@ func (c *userController) JoinCommunity(ctx *gin.Context) {
 		c.Send(ctx).MixedError(err)
 		return
 	}
+	err = c.userService.JoinCommunity(*userId, communityId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
 
 	c.Send(ctx).SuccessMsgResponse("Joined community successfully")
 }
@@ -221,6 +226,11 @@ func (c *userController) LeaveCommunity(ctx *gin.Context) {
 	}
 
 	err = c.communityService.LeaveCommunity(*userId, communityId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	err = c.userService.LeaveCommunity(*userId, communityId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
