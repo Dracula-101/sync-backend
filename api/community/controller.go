@@ -88,17 +88,13 @@ func (c *communityController) GetCommunityById(ctx *gin.Context) {
 		return
 	}
 
-	userId := c.ContextPayload.MustGetUserId(ctx)
 	community, err := c.communityService.GetCommunityById(params.Id)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
 
-	c.Send(ctx).SuccessDataResponse("Community fetched successfully", map[string]interface{}{
-		"community": community,
-		"isMember":  community.IsUserInCommunity(*userId),
-	})
+	c.Send(ctx).SuccessDataResponse("Community fetched successfully", community)
 }
 
 func (c *communityController) SearchCommunities(ctx *gin.Context) {

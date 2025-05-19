@@ -98,10 +98,10 @@ func (s *analyticsService) ApplyJoinCommunity(communityId string) error {
 	if err != nil {
 		return err
 	}
-	currentMemberCount := len(communityData.Members)
+
 	newGrowthRate := 0.7 * communityData.Stats.GrowthRate
-	if currentMemberCount > 0 {
-		newGrowthRate += 0.3 * (1.0 / float64(currentMemberCount))
+	if communityData.MemberCount > 0 {
+		newGrowthRate += 0.3 * (1.0 / float64(communityData.MemberCount))
 	} else {
 		newGrowthRate = 1.0
 	}
@@ -154,10 +154,9 @@ func (s *analyticsService) ApplyLeaveCommunity(communityId string) error {
 		return err
 	}
 
-	currentMemberCount := len(communityData.Members)
 	newGrowthRate := 0.7 * communityData.Stats.GrowthRate
-	if currentMemberCount > 1 { // Check if there are still members left
-		newGrowthRate -= 0.3 * (1.0 / float64(currentMemberCount))
+	if communityData.MemberCount > 1 { // Check if there are still members left
+		newGrowthRate -= 0.3 * (1.0 / float64(communityData.MemberCount))
 	} else {
 		newGrowthRate = 0.0 // No growth if no members left
 	}

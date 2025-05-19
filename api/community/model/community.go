@@ -28,7 +28,6 @@ type Community struct {
 	ShortDesc   string             `bson:"shortDesc" json:"shortDesc"`
 	OwnerId     string             `bson:"ownerId" json:"ownerId"`
 	IsPrivate   bool               `bson:"isPrivate" json:"isPrivate"`
-	Members     []string           `bson:"members" json:"members"`
 	MemberCount int64              `bson:"memberCount" json:"memberCount"`
 	PostCount   int64              `bson:"postCount" json:"postCount"`
 	Media       CommunityMedia     `bson:"media" json:"media"`
@@ -252,7 +251,6 @@ func NewCommunity(args NewCommunityArgs) *Community {
 		ShortDesc:   truncateString(args.Description, 160),
 		OwnerId:     args.OwnerId,
 		IsPrivate:   false,
-		Members:     []string{args.OwnerId},
 		MemberCount: 1,
 		PostCount:   0,
 		Moderators:  []string{args.OwnerId},
@@ -358,15 +356,6 @@ func randomString(length int) string {
 		result[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(result)
-}
-
-func (c *Community) IsUserInCommunity(userId string) bool {
-	for _, member := range c.Members {
-		if member == userId {
-			return true
-		}
-	}
-	return false
 }
 
 func (c *Community) GetCollectionName() string {

@@ -2,6 +2,8 @@ package user
 
 import (
 	"sync-backend/api/common/location"
+	"sync-backend/api/community"
+	"sync-backend/api/community/model"
 	"sync-backend/api/user/dto"
 	"sync-backend/arch/common"
 	coreMW "sync-backend/arch/middleware"
@@ -15,16 +17,18 @@ type userController struct {
 	logger utils.AppLogger
 	network.BaseController
 	common.ContextPayload
-	authProvider    network.AuthenticationProvider
-	uploadProvider  coreMW.UploadProvider
-	userService     UserService
-	locationService location.LocationService
+	authProvider     network.AuthenticationProvider
+	uploadProvider   coreMW.UploadProvider
+	userService      UserService
+	communityService community.CommunityService
+	locationService  location.LocationService
 }
 
 func NewUserController(
 	authProvider network.AuthenticationProvider,
 	uploadProvider coreMW.UploadProvider,
 	userService UserService,
+	communityService community.CommunityService,
 	locationService location.LocationService,
 ) network.Controller {
 	return &userController{
@@ -191,7 +195,7 @@ func (c *userController) JoinCommunity(ctx *gin.Context) {
 		return
 	}
 
-	err = c.userService.JoinCommunity(*userId, communityId)
+	err = c.communityService.JoinCommunity(communityId, *userId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
@@ -241,7 +245,7 @@ func (c *userController) GetMyCommunities(ctx *gin.Context) {
 	}
 
 	userId := c.ContextPayload.MustGetUserId(ctx)
-	communities, err := c.userService.GetMyCommunities(*userId, body.Page, body.Limit)
+	communities, err := c.communityService.GetCommunities(*userId, body.Page, body.Limit)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
@@ -252,10 +256,18 @@ func (c *userController) GetMyCommunities(ctx *gin.Context) {
 		c.Send(ctx).NotFoundError("No communities found", nil)
 		return
 	}
+
+	var finalCommunities []model.Community
+	for _, community := range communities {
+		if community != nil {
+			finalCommunities = append(finalCommunities, *community)
+		}
+	}
+
 	c.Send(ctx).SuccessDataResponse(
 		"Communities fetched successfully",
 		dto.NewGetMyCommunitiesResponse(
-			communities,
+			finalCommunities,
 			len(communities),
 		),
 	)
@@ -269,7 +281,7 @@ func (c *userController) GetJoinedCommunities(ctx *gin.Context) {
 	}
 
 	userId := c.ContextPayload.MustGetUserId(ctx)
-	communities, err := c.userService.GetJoinedCommunities(*userId, body.Page, body.Limit)
+	communities, err := c.communityService.GetCommunities(*userId, body.Page, body.Limit)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
@@ -280,10 +292,17 @@ func (c *userController) GetJoinedCommunities(ctx *gin.Context) {
 		return
 	}
 
+	var finalCommunities []model.Community
+	for _, community := range communities {
+		if community != nil {
+			finalCommunities = append(finalCommunities, *community)
+		}
+	}
+
 	c.Send(ctx).SuccessDataResponse(
 		"Communities fetched successfully",
 		dto.NewJoinedCommunitiesResponse(
-			communities,
+			finalCommunities,
 			len(communities),
 		),
 	)
