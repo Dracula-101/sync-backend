@@ -104,7 +104,7 @@ func (c *userController) FollowUser(ctx *gin.Context) {
 	userId := c.ContextPayload.MustGetUserId(ctx)
 
 	if *userId == followUserId {
-		c.Send(ctx).BadRequestError("Cannot follow yourself", nil)
+		c.Send(ctx).MixedError(NewSelfActionError("follow"))
 		return
 	}
 
@@ -122,7 +122,7 @@ func (c *userController) UnfollowUser(ctx *gin.Context) {
 	userId := c.ContextPayload.MustGetUserId(ctx)
 
 	if *userId == unfollowUserId {
-		c.Send(ctx).BadRequestError("Cannot unfollow yourself", nil)
+		c.Send(ctx).MixedError(NewSelfActionError("unfollow"))
 		return
 	}
 
@@ -140,7 +140,7 @@ func (c *userController) BlockUser(ctx *gin.Context) {
 	userId := c.ContextPayload.MustGetUserId(ctx)
 
 	if *userId == blockUserId {
-		c.Send(ctx).BadRequestError("Cannot block yourself", nil)
+		c.Send(ctx).MixedError(NewSelfActionError("block"))
 		return
 	}
 
@@ -158,7 +158,7 @@ func (c *userController) UnblockUser(ctx *gin.Context) {
 	userId := c.ContextPayload.MustGetUserId(ctx)
 
 	if *userId == unblockUserId {
-		c.Send(ctx).BadRequestError("Cannot unblock yourself", nil)
+		c.Send(ctx).MixedError(NewSelfActionError("unblock"))
 		return
 	}
 

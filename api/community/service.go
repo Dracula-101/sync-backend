@@ -2,7 +2,6 @@ package community
 
 import (
 	"errors"
-	"fmt"
 	"slices"
 	"sync-backend/api/common/media"
 	mediaMadels "sync-backend/api/common/media/model"
@@ -69,12 +68,12 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 	communityTags, err := s.communityTagQueryBuilder.Query(s.Context()).FindAll(filter, nil)
 	if err != nil {
 		s.logger.Error("Error fetching community tags: %v", err)
-		return nil, network.NewInternalServerError("Error fetching community tags", network.DB_ERROR, err)
+		return nil, NewDBError("fetching community tags", err.Error())
 	}
 
 	if len(communityTags) == 0 {
 		s.logger.Error("No community tags found")
-		return nil, network.NewInternalServerError("No community tags found", network.DB_ERROR, errors.New("no community tags found"))
+		return nil, NewDBError("fetching community tags", "no community tags found")
 	}
 	s.logger.Info("Community tags found: %v", communityTags)
 	convertedTags := make([]model.CommunityTagInfo, len(communityTags))
@@ -138,19 +137,20 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 	if err != nil {
 		if !mongo.IsNoDocumentFoundError(err) {
 			s.logger.Error("Error checking for duplicate community: %v", err)
-			return nil, network.NewInternalServerError("Error checking for duplicate community", network.DB_ERROR, err)
+			return nil, NewDBError("checking for duplicate community", err.Error())
 		}
 	}
 	if duplicateCommunity != nil {
 		if duplicateCommunity.Slug == community.Slug {
 			s.logger.Error("Community with the same slug already exists")
 			community.Slug = utils.GenerateUniqueSlug(community.Name)
+			return nil, NewDuplicateCommunityError(community.Slug)
 		}
 	}
 	_, err = s.communityQueryBuilder.Query(s.Context()).InsertOne(community)
 	if err != nil {
 		s.logger.Error("Error inserting community: %v", err)
-		return nil, network.NewInternalServerError("Error inserting community", network.DB_ERROR, err)
+		return nil, NewDBError("inserting community", err.Error())
 	}
 
 	return community, nil
@@ -162,11 +162,11 @@ func (s *communityService) GetCommunityById(id string) (*model.Community, networ
 	community, err := s.communityQueryBuilder.Query(s.Context()).FindOne(filter, nil)
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		s.logger.Error("Error fetching community: %v", err)
-		return nil, network.NewInternalServerError("Error fetching community", network.DB_ERROR, err)
+		return nil, NewDBError("fetching community", err.Error())
 	}
 	if community == nil {
 		s.logger.Error("Community not found")
-		return nil, network.NewNotFoundError("Community not found", fmt.Errorf("community with id %s not found", id))
+		return nil, NewCommunityNotFoundError(id)
 	}
 	return community, nil
 }

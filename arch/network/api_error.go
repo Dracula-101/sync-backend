@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"runtime"
 )
 
 type apiError struct {
@@ -39,12 +40,12 @@ const (
 	ErrorBindingCode                 = "BINDING_ERROR"
 	ErrorValidationCode              = "VALIDATION_ERROR"
 	ErrorFieldValidationCode         = "FIELD_VALIDATION_ERROR"
-	DB_ERROR                         = "DB_ERROR"
-	CACHE_ERROR                      = "CACHE_ERROR"
-	FORBIDDEN_ERROR                  = "FORBIDDEN_ERROR"
 	UnknownErrorCode                 = "UNKNOWN_ERROR"
 
-	MEDIA_ERROR = "MEDIA_ERROR"
+	DB_ERROR        = "DB_ERROR"
+	CACHE_ERROR     = "CACHE_ERROR"
+	FORBIDDEN_ERROR = "FORBIDDEN_ERROR"
+	MEDIA_ERROR     = "MEDIA_ERROR"
 )
 
 func (e *apiError) GetStatusCode() int {
@@ -67,7 +68,7 @@ func IsApiError(err error) bool {
 	return ok
 }
 
-func AsApiError(err error) (ApiError) {
+func AsApiError(err error) ApiError {
 	// panic
 	if err == nil {
 		return nil
@@ -107,22 +108,43 @@ func (e *apiError) GetErrors(isDebug bool) []ErrorDetail {
 
 	var errors []ErrorDetail
 	if isDebug {
-		errors = append(errors, ErrorDetail{
-			Code:    e.ErrorCode,
-			Message: e.Message,
-			Detail:  e.Err.Error(),
-		})
+		// Capture stacktrace, file, line, function
+		stackBuf := make([]byte, 2048)
+		stackSize := runtime.Stack(stackBuf, false)
+		stacktrace := string(stackBuf[:stackSize])
+
+		// Get file, line, function from the call stack
+		var file, function string
+		var line int
+		if pc, f, l, ok := runtime.Caller(2); ok {
+			file = f
+			line = l
+			function = runtime.FuncForPC(pc).Name()
+		}
+
+		errors = append(errors, NewErrorDetailWithDebug(
+			e.ErrorCode,
+			"",
+			e.Message,
+			e.Err.Error(),
+			stacktrace,
+			file,
+			function,
+			e.Err.Error(),
+			line,
+		))
 	} else {
-		errors = append(errors, ErrorDetail{
-			Code:    e.ErrorCode,
-			Message: e.Message,
-			Detail: func() string {
+		errors = append(errors, NewErrorDetail(
+			e.ErrorCode,
+			"",
+			e.Message,
+			func() string {
 				if e.Message == e.Err.Error() {
 					return ""
 				}
 				return "An error occurred"
 			}(),
-		})
+		))
 	}
 
 	return errors

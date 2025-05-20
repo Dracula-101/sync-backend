@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -103,152 +104,169 @@ func ReqHeaders[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 	return dto.GetValue(), nil
 }
 
+// Error code and message constants
+const (
+	ErrCodeBindingBody     = "BODY_BINDING_ERROR"
+	ErrCodeBindingForm     = "FORM_BINDING_ERROR"
+	ErrCodeBindingQuery    = "QUERY_BINDING_ERROR"
+	ErrCodeBindingParams   = "PARAMS_BINDING_ERROR"
+	ErrCodeBindingHeader   = "HEADER_BINDING_ERROR"
+	ErrCodeValidation      = "VALIDATION_ERROR"
+	ErrCodeFieldValidation = "FIELD_VALIDATION_ERROR"
+	ErrCodeInternal        = "INTERNAL_SERVER_ERROR"
+	ErrMsgBindingFailed    = "Failed to bind %s parameters"
+	ErrMsgValidationFailed = "Validation failed"
+	ErrMsgInternal         = "Internal server error"
+)
+
+// Helper: Convert validator.ValidationErrors to []ErrorDetail
+func validationErrorsToDetails(validationErrors validator.ValidationErrors, bindType string, msgs []string) []ErrorDetail {
+	details := make([]ErrorDetail, len(msgs))
+	for i, msg := range msgs {
+		field := ""
+		if i < len(validationErrors) {
+			field = fmt.Sprintf("%s:%s", bindType, validationErrors[i].Field())
+		}
+		details[i] = NewErrorDetail(
+			ErrCodeFieldValidation,
+			field,
+			msg,
+			fmt.Sprintf("Error: Field validation for %s failed on the %s tag", validationErrors[i].Field(), validationErrors[i].Tag()),
+		)
+	}
+	return details
+}
+
+// Helper: Extract required fields from a DTO using reflection
+func getRequiredFields(dto any) []string {
+	requiredFields := []string{}
+	dt := reflect.TypeOf(dto)
+	if dt.Kind() == reflect.Ptr {
+		dt = dt.Elem()
+	}
+	for i := 0; i < dt.NumField(); i++ {
+		field := dt.Field(i)
+		if tag, ok := field.Tag.Lookup("binding"); ok && (tag == "required" || tag == "required,dive") {
+			requiredFields = append(requiredFields, field.Name)
+		} else if tag, ok := field.Tag.Lookup("validate"); ok && (tag == "required" || tag == "required,dive") {
+			requiredFields = append(requiredFields, field.Name)
+		}
+	}
+	return requiredFields
+}
+
 // handleBindingError handles binding errors (typically 400 Bad Request)
 func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCode int, bindType string) error {
+	if err == nil {
+		return nil
+	}
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		return handleValidationError(ctx, dto, validationErrors, statusCode, bindType)
 	}
 
-	if err == nil {
-		return nil
-	}
-
 	errorDetails := make([]ErrorDetail, 0)
-	errorCode := "BINDING_ERROR"
-	errorMessage := fmt.Sprintf("Failed to bind %s parameters", bindType)
-
-	switch bindType {
-	case "body":
-		errorCode = "BODY_BINDING_ERROR"
-	case "form":
-		errorCode = "FORM_BINDING_ERROR"
-	case "query":
-		errorCode = "QUERY_BINDING_ERROR"
-	case "params":
-		errorCode = "PARAMS_BINDING_ERROR"
-	case "header":
-		errorCode = "HEADER_BINDING_ERROR"
+	errorCode := map[string]string{
+		"body":   ErrCodeBindingBody,
+		"form":   ErrCodeBindingForm,
+		"query":  ErrCodeBindingQuery,
+		"params": ErrCodeBindingParams,
+		"header": ErrCodeBindingHeader,
+	}[bindType]
+	if errorCode == "" {
+		errorCode = "BINDING_ERROR"
 	}
+	errorMessage := fmt.Sprintf(ErrMsgBindingFailed, bindType)
 
-	// Handle specific error types
-	if syntaxErr, ok := err.(*json.SyntaxError); ok {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "JSON_SYNTAX_ERROR",
-			Message: "Invalid JSON syntax",
-			Detail:  syntaxErr.Error(),
-		})
-	} else if typeErr, ok := err.(*json.UnmarshalTypeError); ok {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "JSON_UNMARSHAL_TYPE_ERROR",
-			Message: "Invalid JSON type",
-			Detail:  typeErr.Error(),
-		})
-	} else if err.Error() == "EOF" {
-		switch bindType {
-		case "body":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_BODY",
-				Message: "Empty request body",
-				Detail:  "The request body is empty",
-			})
-		case "form":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_FORM",
-				Message: "Empty form data",
-				Detail:  "The form data is empty",
-			})
-		case "query":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_QUERY",
-				Message: "Empty query parameters",
-				Detail:  "The query parameters are empty",
-			})
-		case "params":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_PARAMS",
-				Message: "Empty URI parameters",
-				Detail:  "The URI parameters are empty",
-			})
-		case "header":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_HEADER",
-				Message: "Empty header parameters",
-				Detail:  "The header parameters are empty",
-			})
+	switch e := err.(type) {
+	case *json.SyntaxError:
+		errorDetails = append(errorDetails, NewErrorDetail(
+			"JSON_SYNTAX_ERROR", "", "Invalid JSON syntax", e.Error(),
+		))
+	case *json.UnmarshalTypeError:
+		errorDetails = append(errorDetails, NewErrorDetail(
+			"JSON_UNMARSHAL_TYPE_ERROR", "", "Invalid JSON type", e.Error(),
+		))
+	default:
+		switch err.Error() {
+		case "EOF":
+			// Empty request: enumerate all required fields
+			requiredFields := getRequiredFields(dto)
+			if len(requiredFields) > 0 {
+				for _, field := range requiredFields {
+					errorDetails = append(errorDetails, NewErrorDetail(
+						ErrCodeFieldValidation,
+						fmt.Sprintf("%s:%s", bindType, field),
+						fmt.Sprintf("field '%s' is required", field),
+						fmt.Sprintf("The field '%s' is required but was not provided", field),
+					))
+				}
+			} else {
+				errorDetails = append(errorDetails, NewErrorDetail(
+					"EMPTY_"+strings.ToUpper(bindType), "", fmt.Sprintf("Empty %s", bindType), fmt.Sprintf("The %s is empty", bindType),
+				))
+			}
+		case "http: no such file":
+			errorDetails = append(errorDetails, NewErrorDetail(
+				"FILE_NOT_FOUND", "", "File not found", "The specified file was not found",
+			))
+		case "http: request URI too large":
+			errorDetails = append(errorDetails, NewErrorDetail(
+				"REQUEST_URI_TOO_LARGE", "", "Request URI too large", "The request URI exceeds the maximum size limit",
+			))
+		case "http: request body too large":
+			errorDetails = append(errorDetails, NewErrorDetail(
+				"REQUEST_BODY_TOO_LARGE", "", "Request body too large", "The request body exceeds the maximum size limit",
+			))
+		case "http: request header too large":
+			errorDetails = append(errorDetails, NewErrorDetail(
+				"REQUEST_HEADER_TOO_LARGE", "", "Request header too large", "The request header exceeds the maximum size limit",
+			))
+		default:
+			errorDetails = append(errorDetails, NewErrorDetail(
+				errorCode, "", errorMessage, err.Error(),
+			))
 		}
-	} else if err.Error() == "http: no such file" {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "FILE_NOT_FOUND",
-			Message: "File not found",
-			Detail:  "The specified file was not found",
-		})
-	} else if err.Error() == "http: request URI too large" {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "REQUEST_URI_TOO_LARGE",
-			Message: "Request URI too large",
-			Detail:  "The request URI exceeds the maximum size limit",
-		})
-	} else if err.Error() == "http: request body too large" {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "REQUEST_BODY_TOO_LARGE",
-			Message: "Request body too large",
-			Detail:  "The request body exceeds the maximum size limit",
-		})
-	} else if err.Error() == "http: request header too large" {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "REQUEST_HEADER_TOO_LARGE",
-			Message: "Request header too large",
-			Detail:  "The request header exceeds the maximum size limit",
-		})
-	} else {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    errorCode,
-			Message: errorMessage,
-			Detail:  err.Error(),
-		})
 	}
-	errResponse := NewEnvelopeWithErrors(false, statusCode, "Binding failed", errorDetails)
 
+	// Fallback for truly unknown errors
+	if len(errorDetails) == 0 {
+		errorDetails = append(errorDetails, NewErrorDetail(
+			ErrCodeInternal, "", ErrMsgInternal, err.Error(),
+		))
+	}
+
+	errResponse := NewEnvelopeWithErrors(false, statusCode, "Binding failed", errorDetails)
 	ctx.JSON(statusCode, errResponse)
 	return err
 }
 
 // handleValidationError handles validation errors (typically 422 Unprocessable Entity)
 func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statusCode int, bindType string) error {
+	if err == nil {
+		return nil
+	}
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		msgs, e := dto.ValidateErrors(validationErrors)
 		if e != nil {
-			// If something went wrong during error processing
 			ctx.JSON(http.StatusInternalServerError, NewEnvelopeWithErrors(
 				false,
 				http.StatusInternalServerError,
-				"Internal server error",
+				ErrMsgInternal,
 				[]ErrorDetail{
-					{
-						Code:    InternalServerErrorCode,
-						Message: "Validation error",
-						Detail:  "Failed to process validation errors",
-					},
+					NewErrorDetail(
+						ErrCodeInternal, "", "Validation error", "Failed to process validation errors",
+					),
 				},
 			))
 			return e
 		}
-
+		details := validationErrorsToDetails(validationErrors, bindType, msgs)
 		errResponse := NewEnvelopeWithErrors(
 			false,
 			statusCode,
-			"Validation failed",
-			[]ErrorDetail{},
+			ErrMsgValidationFailed,
+			details,
 		)
-		errResponse.Errors = make([]ErrorDetail, len(msgs))
-		for i, msg := range msgs {
-			errResponse.Errors[i] = ErrorDetail{
-				Code:    ErrorFieldValidationCode,
-				Message: msg,
-				Field:   fmt.Sprintf("%s:%s", bindType, validationErrors[i].Field()),
-				Detail:  fmt.Sprintf("Error: Field validation for %s failed on the %s tag", validationErrors[i].Field(), validationErrors[i].Tag()),
-			}
-		}
 		ctx.JSON(statusCode, errResponse)
 
 		// For compatibility with your original error return approach
@@ -269,14 +287,12 @@ func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statu
 	ctx.JSON(statusCode, NewEnvelopeWithErrors(
 		false,
 		statusCode,
-		"Validation failed",
+		ErrMsgValidationFailed,
 		[]ErrorDetail{
-			{
-				Code:    ErrorValidationCode,
-				Message: "Failed to validate request",
-				Detail:  err.Error(),
-			},
-		}),
-	)
+			NewErrorDetail(
+				ErrCodeValidation, "", "Failed to validate request", err.Error(),
+			),
+		},
+	))
 	return err
 }

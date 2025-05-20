@@ -64,14 +64,14 @@ func (s *commentService) CreatePostComment(userId string, comment *dto.CreatePos
 	_, err := s.postQueryBuilder.SingleQuery().FindOne(postFilter, nil)
 	if err != nil {
 		s.logger.Error("Failed to find post - %v", err)
-		return nil, network.NewNotFoundError("Post not found", fmt.Errorf("post %s not found", comment.PostId))
+		return nil, NewPostNotFoundError(comment.PostId)
 	}
 	// check for community existence
 	communityFilter := bson.M{"communityId": comment.CommunityId}
 	_, err = s.communityQueryBuilder.SingleQuery().FindOne(communityFilter, nil)
 	if err != nil {
 		s.logger.Error("Failed to find community - %v", err)
-		return nil, network.NewNotFoundError("Community not found", fmt.Errorf("community %s not found", comment.CommunityId))
+		return nil, NewCommunityNotFoundError(comment.CommunityId)
 	}
 
 	commentModel := model.NewComment(comment.PostId, userId, comment.CommunityId, comment.Comment, comment.ParentId)
@@ -80,7 +80,7 @@ func (s *commentService) CreatePostComment(userId string, comment *dto.CreatePos
 	_, err = s.commentQueryBuilder.SingleQuery().InsertOne(commentModel)
 	if err != nil {
 		s.logger.Error("Failed to create post comment - %v", err)
-		return nil, network.NewInternalServerError("Failed to create comment", network.DB_ERROR, err)
+		return nil, NewDBError("creating comment", err.Error())
 	}
 	return commentModel, nil
 }
@@ -93,12 +93,12 @@ func (s *commentService) EditPostComment(userId string, commentId string, commen
 	commentModel, err := s.commentQueryBuilder.SingleQuery().FindOne(filter, nil)
 	if err != nil {
 		s.logger.Error("Failed to find comment - %v", err)
-		return nil, network.NewNotFoundError("Comment not found", fmt.Errorf("comment %s not found", commentId))
+		return nil, NewCommentNotFoundError(commentId)
 	}
 
 	if commentModel.AuthorId != userId {
 		s.logger.Error("User is not authorized to edit this comment")
-		return nil, network.NewForbiddenError("User is not authorized to edit this comment", fmt.Errorf("user %s is not authorized to edit comment %s", userId, commentId))
+		return nil, NewForbiddenError("edit", userId, commentId)
 	}
 
 	commentModel.Content = comment.Comment
@@ -118,7 +118,7 @@ func (s *commentService) EditPostComment(userId string, commentId string, commen
 	_, err = s.commentQueryBuilder.SingleQuery().UpdateOne(filter, update, nil)
 	if err != nil {
 		s.logger.Error("Failed to update post comment - %v", err)
-		return nil, network.NewInternalServerError("Failed to update comment", network.DB_ERROR, err)
+		return nil, NewDBError("updating comment", err.Error())
 	}
 
 	return commentModel, nil
@@ -129,11 +129,11 @@ func (s *commentService) DeletePostComment(userId string, commentId string) netw
 	commentModel, err := s.commentQueryBuilder.SingleQuery().FindOne(filter, nil)
 	if err != nil {
 		s.logger.Error("Failed to find comment - %v", err)
-		return network.NewNotFoundError("Comment not found", fmt.Errorf("comment %s not found", commentId))
+		return NewCommentNotFoundError(commentId)
 	}
 	if commentModel.AuthorId != userId {
 		s.logger.Error("User is not authorized to delete this comment")
-		return network.NewForbiddenError("User is not authorized to delete this comment", fmt.Errorf("user %s is not authorized to delete comment %s", userId, commentId))
+		return NewForbiddenError("delete", userId, commentId)
 	}
 	_, err = s.commentQueryBuilder.SingleQuery().UpdateOne(
 		bson.M{"commentId": commentId},
@@ -151,7 +151,7 @@ func (s *commentService) DeletePostComment(userId string, commentId string) netw
 	)
 	if err != nil {
 		s.logger.Error("Failed to delete post comment - %v", err)
-		return network.NewInternalServerError("Failed to delete comment", network.DB_ERROR, err)
+		return NewDBError("deleting comment", err.Error())
 	}
 	return nil
 }

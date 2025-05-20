@@ -1,7 +1,6 @@
 package user
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -71,23 +70,23 @@ func (s *userService) CreateUser(userName string, email string, password string,
 	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(filter, nil)
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		s.log.Error("Error checking for existing user: %v", err)
-		return nil, fmt.Errorf("error checking for existing user: %v", err)
+		return nil, NewDBError("checking for existing user", err.Error())
 	}
 
 	if existingUser != nil {
 		if existingUser.Email == email {
 			s.log.Error("User with this email already exists: %s", email)
-			return nil, errors.New("user with this email already exists")
+			return nil, NewUserExistsByEmailError(email)
 		} else {
 			s.log.Error("User with this username already exists: %s", userName)
-			return nil, errors.New("user with this username already exists")
+			return nil, NewUserExistsByUsernameError(userName)
 		}
 	}
 
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		s.log.Error("Error hashing password: %v", err)
-		return nil, err
+		return nil, NewDBError("hashing password", err.Error())
 	}
 	var profilePicUrl, profileId string
 	var profileHeight, profileWidth int
@@ -145,13 +144,13 @@ func (s *userService) CreateUser(userName string, email string, password string,
 	})
 	if err != nil {
 		s.log.Error("Error creating user: %v", err)
-		return nil, err
+		return nil, NewDBError("creating user", err.Error())
 	}
 
 	id, err := s.userQueryBuilder.SingleQuery().InsertOne(user.GetValue())
 	if err != nil {
 		s.log.Error("Error inserting user into database: %v", err)
-		return nil, err
+		return nil, NewDBError("inserting user into database", err.Error())
 	}
 	user.Id = *id
 	return user, nil
@@ -162,13 +161,13 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 	googleUser, err := utils.DecodeGoogleJWTToken(googleIdToken)
 	if err != nil {
 		s.log.Error("Error decoding Google ID token: %v", err)
-		return nil, fmt.Errorf("error decoding Google ID token: %v", err)
+		return nil, NewDBError("decoding Google ID token", err.Error())
 	}
 
 	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": googleUser.Email}, nil)
 
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
-		return nil, fmt.Errorf("error checking for existing user: %v", err)
+		return nil, NewDBError("checking for existing user", err.Error())
 	}
 	width, height, _ := utils.GetImageSize(googleUser.Picture)
 	if existingUser != nil {
@@ -195,7 +194,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		}, nil)
 		if err != nil {
 			s.log.Error("Error updating existing user: %v", err)
-			return nil, fmt.Errorf("error updating existing user: %v", err)
+			return nil, NewDBError("updating existing user", err.Error())
 		}
 		s.log.Debug("User updated successfully: %s", existingUser.Email)
 		return existingUser, nil
@@ -221,7 +220,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 			DeviceToken: *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
 		})
 		if err != nil {
-			return nil, err
+			return nil, NewDBError("creating user from Google ID", err.Error())
 		}
 		userAuthProvider, err := model.NewAuthProvider(
 			googleIdToken,
@@ -230,7 +229,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		)
 		if err != nil {
 			s.log.Error("Error creating auth provider: %v", err)
-			return nil, err
+			return nil, NewDBError("creating auth provider", err.Error())
 		}
 
 		user.VerifiedEmail = googleUser.EmailVerified
@@ -238,7 +237,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		id, err := s.userQueryBuilder.SingleQuery().InsertOne(user.GetValue())
 		if err != nil {
 			s.log.Error("Error inserting user into database: %v", err)
-			return nil, err
+			return nil, NewDBError("inserting user into database", err.Error())
 		}
 		s.log.Debug("User created successfully: %s - %s", user.Email, id.Hex())
 		return user, nil
@@ -250,22 +249,22 @@ func (s *userService) FindUserById(userId string) (*model.User, error) {
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
-			return nil, errors.New("user not found")
+			return nil, NewUserNotFoundError(userId)
 		}
 		s.log.Error("Error getting user by ID: %v", err)
-		return nil, err
+		return nil, NewDBError("getting user by ID", err.Error())
 	}
 	if user.Status == model.Deleted {
 		s.log.Error("User is deleted: %s", userId)
-		return nil, errors.New("user is deleted")
+		return nil, NewUserDeletedError(userId)
 	}
 	if user.Status == model.Inactive {
 		s.log.Error("User is inactive: %s", userId)
-		return nil, errors.New("user is inactive")
+		return nil, NewUserInactiveError(userId)
 	}
 	if user.Status == model.Banned {
 		s.log.Error("User is banned: %s", userId)
-		return nil, errors.New("user is banned")
+		return nil, NewUserBannedError(userId)
 	}
 
 	s.log.Debug("User found by ID: %s", user.UserId)
@@ -280,19 +279,19 @@ func (s *userService) FindUserByEmail(email string) (*model.User, error) {
 			return nil, nil
 		}
 		s.log.Error("Error finding user by email: %v", err)
-		return nil, err
+		return nil, NewDBError("finding user by email", err.Error())
 	}
 	if user.Status == model.Deleted {
 		s.log.Error("User is deleted: %s", email)
-		return nil, errors.New("user is deleted")
+		return nil, NewUserDeletedError(email)
 	}
 	if user.Status == model.Inactive {
 		s.log.Error("User is inactive: %s", email)
-		return nil, errors.New("user is inactive")
+		return nil, NewUserInactiveError(email)
 	}
 	if user.Status == model.Banned {
 		s.log.Error("User is banned: %s", email)
-		return nil, errors.New("user is banned")
+		return nil, NewUserBannedError(email)
 	}
 	s.log.Debug("User found: %s", user.Email)
 	return user, nil
@@ -306,19 +305,19 @@ func (s *userService) FindUserByUsername(username string) (*model.User, error) {
 			return nil, nil
 		}
 		s.log.Error("Error finding user by username: %v", err)
-		return nil, err
+		return nil, NewDBError("finding user by username", err.Error())
 	}
 	if user.Status == model.Deleted {
 		s.log.Error("User is deleted: %s", username)
-		return nil, errors.New("user is deleted")
+		return nil, NewUserDeletedError(username)
 	}
 	if user.Status == model.Inactive {
 		s.log.Error("User is inactive: %s", username)
-		return nil, errors.New("user is inactive")
+		return nil, NewUserInactiveError(username)
 	}
 	if user.Status == model.Banned {
 		s.log.Error("User is banned: %s", username)
-		return nil, errors.New("user is banned")
+		return nil, NewUserBannedError(username)
 	}
 	s.log.Debug("User found: %s", user.Username)
 	return user, nil
@@ -332,7 +331,7 @@ func (s *userService) FindUserAuthProvider(userId string, username string, provi
 			return nil, nil
 		}
 		s.log.Error("Error finding auth provider by user ID: %v", err)
-		return nil, err
+		return nil, NewDBError("finding auth provider by user ID", err.Error())
 	}
 	if user == nil {
 		s.log.Debug("No auth provider found for user ID: %s and provider name: %s", userId, providerName)
@@ -366,7 +365,7 @@ func (s *userService) UpdateLoginHistory(userId string, loginHistory model.Login
 	}, nil)
 	if err != nil {
 		s.log.Error("Error updating login history: %v", err)
-		return fmt.Errorf("error updating login history: %v", err)
+		return NewDBError("updating login history", err.Error())
 	}
 
 	s.log.Debug("Login history updated successfully for user ID: %s - Modified count: %d", userId, result.ModifiedCount)
@@ -379,11 +378,11 @@ func (s *userService) ValidateUserPassword(user *model.User, password string) er
 	isValid, err := utils.CheckPasswordHash(password, user.PasswordHash)
 	if err != nil {
 		s.log.Error("Error comparing password: %v", err)
-		return fmt.Errorf("error comparing password: %v", err)
+		return NewDBError("comparing password", err.Error())
 	}
 	if !isValid {
 		s.log.Error("Invalid password for user: %s", user.Email)
-		return errors.New("invalid password")
+		return NewForbiddenUserActionError("validate password for", user.Email, user.Email)
 	}
 	return nil
 }
@@ -397,7 +396,7 @@ func (s *userService) JoinCommunity(userId string, communityId string) error {
 	}, nil)
 	if err != nil {
 		s.log.Error("Error joining community: %v", err)
-		return fmt.Errorf("error joining community: %v", err)
+		return NewDBError("joining community", err.Error())
 	}
 
 	s.log.Debug("User %s joined community %s successfully", userId, communityId)
@@ -413,7 +412,7 @@ func (s *userService) LeaveCommunity(userId string, communityId string) error {
 	}, nil)
 	if err != nil {
 		s.log.Error("Error leaving community: %v", err)
-		return fmt.Errorf("error leaving community: %v", err)
+		return NewDBError("leaving community", err.Error())
 	}
 
 	s.log.Debug("User %s left community %s successfully", userId, communityId)
@@ -426,20 +425,20 @@ func (s *userService) FollowUser(userId string, followUserId string) error {
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.log.Error("User to follow does not exist: %s", followUserId)
-			return fmt.Errorf("user to follow does not exist")
+			return NewUserNotFoundError(followUserId)
 		}
 		s.log.Error("Error checking if user to follow exists: %v", err)
-		return fmt.Errorf("error checking if user to follow exists: %v", err)
+		return NewDBError("checking if user to follow exists", err.Error())
 	}
 	if userId == followUserId {
 		s.log.Error("Cannot follow self")
-		return errors.New("cannot follow self")
+		return NewSelfActionError("follow")
 	}
 
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
 	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
 	}
 	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		userCollection := session.Collection(model.UserCollectionName)
@@ -453,7 +452,7 @@ func (s *userService) FollowUser(userId string, followUserId string) error {
 		)
 		if err != nil {
 			s.log.Error("error following user: %v", err)
-			return fmt.Errorf("error following user: %v", err)
+			return NewDBError("following user", err.Error())
 		}
 		_, err = userCollection.UpdateOne(
 			bson.M{"userId": followUserId},
@@ -465,14 +464,14 @@ func (s *userService) FollowUser(userId string, followUserId string) error {
 		)
 		if err != nil {
 			s.log.Error("error following user: %v", err)
-			return fmt.Errorf("error following user: %v", err)
+			return NewDBError("following user", err.Error())
 		}
 		return nil
 	})
 
 	if err != nil {
 		s.log.Error("Error following user: %v", err)
-		return fmt.Errorf("error following user: %v", err)
+		return NewDBError("following user", err.Error())
 	}
 
 	s.log.Debug("User %s followed user %s successfully", userId, followUserId)
@@ -485,20 +484,20 @@ func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.log.Error("User to follow does not exist: %s", unfollowUserId)
-			return fmt.Errorf("user to follow does not exist")
+			return NewUserNotFoundError(unfollowUserId)
 		}
 		s.log.Error("Error checking if user to follow exists: %v", err)
-		return fmt.Errorf("error checking if user to follow exists: %v", err)
+		return NewDBError("checking if user to follow exists", err.Error())
 	}
 	if userId == unfollowUserId {
 		s.log.Error("Cannot follow self")
-		return errors.New("cannot follow self")
+		return NewSelfActionError("unfollow")
 	}
 
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
 	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
 	}
 
 	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
@@ -513,7 +512,7 @@ func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
 		)
 		if err != nil {
 			s.log.Error("error unfollowing user: %v", err)
-			return fmt.Errorf("error unfollowing user: %v", err)
+			return NewDBError("unfollowing user", err.Error())
 		}
 		_, err = userCollection.UpdateOne(
 			bson.M{"userId": unfollowUserId},
@@ -525,14 +524,14 @@ func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
 		)
 		if err != nil {
 			s.log.Error("error unfollowing user: %v", err)
-			return fmt.Errorf("error unfollowing user: %v", err)
+			return NewDBError("unfollowing user", err.Error())
 		}
 		return nil
 	})
 
 	if err != nil {
 		s.log.Error("Error unfollowing user: %v", err)
-		return err
+		return NewDBError("unfollowing user", err.Error())
 	}
 
 	s.log.Debug("User %s unfollowed user %s successfully", userId, unfollowUserId)
@@ -545,19 +544,19 @@ func (s *userService) BlockUser(userId string, blockUserId string) error {
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.log.Error("User to block does not exist: %s", blockUserId)
-			return fmt.Errorf("user to block does not exist")
+			return NewUserNotFoundError(blockUserId)
 		}
 		s.log.Error("Error checking if user to block exists: %v", err)
-		return fmt.Errorf("error checking if user to block exists: %v", err)
+		return NewDBError("checking if user to block exists", err.Error())
 	}
 	if userId == blockUserId {
 		s.log.Error("Cannot block self")
-		return errors.New("cannot block self")
+		return NewSelfActionError("block")
 	}
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
 	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
 	}
 
 	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
@@ -571,13 +570,13 @@ func (s *userService) BlockUser(userId string, blockUserId string) error {
 		)
 		if err != nil {
 			s.log.Error("error blocking user: %v", err)
-			return fmt.Errorf("error blocking user: %v", err)
+			return NewDBError("blocking user", err.Error())
 		}
 		return nil
 	})
 
 	if err != nil {
-		return err
+		return NewDBError("blocking user", err.Error())
 	}
 
 	s.log.Debug("User %s blocked user %s successfully", userId, blockUserId)
@@ -590,19 +589,19 @@ func (s *userService) UnblockUser(userId string, unblockUserId string) error {
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.log.Error("User to unblock does not exist: %s", unblockUserId)
-			return fmt.Errorf("user to unblock does not exist")
+			return NewUserNotFoundError(unblockUserId)
 		}
 		s.log.Error("Error checking if user to unblock exists: %v", err)
-		return fmt.Errorf("error checking if user to unblock exists: %v", err)
+		return NewDBError("checking if user to unblock exists", err.Error())
 	}
 	if userId == unblockUserId {
 		s.log.Error("Cannot block self")
-		return errors.New("cannot block self")
+		return NewSelfActionError("unblock")
 	}
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
 	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
 	}
 
 	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
@@ -617,14 +616,14 @@ func (s *userService) UnblockUser(userId string, unblockUserId string) error {
 		)
 		if err != nil {
 			s.log.Error("error unblocking user: %v", err)
-			return fmt.Errorf("error unblocking user: %v", err)
+			return NewDBError("unblocking user", err.Error())
 		}
 		return nil
 	})
 
 	if err != nil {
 		s.log.Error("Error unblocking user: %v", err)
-		return err
+		return NewDBError("unblocking user", err.Error())
 	}
 
 	s.log.Debug("User %s unblocked user %s successfully", userId, unblockUserId)

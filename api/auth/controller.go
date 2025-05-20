@@ -66,7 +66,7 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 	if exists != nil {
-		c.Send(ctx).ConflictError("User with this email already exists", nil)
+		c.Send(ctx).MixedError(NewUserExistsByEmailError(body.Email))
 		return
 	}
 
@@ -76,7 +76,7 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 	if exists != nil {
-		c.Send(ctx).ConflictError("User with this username already exists", nil)
+		c.Send(ctx).MixedError(NewUserExistsByUsernameError(body.UserName))
 		return
 	}
 

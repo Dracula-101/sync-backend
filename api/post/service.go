@@ -65,7 +65,7 @@ func (s *postService) CreatePost(
 		mediaInfo, err := s.mediaService.UploadMedia(file, userId+"_post", "post")
 		if err != nil {
 			s.logger.Error("Failed to upload media: %v", err)
-			return nil, network.NewInternalServerError("Failed to upload media", network.MEDIA_ERROR, err)
+			return nil, NewMediaError("uploading media", err.Error())
 		}
 		fileUrls = append(fileUrls, model.Media{
 			Id:        mediaInfo.Id,
@@ -82,13 +82,13 @@ func (s *postService) CreatePost(
 
 	if err := s.communityService.CheckUserInCommunity(userId, communityId); err != nil {
 		s.logger.Error("User is not a member of the community: %v", err)
-		return nil, network.NewForbiddenError("User is not a member of the community", err)
+		return nil, NewForbiddenError("create post in", userId, communityId)
 	}
 
 	_, err := s.postQueryBuilder.SingleQuery().InsertOne(post)
 	if err != nil {
 		s.logger.Error("Failed to create post: %v", err)
-		return nil, network.NewInternalServerError("Failed to create post", network.DB_ERROR, err)
+		return nil, NewDBError("creating post", err.Error())
 	}
 	s.logger.Info("Post created successfully with ID: %s", post.PostId)
 	return post, nil
@@ -187,11 +187,11 @@ func (s *postService) GetPost(postId string, userId string) (*model.PublicPost, 
 	posts, err := aggregate.Exec()
 	if err != nil {
 		s.logger.Error("Failed to get post: %v", err)
-		return nil, network.NewInternalServerError("Failed to get post", network.DB_ERROR, err)
+		return nil, NewDBError("getting post", err.Error())
 	}
 	if len(posts) == 0 {
 		s.logger.Error("Post not found")
-		return nil, network.NewNotFoundError("Post not found", fmt.Errorf("post with ID %s not found", postId))
+		return nil, NewPostNotFoundError(postId)
 	}
 	s.logger.Info("Post retrieved successfully with ID: %s", postId)
 	return posts[0], nil
