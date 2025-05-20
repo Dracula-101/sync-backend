@@ -28,7 +28,7 @@ func NewUserNotFoundError(email string) network.ApiError {
 // User banned error
 func NewUserBannedError(email string, banReason string) network.ApiError {
 	return network.NewBadRequestError(
-		fmt.Sprintf("User is banned. Reason - %s", email, banReason),
+		fmt.Sprintf("User is banned. Reason - %s", banReason),
 		fmt.Sprintf("This may indicate the user is banned and can't use the platform. [Context: email=%s]", email),
 		nil,
 	)
