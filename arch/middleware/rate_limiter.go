@@ -72,7 +72,7 @@ func (m *rateLimiter) Handler(ctx *gin.Context) {
 		m.Send(ctx).TooManyRequestsError(
 			"Rate limit exceeded",
 			fmt.Sprintf("Rate limit exceeded. Try again in %d seconds", timeUntilReset),
-			fmt.Errorf("Rate limit exceeded for IP %s: %d requests in %d seconds", ip, val, windowSeconds),
+			fmt.Errorf("Rate limit exceeded for IP %s: %d requests in %.0f seconds", ip, val, windowSeconds),
 		)
 		return
 	}

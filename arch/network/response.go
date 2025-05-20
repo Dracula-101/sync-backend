@@ -23,6 +23,7 @@ type ErrorDetail struct {
 	Code            string `json:"code"`                       // machine‐readable error code
 	Field           string `json:"field,omitempty"`            // optional: which input field
 	Message         string `json:"message"`                    // human‐readable error message
+	Error           string `json:"error,omitempty"`            // optional: machine‐readable error code
 	Detail          string `json:"detail,omitempty"`           // optional: developer detail
 	Stacktrace      string `json:"stacktrace,omitempty"`       // debug only
 	File            string `json:"file,omitempty"`             // debug only
@@ -93,23 +94,25 @@ func NewEnvelopeWithErrors(success bool, statusCode int, message string, errors 
 	}
 }
 
-func NewErrorDetail(code string, field string, message string, detail string) ErrorDetail {
+func NewErrorDetail(code string, field string, message string, detail string, err error) ErrorDetail {
 	return ErrorDetail{
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Code:      code,
 		Field:     field,
 		Message:   message,
 		Detail:    detail,
+		Error:     err.Error(),
 	}
 }
 
-func NewErrorDetailWithDebug(code, field, message, detail, stacktrace, file, function, internalMessage string, line int) ErrorDetail {
+func NewErrorDetailWithDebug(code, field, message, detail, err, stacktrace, file, function, internalMessage string, line int) ErrorDetail {
 	return ErrorDetail{
 		Timestamp:       time.Now().UTC().Format(time.RFC3339),
 		Code:            code,
 		Field:           field,
 		Message:         message,
 		Detail:          detail,
+		Error:           err,
 		Stacktrace:      stacktrace,
 		File:            file,
 		Line:            line,

@@ -127,7 +127,8 @@ func (e *apiError) GetErrors(isDebug bool) []ErrorDetail {
 			e.ErrorCode,
 			"",
 			e.Message,
-			e.Err.Error(),
+			fmt.Sprintf("Details: %s", e.Detail),
+			fmt.Sprintf("Error: %s", e.Err.Error()),
 			stacktrace,
 			file,
 			function,
@@ -139,12 +140,8 @@ func (e *apiError) GetErrors(isDebug bool) []ErrorDetail {
 			e.ErrorCode,
 			"",
 			e.Message,
-			func() string {
-				if e.Message == e.Err.Error() {
-					return ""
-				}
-				return "An error occurred"
-			}(),
+			fmt.Sprintf("Details: %s", e.Detail),
+			e.Err,
 		))
 	}
 

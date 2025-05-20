@@ -132,6 +132,7 @@ func validationErrorsToDetails(validationErrors validator.ValidationErrors, bind
 			field,
 			msg,
 			fmt.Sprintf("Error: Field validation for %s failed on the %s tag", validationErrors[i].Field(), validationErrors[i].Tag()),
+			validationErrors[i],
 		)
 	}
 	return details
@@ -180,11 +181,19 @@ func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCo
 	switch e := err.(type) {
 	case *json.SyntaxError:
 		errorDetails = append(errorDetails, NewErrorDetail(
-			"JSON_SYNTAX_ERROR", "", "Invalid JSON syntax", e.Error(),
+			"JSON_SYNTAX_ERROR",
+			"",
+			"Invalid JSON syntax",
+			fmt.Sprintf("Invalid JSON syntax at byte offset %d", e.Offset),
+			e,
 		))
 	case *json.UnmarshalTypeError:
 		errorDetails = append(errorDetails, NewErrorDetail(
-			"JSON_UNMARSHAL_TYPE_ERROR", "", "Invalid JSON type", e.Error(),
+			"JSON_UNMARSHAL_TYPE_ERROR",
+			"",
+			"Invalid JSON type",
+			fmt.Sprintf("Invalid JSON type for field '%s': expected %s, got %s", e.Field, e.Type, e.Value),
+			e,
 		))
 	default:
 		switch err.Error() {
@@ -198,32 +207,37 @@ func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCo
 						fmt.Sprintf("%s:%s", bindType, field),
 						fmt.Sprintf("field '%s' is required", field),
 						fmt.Sprintf("The field '%s' is required but was not provided", field),
+						err,
 					))
 				}
 			} else {
 				errorDetails = append(errorDetails, NewErrorDetail(
-					"EMPTY_"+strings.ToUpper(bindType), "", fmt.Sprintf("Empty %s", bindType), fmt.Sprintf("The %s is empty", bindType),
+					"EMPTY_"+strings.ToUpper(bindType),
+					"",
+					fmt.Sprintf("Empty %s", bindType),
+					fmt.Sprintf("The %s is empty", bindType),
+					err,
 				))
 			}
 		case "http: no such file":
 			errorDetails = append(errorDetails, NewErrorDetail(
-				"FILE_NOT_FOUND", "", "File not found", "The specified file was not found",
+				"FILE_NOT_FOUND", "", "File not found", "The specified file was not found", err,
 			))
 		case "http: request URI too large":
 			errorDetails = append(errorDetails, NewErrorDetail(
-				"REQUEST_URI_TOO_LARGE", "", "Request URI too large", "The request URI exceeds the maximum size limit",
+				"REQUEST_URI_TOO_LARGE", "", "Request URI too large", "The request URI exceeds the maximum size limit", err,
 			))
 		case "http: request body too large":
 			errorDetails = append(errorDetails, NewErrorDetail(
-				"REQUEST_BODY_TOO_LARGE", "", "Request body too large", "The request body exceeds the maximum size limit",
+				"REQUEST_BODY_TOO_LARGE", "", "Request body too large", "The request body exceeds the maximum size limit", err,
 			))
 		case "http: request header too large":
 			errorDetails = append(errorDetails, NewErrorDetail(
-				"REQUEST_HEADER_TOO_LARGE", "", "Request header too large", "The request header exceeds the maximum size limit",
+				"REQUEST_HEADER_TOO_LARGE", "", "Request header too large", "The request header exceeds the maximum size limit", err,
 			))
 		default:
 			errorDetails = append(errorDetails, NewErrorDetail(
-				errorCode, "", errorMessage, err.Error(),
+				errorCode, "", errorMessage, fmt.Sprintf("Failed to bind %s: %s", bindType, err.Error()), err,
 			))
 		}
 	}
@@ -231,7 +245,7 @@ func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCo
 	// Fallback for truly unknown errors
 	if len(errorDetails) == 0 {
 		errorDetails = append(errorDetails, NewErrorDetail(
-			ErrCodeInternal, "", ErrMsgInternal, err.Error(),
+			ErrCodeInternal, "", ErrMsgInternal, fmt.Sprintf("Failed to bind %s: %s", bindType, err.Error()), err,
 		))
 	}
 
@@ -254,7 +268,11 @@ func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statu
 				ErrMsgInternal,
 				[]ErrorDetail{
 					NewErrorDetail(
-						ErrCodeInternal, "", "Validation error", "Failed to process validation errors",
+						ErrCodeInternal,
+						"",
+						"Validation error",
+						fmt.Sprintf("Failed to validate request: %s", e.Error()),
+						e,
 					),
 				},
 			))
@@ -290,7 +308,11 @@ func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statu
 		ErrMsgValidationFailed,
 		[]ErrorDetail{
 			NewErrorDetail(
-				ErrCodeValidation, "", "Failed to validate request", err.Error(),
+				ErrCodeValidation,
+				"",
+				"Failed to validate request",
+				fmt.Sprintf("Failed to validate %s: %s", bindType, err.Error()),
+				err,
 			),
 		},
 	))
