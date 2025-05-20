@@ -12,6 +12,7 @@ import (
 	"sync-backend/api/common/token"
 	"sync-backend/api/community"
 	"sync-backend/api/post"
+	"sync-backend/api/system"
 	"sync-backend/api/user"
 	"sync-backend/arch/config"
 	coreMW "sync-backend/arch/middleware"
@@ -19,6 +20,8 @@ import (
 	"sync-backend/arch/network"
 	pg "sync-backend/arch/postgres"
 	"sync-backend/arch/redis"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Module network.Module[appModule]
@@ -43,6 +46,7 @@ type appModule struct {
 	CommunityService community.CommunityService
 	PostService      post.PostService
 	CommentService   comment.CommentService
+	SystemService    system.SystemService
 }
 
 func (m *appModule) GetInstance() *appModule {
@@ -56,6 +60,7 @@ func (m *appModule) Controllers() []network.Controller {
 		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.LocationService),
 		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService),
 		comment.NewCommentController(m.AuthenticationProvider(), m.LocationProvider(), m.CommentService),
+		system.NewSystemController(m.SystemService),
 	}
 }
 
@@ -81,17 +86,19 @@ func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 	return middlewares
 }
 
-func NewAppModule(context context.Context, env *config.Env, config *config.Config, db mongo.Database, ipDb pg.Database, store redis.Store) Module {
+func NewAppModule(context context.Context, env *config.Env, config *config.Config, db mongo.Database, ipDb pg.Database, store redis.Store, engine *gin.Engine) Module {
 	mediaService := media.NewMediaService(*env)
 	locationService := location.NewLocationService(ipDb)
 	tokenService := token.NewTokenService(config)
 	sessionService := session.NewSessionService(db)
+	systemService := system.NewSystemService(config, db, store, engine)
 
 	userService := user.NewUserService(db, mediaService)
 	authService := auth.NewAuthService(config, userService, sessionService, tokenService)
 	communityService := community.NewCommunityService(db, mediaService)
 	postService := post.NewPostService(db, userService, communityService, mediaService)
 	commentService := comment.NewCommentService(db)
+
 	return &appModule{
 		Context: context,
 		Env:     env,
@@ -106,6 +113,7 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 		SessionService:  sessionService,
 		TokenService:    tokenService,
 		MediaService:    mediaService,
+		SystemService:   systemService,
 
 		// Services
 		AuthService:      authService,
