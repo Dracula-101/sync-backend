@@ -12,14 +12,14 @@ import (
 // =======================================
 
 type CreatePostRequest struct {
-	Title       string                `form:"title" json:"title" binding:"required" validate:"required,min=1,max=100"`
-	Content     string                `form:"content" json:"content" binding:"required" validate:"required,min=1,max=10000"`
-	Tags        []string              `form:"tags,omitempty" json:"tags"`
-	Media       *multipart.FileHeader `form:"media" json:"media"`
-	CommunityId string                `form:"communityId" json:"communityId" binding:"required" validate:"required"`
-	Type        model.PostType        `form:"type" json:"type" binding:"required" validate:"required,oneof=TEXT IMAGE VIDEO"`
-	IsNSFW      bool                  `form:"isNSFW,omitempty" json:"isNSFW"`
-	IsSpoiler   bool                  `form:"isSpoiler,omitempty" json:"isSpoiler"`
+	Title       string                  `form:"title" json:"title" binding:"required" validate:"required,min=1,max=100"`
+	Content     string                  `form:"content" json:"content" binding:"required" validate:"required,min=1,max=10000"`
+	Tags        []string                `form:"tags,omitempty" json:"tags"`
+	Media       *[]multipart.FileHeader `form:"media" json:"media" binding:"omitempty" validate:"dive"`
+	CommunityId string                  `form:"communityId" json:"communityId" binding:"required" validate:"required"`
+	Type        model.PostType          `form:"type" json:"type" binding:"required" validate:"required,oneof=TEXT IMAGE VIDEO"`
+	IsNSFW      bool                    `form:"isNSFW,omitempty" json:"isNSFW"`
+	IsSpoiler   bool                    `form:"isSpoiler,omitempty" json:"isSpoiler"`
 }
 
 func NewCreatePostRequest() *CreatePostRequest {

@@ -47,7 +47,7 @@ func NewAuthController(
 
 func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting auth routes")
-	group.POST("/signup", c.locationProvider.Middleware(), c.uploadProvider.Middleware("profile_photo"), c.uploadProvider.Middleware("background_photo"), c.SignUp)
+	group.POST("/signup", c.locationProvider.Middleware(), c.uploadProvider.Middleware("profile_photo", "background_photo"), c.SignUp)
 	group.POST("/login", c.locationProvider.Middleware(), c.Login)
 	group.POST("/google", c.locationProvider.Middleware(), c.GoogleLogin)
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
@@ -80,10 +80,10 @@ func (c *authController) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	profilePic := c.uploadProvider.GetUploadedFiles(ctx, "profile_photo")
+	profile := c.uploadProvider.GetUploadedFiles(ctx, "profile_photo")
 	backgroundPic := c.uploadProvider.GetUploadedFiles(ctx, "background_photo")
-	if len(profilePic.Files) != 0 {
-		body.ProfileFilePath = profilePic.Files[0].Path
+	if len(profile.Files) != 0 {
+		body.ProfileFilePath = profile.Files[0].Path
 	}
 	if len(backgroundPic.Files) != 0 {
 		body.BackgroundFilePath = backgroundPic.Files[0].Path

@@ -20,6 +20,7 @@ func ReqBody[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "body")
 	}
@@ -46,6 +47,7 @@ func ReqForm[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "form")
 	}
@@ -61,6 +63,7 @@ func ReqQuery[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "query")
 	}
@@ -76,6 +79,7 @@ func ReqParams[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "params")
 	}
@@ -91,6 +95,7 @@ func ReqHeaders[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "header")
 	}

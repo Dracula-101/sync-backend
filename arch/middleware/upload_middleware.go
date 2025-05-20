@@ -16,7 +16,7 @@ import (
 
 type UploadProvider interface {
 	network.BaseMiddlewareProvider
-	Middleware(fieldname string) gin.HandlerFunc
+	Middleware(fieldNames ...string) gin.HandlerFunc
 	GetUploadedFiles(ctx *gin.Context, fieldname string) *UploadedFiles
 	DeleteUploadedFiles(ctx *gin.Context, fieldname string) error
 }
@@ -60,7 +60,7 @@ func NewUploadProvider() *uploadMiddleware {
 	}
 }
 
-func (p *uploadMiddleware) Middleware(fieldName string) gin.HandlerFunc {
+func (p *uploadMiddleware) Middleware(fieldNames ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Method != "POST" && c.Request.Method != "PUT" {
 			c.Next()
@@ -70,9 +70,7 @@ func (p *uploadMiddleware) Middleware(fieldName string) gin.HandlerFunc {
 		var userID string
 		if p.config.UseUserID {
 			userIDValue := p.ContextPayload.GetUserId(c)
-			if userIDValue == nil {
-				p.logger.Warn("User ID not found in context")
-			} else {
+			if userIDValue != nil {
 				userID = *userIDValue
 			}
 		}
@@ -91,55 +89,63 @@ func (p *uploadMiddleware) Middleware(fieldName string) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		files := form.File[fieldName]
-		if len(files) == 0 {
-			p.logger.Warn("No files found in the request")
-			c.Next()
-			return
-		}
-		uploadedFiles := &UploadedFiles{
-			Files: make([]UploadedFile, 0, len(files)),
-		}
+		for _, fieldName := range fieldNames {
+			files := form.File[fieldName]
+			// Print all files for debugging
+			p.logger.Debug("Processing field: %s, files count: %d", fieldName, len(files))
 
-		for _, file := range files {
-			p.logger.Debug("Processing file: %s", file.Filename)
-
-			if p.config.MaxSize > 0 && file.Size > p.config.MaxSize {
-				p.logger.Warn("File %s exceeds maximum size limit of %d bytes", file.Filename, p.config.MaxSize)
+			if len(files) == 0 {
+				p.logger.Debug("No files found for field: %s", fieldName)
 				continue
 			}
-			if len(p.config.AllowedExtensions) > 0 {
-				ext := filepath.Ext(file.Filename)
-				allowed := slices.Contains(p.config.AllowedExtensions, ext)
-				if !allowed {
-					p.logger.Warn("File %s has disallowed extension: %s", file.Filename, ext)
+
+			uploadedFiles := &UploadedFiles{
+				Files: make([]UploadedFile, 0, len(files)),
+			}
+
+			for _, file := range files {
+				p.logger.Debug("Processing file: %s", file.Filename)
+
+				if p.config.MaxSize > 0 && file.Size > p.config.MaxSize {
+					p.logger.Warn("File %s exceeds maximum size limit of %d bytes", file.Filename, p.config.MaxSize)
 					continue
 				}
+				if len(p.config.AllowedExtensions) > 0 {
+					ext := filepath.Ext(file.Filename)
+					allowed := slices.Contains(p.config.AllowedExtensions, ext)
+					if !allowed {
+						p.logger.Warn("File %s has disallowed extension: %s", file.Filename, ext)
+						continue
+					}
+				}
+
+				uniqueFilename := fmt.Sprintf("%d-%s", time.Now().Unix(), file.Filename)
+				filePath := filepath.Join(storageDir, uniqueFilename)
+
+				if err := c.SaveUploadedFile(file, filePath); err != nil {
+					p.logger.Error("Failed to save file %s: %v", file.Filename, err)
+					continue
+				}
+
+				urlPath := fmt.Sprintf("/uploads/%s/%s", userID, uniqueFilename)
+				if !p.config.UseUserID || userID == "" {
+					urlPath = fmt.Sprintf("/uploads/common/%s", uniqueFilename)
+				}
+
+				uploadedFiles.Files = append(uploadedFiles.Files, UploadedFile{
+					Filename: file.Filename,
+					Size:     file.Size,
+					Path:     filePath,
+					URL:      urlPath,
+				})
+
+				p.logger.Info("File uploaded successfully: %s -> %s", file.Filename, filePath)
 			}
 
-			uniqueFilename := fmt.Sprintf("%d-%s", time.Now().Unix(), file.Filename)
-			filePath := filepath.Join(storageDir, uniqueFilename)
-
-			if err := c.SaveUploadedFile(file, filePath); err != nil {
-				p.logger.Error("Failed to save file %s: %v", file.Filename, err)
-				continue
+			if len(uploadedFiles.Files) > 0 {
+				c.Set("uploadedFiles-"+fieldName, uploadedFiles)
 			}
-
-			urlPath := fmt.Sprintf("/uploads/%s/%s", userID, uniqueFilename)
-			if !p.config.UseUserID || userID == "" {
-				urlPath = fmt.Sprintf("/uploads/common/%s", uniqueFilename)
-			}
-
-			uploadedFiles.Files = append(uploadedFiles.Files, UploadedFile{
-				Filename: file.Filename,
-				Size:     file.Size,
-				Path:     filePath,
-				URL:      urlPath,
-			})
-
-			p.logger.Info("File uploaded successfully: %s -> %s", file.Filename, filePath)
 		}
-		c.Set("uploadedFiles-"+fieldName, uploadedFiles)
 		c.Next()
 	}
 }
@@ -147,23 +153,33 @@ func (p *uploadMiddleware) Middleware(fieldName string) gin.HandlerFunc {
 func (p *uploadMiddleware) GetUploadedFiles(c *gin.Context, fieldName string) *UploadedFiles {
 	files, exists := c.Get("uploadedFiles-" + fieldName)
 	if !exists {
-		p.logger.Warn("No uploaded files found in context")
+		p.logger.Debug("No uploaded files found in context for field: %s", fieldName)
 		return &UploadedFiles{Files: []UploadedFile{}}
 	}
 
-	if uploadedFiles, ok := files.(*UploadedFiles); ok {
-		var filteredFiles []UploadedFile
-		for _, file := range uploadedFiles.Files {
-			if file.Path != "" {
-				filteredFiles = append(filteredFiles, file)
-			}
-		}
-		uploadedFiles.Files = filteredFiles
-		return uploadedFiles
+	uploadedFiles, ok := files.(*UploadedFiles)
+	if !ok {
+		p.logger.Error("Invalid type in context for field %s: expected *UploadedFiles", fieldName)
+		return &UploadedFiles{Files: []UploadedFile{}}
 	}
 
-	p.logger.Warn("Uploaded files in context are not of type *UploadedFiles")
-	return &UploadedFiles{Files: []UploadedFile{}}
+	// Filter out any potentially invalid files
+	if len(uploadedFiles.Files) > 0 {
+		validFiles := make([]UploadedFile, 0, len(uploadedFiles.Files))
+		for _, file := range uploadedFiles.Files {
+			if file.Path != "" && file.Filename != "" {
+				// Check if file actually exists
+				if _, err := os.Stat(file.Path); err == nil {
+					validFiles = append(validFiles, file)
+				} else {
+					p.logger.Warn("File doesn't exist on disk: %s", file.Path)
+				}
+			}
+		}
+		uploadedFiles.Files = validFiles
+	}
+
+	return uploadedFiles
 }
 
 func (p *uploadMiddleware) DeleteUploadedFiles(c *gin.Context, fieldName string) error {

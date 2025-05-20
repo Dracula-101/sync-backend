@@ -17,7 +17,7 @@ import (
 
 type UserService interface {
 	/* CREATING USER */
-	CreateUser(userName string, email string, password string, profilePic string, backgroundPic string, locale string, timezone string, country string) (*model.User, error)
+	CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, error)
 	CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error)
 
 	/* FINDING USER */
@@ -59,7 +59,7 @@ func NewUserService(db mongo.Database, mediaService media.MediaService) UserServ
 	}
 }
 
-func (s *userService) CreateUser(userName string, email string, password string, profilePic string, backgroundPic string, locale string, timezone string, country string) (*model.User, error) {
+func (s *userService) CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, error) {
 	s.log.Debug("Creating user with email: %s", email)
 	filter := bson.M{
 		"$or": []bson.M{
@@ -93,16 +93,16 @@ func (s *userService) CreateUser(userName string, email string, password string,
 	var profileHeight, profileWidth int
 	var backgroundUrl, backgroundId string
 	var backgroundHeight, backgroundWidth int
-	if profilePic != "" {
-		profileInfo, _ := s.mediaService.UploadMedia(profilePic, userName+"_profile", "profile")
+	if profile != "" {
+		profileInfo, _ := s.mediaService.UploadMedia(profile, userName+"_profile", "profile")
 		profileId = profileInfo.Id
 		profilePicUrl = profileInfo.Url
 		profileHeight = profileInfo.Height
 		profileWidth = profileInfo.Width
 	} else {
-		profilePic = "https://placehold.co/150x150.png"
+		profile = "https://placehold.co/150x150.png"
 		profileId = "default-profile-id"
-		profilePicUrl = profilePic
+		profilePicUrl = profile
 		profileHeight = 150
 		profileWidth = 150
 	}
@@ -185,9 +185,9 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 			AddedAt:      time.Now(),
 		})
 		existingUser.VerifiedEmail = googleUser.EmailVerified
-		existingUser.Avatar.ProfilePic.Url = googleUser.Picture
-		existingUser.Avatar.ProfilePic.Width = width
-		existingUser.Avatar.ProfilePic.Height = height
+		existingUser.Avatar.Profile.Url = googleUser.Picture
+		existingUser.Avatar.Profile.Width = width
+		existingUser.Avatar.Profile.Height = height
 		existingUser.Email = googleUser.Email
 		existingUser.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": existingUser.UserId}, bson.M{

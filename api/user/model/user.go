@@ -38,7 +38,7 @@ type User struct {
 	LastSeen          primitive.DateTime  `bson:"lastSeen" json:"lastSeen"`
 	CreatedAt         primitive.DateTime  `bson:"createdAt" json:"createdAt"`
 	UpdatedAt         primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
-	DeletedAt         *primitive.DateTime `bson:"deletedAt" json:"-"`
+	DeletedAt         *primitive.DateTime `bson:"deletedAt,omitempty" json:"-"`
 }
 
 type UserStatus string
@@ -102,7 +102,6 @@ func NewUser(
 		LastSeen:     primitive.NewDateTimeFromTime(now),
 		CreatedAt:    primitive.NewDateTimeFromTime(now),
 		UpdatedAt:    primitive.NewDateTimeFromTime(now),
-		DeletedAt:    nil,
 	}
 	if err := u.Validate(); err != nil {
 		return nil, err

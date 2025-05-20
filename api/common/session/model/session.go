@@ -122,6 +122,13 @@ func (*Session) EnsureIndexes(db mongo.Database) {
 			},
 			Options: options.Index().SetExpireAfterSeconds(12 * 60 * 60).SetName("ttl_session_deleted"),
 		},
+		// TTL index for expired sessions - 12 hours
+		{
+			Keys: bson.D{
+				{Key: "expiresAt", Value: 1},
+			},
+			Options: options.Index().SetExpireAfterSeconds(12 * 60 * 60).SetName("ttl_session_expired"),
+		},
 	}
 
 	mongo.NewQueryBuilder[Session](db, SessionCollectionName).Query(context.Background()).CheckIndexes(indexes)

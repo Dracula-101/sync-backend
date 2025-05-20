@@ -1,6 +1,7 @@
 package community
 
 import (
+	"strings"
 	"sync-backend/api/community/dto"
 	"sync-backend/api/community/model"
 	"sync-backend/arch/common"
@@ -68,7 +69,14 @@ func (c *communityController) CreateCommunity(ctx *gin.Context) {
 		body.BackgroundFilePath = backgroundPhoto.Files[0].Path
 	}
 
-	community, err := c.communityService.CreateCommunity(body.Name, body.Description, body.TagIds, body.AvatarFilePath, body.BackgroundFilePath, *userId)
+	// Process the tagIds - already validated through custom validator
+	var tagIds []string
+	tagIds = strings.Split(body.TagIds, ",")
+	for i := range tagIds {
+		tagIds[i] = strings.TrimSpace(tagIds[i])
+	}
+
+	community, err := c.communityService.CreateCommunity(body.Name, body.Description, tagIds, body.AvatarFilePath, body.BackgroundFilePath, *userId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return

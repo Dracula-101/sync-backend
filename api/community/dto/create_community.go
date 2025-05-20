@@ -12,11 +12,11 @@ import (
 // ==========================================
 
 type CreateCommunityRequest struct {
-	Name               string                `form:"name" binding:"required" validate:"required,min=3,max=50"`
-	Description        string                `form:"description" binding:"required" validate:"required,min=15,max=500"`
-	TagIds             []string              `form:"tag_ids" binding:"required" validate:"required"`
-	AvatarPhoto        *multipart.FileHeader `form:"avatar_photo" binding:"omitempty" validate:"omitempty"`
-	BackgroundPhoto    *multipart.FileHeader `form:"background_photo" binding:"omitempty" validate:"omitempty"`
+	Name               string                  `form:"name" binding:"required" validate:"required,min=3,max=50"`
+	Description        string                  `form:"description" binding:"required" validate:"required,min=15,max=500"`
+	TagIds             string                  `form:"tag_ids" binding:"required" validate:"required"`
+	AvatarPhoto        *[]multipart.FileHeader `form:"avatar_photo" binding:"omitempty" validate:"omitempty,dive"`
+	BackgroundPhoto    *[]multipart.FileHeader `form:"background_photo" binding:"omitempty" validate:"omitempty,dive"`
 	AvatarFilePath     string
 	BackgroundFilePath string
 }
@@ -39,6 +39,12 @@ func (c *CreateCommunityRequest) ValidateErrors(errs validator.ValidationErrors)
 			msgs = append(msgs, fmt.Sprintf("%s must be at least %s characters", err.Field(), err.Param()))
 		case "max":
 			msgs = append(msgs, fmt.Sprintf("%s must be at most %s characters", err.Field(), err.Param()))
+		case "dive":
+			if err.Field() == "avatar_photo" || err.Field() == "background_photo" {
+				msgs = append(msgs, fmt.Sprintf("%s must be a valid file", err.Field()))
+			} else if err.Field() == "tag_ids" {
+				msgs = append(msgs, fmt.Sprintf("%s must be a valid tag ID", err.Field()))
+			}
 		default:
 			msgs = append(msgs, fmt.Sprintf("%s is invalid", err.Field()))
 		}
