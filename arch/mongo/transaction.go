@@ -23,8 +23,8 @@ type Transaction interface {
 	InsertMany(collectionName string, documents []interface{}) ([]interface{}, error)
 
 	/* FINDING OPERATIONS */
-	FindOne(collectionName string, filter interface{}, result interface{}) error
-	FindMany(collectionName string, filter interface{}, result interface{}) error
+	FindOne(collectionName string, filter interface{}) (SingleResultHandle, error)
+	FindMany(collectionName string, filter interface{}) (MultipleResultHandle, error)
 
 	/* UDPATE OPERATIONS */
 	UpdateOne(collectionName string, filter interface{}, update interface{}) (int64, error)
@@ -35,8 +35,8 @@ type Transaction interface {
 	DeleteMany(collectionName string, filter interface{}) (int64, error)
 
 	/* FIND AND UPDATE OPERATIONS */
-	FindOneAndUpdate(collectionName string, filter interface{}, update interface{}, result interface{}) error
-	FindOneAndDelete(collectionName string, filter interface{}, result interface{}) error
+	FindOneAndUpdate(collectionName string, filter interface{}, update interface{}) error
+	FindOneAndDelete(collectionName string, filter interface{}) error
 
 	/* COUNT */
 	CountDocuments(collectionName string, filter interface{}) (int64, error)
@@ -199,37 +199,34 @@ func (t *transaction) InsertMany(collectionName string, documents []interface{})
 	return results.InsertedIDs, nil
 }
 
-func (t *transaction) FindOne(collectionName string, filter interface{}, result interface{}) error {
+func (t *transaction) FindOne(collectionName string, filter interface{}) (SingleResultHandle, error) {
 	collection := t.session.Client().Database(t.database).Collection(collectionName)
-	err := collection.FindOne(t.context, filter).Decode(result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
+	result := collection.FindOne(t.context, filter)
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
 			t.logger.Info("[ MONGO ] - [ TRANSACTION ] No document found for filter: %v", filter)
-			return nil
+			return nil, result.Err()
 		}
-		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find document: %v", err)
-		return fmt.Errorf("failed to find document: %w", err)
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find document: %v", result.Err())
+		return nil, result.Err()
 	}
 	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document found successfully: %v", result)
-	return nil
+	return &singleResultAdapter{
+		result: result,
+	}, nil
 }
 
-func (t *transaction) FindMany(collectionName string, filter interface{}, result interface{}) error {
+func (t *transaction) FindMany(collectionName string, filter interface{}) (MultipleResultHandle, error) {
 	collection := t.session.Client().Database(t.database).Collection(collectionName)
 	cursor, err := collection.Find(t.context, filter)
 	if err != nil {
 		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find documents: %v", err)
-		return fmt.Errorf("failed to find documents: %w", err)
+		return nil, err
 	}
-	defer cursor.Close(t.context)
-	err = cursor.All(t.context, result)
-	if err != nil {
-		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to decode documents: %v", err)
-		return fmt.Errorf("failed to decode documents: %w", err)
-	}
-
-	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Documents found successfully: %v", result)
-	return nil
+	return &multipleResultAdapter{
+		cursor: cursor,
+		ctx:    t.context,
+	}, nil
 }
 
 func (t *transaction) UpdateOne(collectionName string, filter interface{}, update interface{}) (int64, error) {
@@ -276,33 +273,33 @@ func (t *transaction) DeleteMany(collectionName string, filter interface{}) (int
 	return result.DeletedCount, nil
 }
 
-func (t *transaction) FindOneAndUpdate(collectionName string, filter interface{}, update interface{}, result interface{}) error {
+func (t *transaction) FindOneAndUpdate(collectionName string, filter interface{}, update interface{}) error {
 	collection := t.session.Client().Database(t.database).Collection(collectionName)
-	err := collection.FindOneAndUpdate(t.context, filter, update).Decode(result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
+	err := collection.FindOneAndUpdate(t.context, filter, update)
+	if err.Err() != nil {
+		if err.Err() == mongo.ErrNoDocuments {
 			t.logger.Info("[ MONGO ] - [ TRANSACTION ] No document found for filter: %v", filter)
 			return nil
 		}
-		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find and update document: %v", err)
-		return fmt.Errorf("failed to find and update document: %w", err)
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find and update document: %v", err.Err())
+		return fmt.Errorf("failed to find and update document: %w", err.Err())
 	}
-	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document found and updated successfully: %v", result)
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document found and updated successfully")
 	return nil
 }
 
-func (t *transaction) FindOneAndDelete(collectionName string, filter interface{}, result interface{}) error {
+func (t *transaction) FindOneAndDelete(collectionName string, filter interface{}) error {
 	collection := t.session.Client().Database(t.database).Collection(collectionName)
-	err := collection.FindOneAndDelete(t.context, filter).Decode(result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
+	err := collection.FindOneAndDelete(t.context, filter)
+	if err.Err() != nil {
+		if err.Err() == mongo.ErrNoDocuments {
 			t.logger.Info("[ MONGO ] - [ TRANSACTION ] No document found for filter: %v", filter)
 			return nil
 		}
-		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find and delete document: %v", err)
-		return fmt.Errorf("failed to find and delete document: %w", err)
+		t.logger.Error("[ MONGO ] - [ TRANSACTION ] Failed to find and delete document: %v", err.Err())
+		return fmt.Errorf("failed to find and delete document: %w", err.Err())
 	}
-	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document found and deleted successfully: %v", result)
+	t.logger.Info("[ MONGO ] - [ TRANSACTION ] Document found and deleted successfully")
 	return nil
 }
 

@@ -9,7 +9,7 @@ import (
 type EditPostRequest struct {
 	Title       string         `json:"title" form:"title"`
 	Content     string         `json:"content" form:"content"`
-	PostType    model.PostType `json:"type" form:"postType" validate:"oneof=TEXT IMAGE VIDEO"`
+	PostType    model.PostType `json:"type" form:"type" validate:"oneof=TEXT IMAGE VIDEO"`
 	CommunityId string         `json:"communityId" form:"communityId"`
 	IsNSFW      bool           `json:"isNSFW" form:"isNSFW"`
 	IsSpoiler   bool           `json:"isSpoiler" form:"isSpoiler"`

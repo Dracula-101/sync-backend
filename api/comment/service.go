@@ -777,21 +777,11 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 		}
 	}()
 
-	var commentDoc model.Comment
-	txErr = tx.FindOne(
+	result, txErr := tx.FindOne(
 		model.CommentCollectionName,
 		bson.M{"commentId": commentId, "status": model.CommentStatusActive},
-		commentDoc,
 	)
 	if txErr != nil {
-		if mongo.IsNoDocumentFoundError(txErr) {
-			s.logger.Error("Comment not found or not active: %v", txErr)
-			return network.NewNotFoundError(
-				"Comment not found",
-				fmt.Sprintf("Comment with ID '%s' not found or not active", commentId),
-				txErr,
-			)
-		}
 		s.logger.Error("Failed to get comment: %v", txErr)
 		return network.NewInternalServerError(
 			"Failed to get comment",
@@ -800,9 +790,27 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 			txErr,
 		)
 	}
+	var comment *model.Comment
+	result.Decode(&comment)
+	if comment == nil {
+		s.logger.Error("Comment not found")
+		return network.NewNotFoundError(
+			"Comment not found",
+			fmt.Sprintf("Comment with ID '%s' not found, it may have been deleted or the ID is incorrect", commentId),
+			nil,
+		)
+	}
 
-	existingInteractions := []model.CommentInteraction{}
-	txErr = tx.FindMany(
+	if result.IsNotFound() {
+		s.logger.Error("Comment not found")
+		return network.NewNotFoundError(
+			"Comment not found",
+			fmt.Sprintf("Comment with ID '%s' not found, it may have been deleted or the ID is incorrect", commentId),
+			nil,
+		)
+	}
+
+	commentResult, txErr := tx.FindMany(
 		model.CommentInteractionCollectionName,
 		bson.M{
 			"commentId": commentId,
@@ -812,7 +820,6 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 				model.CommentInteractionTypeDislike,
 			}},
 		},
-		&existingInteractions,
 	)
 	if txErr != nil {
 		s.logger.Error("Failed to get comment interactions: %v", txErr)
@@ -821,6 +828,30 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 			fmt.Sprintf("Failed to get comment interactions - %s Context - [Query Failed]", txErr),
 			network.DB_ERROR,
 			txErr,
+		)
+	}
+	existingInteractions := []*model.CommentInteraction{}
+	if commentResult != nil {
+		commentResult.All(&existingInteractions)
+	}
+	if existingInteractions == nil {
+		existingInteractions = []*model.CommentInteraction{}
+	}
+	if commentResult.Err() != nil {
+		if mongo.IsNoDocumentFoundError(commentResult.Err()) {
+			s.logger.Error("Comment interaction not found - %v", commentResult.Err())
+			return network.NewNotFoundError(
+				"Comment interaction not found",
+				fmt.Sprintf("Comment interaction with ID '%s' not found, it may have been deleted or the ID is incorrect", commentId),
+				nil,
+			)
+		}
+		s.logger.Error("Failed to get comment interactions: %v", commentResult.Err())
+		return network.NewInternalServerError(
+			"Failed to get comment interactions",
+			fmt.Sprintf("Failed to get comment interactions - %s Context - [Query Failed]", commentResult.Err()),
+			network.DB_ERROR,
+			commentResult.Err(),
 		)
 	}
 
@@ -889,7 +920,6 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 			"$set": bson.M{"updatedAt": primitive.NewDateTimeFromTime(time.Now())},
 			"$inc": bson.M{"synergy": synergyChange},
 		},
-		model.Comment{},
 	)
 
 	if updateResult != nil {

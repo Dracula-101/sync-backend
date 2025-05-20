@@ -1,6 +1,8 @@
 package mongo
 
 import (
+	"context"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -229,12 +231,12 @@ func (c *collectionAdapter) Aggregate(pipeline interface{}) (MultipleResultHandl
 	if err != nil {
 		return nil, err
 	}
-	return &multipleResultAdapter{cursor: cursor, ctx: c.ctx}, nil
+	return &multipleResultAdapter{cursor: cursor}, nil
 }
 
 type multipleResultAdapter struct {
 	cursor *mongo.Cursor
-	ctx    mongo.SessionContext
+	ctx    context.Context
 }
 
 func (m *multipleResultAdapter) All(v interface{}) error {
