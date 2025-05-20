@@ -14,6 +14,7 @@ const (
 
 func NewPostNotFoundError(postId string) network.ApiError {
 	return network.NewNotFoundError(
+		"Post Not Found",
 		fmt.Sprintf("Post with ID '%s' not found. It may have been deleted or never existed. [Context: postId=%s]", postId, postId),
 		nil,
 	)
@@ -21,6 +22,7 @@ func NewPostNotFoundError(postId string) network.ApiError {
 
 func NewDBError(action, extra string) network.ApiError {
 	return network.NewInternalServerError(
+		"Database Error",
 		fmt.Sprintf("Database error occurred during %s. Details: %s", action, extra),
 		ERR_DB,
 		nil,
@@ -29,6 +31,7 @@ func NewDBError(action, extra string) network.ApiError {
 
 func NewForbiddenError(action, userId, postId string) network.ApiError {
 	return network.NewForbiddenError(
+		"Forbidden",
 		fmt.Sprintf("User '%s' is not authorized to %s post '%s'. [Context: userId=%s, postId=%s]", userId, action, postId, userId, postId),
 		nil,
 	)
@@ -36,6 +39,7 @@ func NewForbiddenError(action, userId, postId string) network.ApiError {
 
 func NewMediaError(action, extra string) network.ApiError {
 	return network.NewInternalServerError(
+		"Media Error",
 		fmt.Sprintf("Media error occurred during %s. Details: %s", action, extra),
 		ERR_MEDIA,
 		nil,

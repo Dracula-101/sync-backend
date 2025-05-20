@@ -64,7 +64,11 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 		}
 	}
 	if len(filesList) > 10 {
-		c.Send(ctx).BadRequestError("You can only upload a maximum of 10 files", nil)
+		c.Send(ctx).BadRequestError(
+			"Too many files uploaded",
+			"The maximum number of files allowed is 10",
+			nil,
+		)
 		return
 	}
 	post, err := c.postService.CreatePost(
@@ -91,7 +95,11 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 func (c *postController) GetPost(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -108,7 +116,11 @@ func (c *postController) GetPost(ctx *gin.Context) {
 func (c *postController) EditPost(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 	body, err := network.ReqForm(ctx, dto.NewEditPostRequest())
@@ -139,7 +151,11 @@ func (c *postController) EditPost(ctx *gin.Context) {
 func (c *postController) LikePost(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -160,7 +176,11 @@ func (c *postController) LikePost(ctx *gin.Context) {
 func (c *postController) DislikePost(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 	userId := c.MustGetUserId(ctx)
@@ -179,7 +199,11 @@ func (c *postController) DislikePost(ctx *gin.Context) {
 func (c *postController) SavePost(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 	userId := c.MustGetUserId(ctx)
@@ -194,7 +218,11 @@ func (c *postController) SavePost(ctx *gin.Context) {
 func (c *postController) SharePost(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -231,7 +259,11 @@ func (c *postController) UserPosts(ctx *gin.Context) {
 func (c *postController) GetCommunityPosts(ctx *gin.Context) {
 	communityId := ctx.Param("communityId")
 	if communityId == "" {
-		c.Send(ctx).BadRequestError("Community ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Community ID is required",
+			"Please provide a valid community ID in the request params.",
+			nil,
+		)
 		return
 	}
 	body, err := network.ReqQuery(ctx, dto.NewGetCommunityPostRequest())

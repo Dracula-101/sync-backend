@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"sync-backend/api/common/location"
 	"sync-backend/api/community"
 	"sync-backend/api/community/model"
@@ -71,7 +72,11 @@ func (c *userController) GetMe(ctx *gin.Context) {
 	}
 
 	if user == nil {
-		c.Send(ctx).NotFoundError("User not found", nil)
+		c.Send(ctx).NotFoundError(
+			"User not found",
+			fmt.Sprintf("User with ID %s not found", *userId),
+			nil,
+		)
 		return
 	}
 
@@ -92,7 +97,11 @@ func (c *userController) GetUserById(ctx *gin.Context) {
 	}
 
 	if user == nil {
-		c.Send(ctx).NotFoundError("User not found", nil)
+		c.Send(ctx).NotFoundError(
+			"User not found",
+			fmt.Sprintf("User with ID %s not found", userId),
+			nil,
+		)
 		return
 	}
 
@@ -187,7 +196,11 @@ func (c *userController) JoinCommunity(ctx *gin.Context) {
 	}
 
 	if user == nil {
-		c.Send(ctx).NotFoundError("User not found", nil)
+		c.Send(ctx).NotFoundError(
+			"User not found",
+			fmt.Sprintf("User with ID %s not found", *userId),
+			nil,
+		)
 		return
 	}
 
@@ -221,7 +234,11 @@ func (c *userController) LeaveCommunity(ctx *gin.Context) {
 	}
 
 	if user == nil {
-		c.Send(ctx).NotFoundError("User not found", nil)
+		c.Send(ctx).NotFoundError(
+			"User not found",
+			fmt.Sprintf("User with ID %s not found", *userId),
+			nil,
+		)
 		return
 	}
 
@@ -254,7 +271,11 @@ func (c *userController) GetMyCommunities(ctx *gin.Context) {
 	c.logger.Debug("Communities: %+v", communities)
 
 	if communities == nil {
-		c.Send(ctx).NotFoundError("No communities found", nil)
+		c.Send(ctx).NotFoundError(
+			"No communities found",
+			"No communities found for the user",
+			nil,
+		)
 		return
 	}
 
@@ -289,7 +310,11 @@ func (c *userController) GetJoinedCommunities(ctx *gin.Context) {
 	}
 
 	if communities == nil {
-		c.Send(ctx).NotFoundError("No communities found", nil)
+		c.Send(ctx).NotFoundError(
+			"No communities found",
+			"No communities found for the user",
+			nil,
+		)
 		return
 	}
 

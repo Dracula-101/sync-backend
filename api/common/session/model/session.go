@@ -108,13 +108,6 @@ func (*Session) EnsureIndexes(db mongo.Database) {
 			},
 			Options: options.Index().SetName("idx_session_user_revocation"),
 		},
-		// TTL index for session expiry - critical for security
-		{
-			Keys: bson.D{
-				{Key: "expiresAt", Value: 1},
-			},
-			Options: options.Index().SetName("ttl_session_expiry"),
-		},
 		// TTL index for deleted sessions - 12 hours
 		{
 			Keys: bson.D{
@@ -127,7 +120,7 @@ func (*Session) EnsureIndexes(db mongo.Database) {
 			Keys: bson.D{
 				{Key: "expiresAt", Value: 1},
 			},
-			Options: options.Index().SetExpireAfterSeconds(12 * 60 * 60).SetName("ttl_session_expired"),
+			Options: options.Index().SetExpireAfterSeconds(12 * 60 * 60).SetName("ttl_session_expiry"),
 		},
 	}
 

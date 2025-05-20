@@ -15,35 +15,40 @@ const (
 
 func NewCommentNotFoundError(commentId string) network.ApiError {
 	return network.NewNotFoundError(
-		fmt.Sprintf("Comment with ID '%s' not found. It may have been deleted or never existed. [Context: commentId=%s]", commentId, commentId),
+		"Comment Not Found",
+		fmt.Sprintf("It seems the comment with ID '%s' does not exist. The comment may have been deleted or the comment ID is incorrect. [Context: commentId=%s]", commentId, commentId),
 		nil,
 	)
 }
 
 func NewPostNotFoundError(postId string) network.ApiError {
 	return network.NewNotFoundError(
-		fmt.Sprintf("Post with ID '%s' not found. [Context: postId=%s]", postId, postId),
+		"Post Not Found",
+		fmt.Sprintf("It seems the post with ID '%s' does not exist. The post may have been deleted or the post ID is incorrect. [Context: postId=%s]", postId, postId),
 		nil,
 	)
 }
 
 func NewCommunityNotFoundError(communityId string) network.ApiError {
 	return network.NewNotFoundError(
-		fmt.Sprintf("Community with ID '%s' not found. [Context: communityId=%s]", communityId, communityId),
+		"Community Not Found",
+		fmt.Sprintf("It seems the community with ID '%s' does not exist. The community may have been deleted or the community ID is incorrect. [Context: communityId=%s]", communityId, communityId),
 		nil,
 	)
 }
 
 func NewForbiddenError(action, userId, commentId string) network.ApiError {
 	return network.NewForbiddenError(
-		fmt.Sprintf("User '%s' is not authorized to %s comment '%s'. [Context: userId=%s, commentId=%s]", userId, action, commentId, userId, commentId),
+		"Forbidden",
+		fmt.Sprintf("You do not have permission to perform this action. [Context: action=%s, userId=%s, commentId=%s]", action, userId, commentId),
 		nil,
 	)
 }
 
 func NewDBError(action, extra string) network.ApiError {
 	return network.NewInternalServerError(
-		fmt.Sprintf("Database error occurred during %s. Details: %s", action, extra),
+		"Database Error",
+		fmt.Sprintf("An error occurred while performing the action '%s'. Please try again later. [Context: action=%s, extra=%s]", action, action, extra),
 		ERR_DB,
 		nil,
 	)

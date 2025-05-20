@@ -2,6 +2,7 @@ package community
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 	"sync-backend/api/common/media"
 	mediaMadels "sync-backend/api/common/media/model"
@@ -176,33 +177,59 @@ func (s *communityService) CheckUserInCommunity(userId string, communityId strin
 	community, err := s.communityQueryBuilder.Query(s.Context()).FindOne(bson.M{"communityId": communityId}, nil)
 	if err != nil {
 		s.logger.Error("Error fetching community: %v", err)
-		return network.NewInternalServerError("Error fetching community", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Error fetching community",
+			fmt.Sprintf("Error fetching community with id %s. Context - [ Query Failed ] ", communityId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	if community == nil {
 		s.logger.Error("Community not found")
-		return network.NewNotFoundError("Community not found", errors.New("community not found"))
+		return network.NewNotFoundError(
+			"Community not found",
+			fmt.Sprintf("It seems the community with ID '%s' does not exist. The community may have been deleted or never existed. Context - [ No Data ] ", communityId),
+			errors.New("community not found"),
+		)
 	}
 
 	communityInteraction, err := s.communityInteractionQueryBuilder.Query(s.Context()).FindOne(bson.M{"communityId": communityId, "userId": userId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.logger.Error("Community interaction not found: %v", err)
-			return network.NewNotFoundError("User is not a member of the community", err)
+			return network.NewNotFoundError(
+				"User is not a member of the community",
+				fmt.Sprintf("User %s is not a member of community %s. Context - [ No Data ] ", userId, communityId),
+				err,
+			)
 		}
 		s.logger.Error("Error fetching community interaction: %v", err)
-		return network.NewInternalServerError("Error fetching community interaction", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Error fetching community interaction",
+			fmt.Sprintf("Error fetching community interaction for user %s in community %s. Context - [ Query Failed ] ", userId, communityId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 	if communityInteraction.InteractionType == model.CommunityInteractionTypeJoin {
 		s.logger.Info("User %s is a member of community %s", userId, communityId)
 		return nil
 	} else if communityInteraction.InteractionType == model.CommunityInteractionTypeLeave {
 		s.logger.Info("User %s left the community %s", userId, communityId)
-		return network.NewNotFoundError("User is not a member of the community", errors.New("user left the community"))
+		return network.NewNotFoundError(
+			"User is not a member of the community",
+			fmt.Sprintf("User %s left the community %s. Context - [ No Data ] ", userId, communityId),
+			errors.New("user is not a member of the community"),
+		)
 	} else {
 		// This case should not happen, but just in case
 		s.logger.Error("User is not a member of the community")
-		return network.NewNotFoundError("User is not a member of the community", errors.New("user is not a member of the community"))
+		return network.NewNotFoundError(
+			"User is not a member of the community",
+			fmt.Sprintf("User %s is not a member of community %s. Context - [ No Data ] ", userId, communityId),
+			errors.New("user is not a member of the community"),
+		)
 	}
 }
 
@@ -218,7 +245,12 @@ func (s *communityService) GetCommunities(userId string, page int, limit int) ([
 
 	if err != nil {
 		s.logger.Error("Error fetching communities: %v", err)
-		return nil, network.NewInternalServerError("Error fetching communities", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Error fetching communities",
+			fmt.Sprintf("Error fetching communities for user %s. Context - [ Query Failed ] ", userId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	var communityIds []string
@@ -238,7 +270,12 @@ func (s *communityService) GetCommunities(userId string, page int, limit int) ([
 	communityResults, err := aggregator.Exec()
 	if err != nil {
 		s.logger.Error("Error executing community query: %v", err)
-		return nil, network.NewInternalServerError("Error executing community query", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Error executing community query",
+			fmt.Sprintf("Error executing community query for user %s. Context - [ Query Failed ] ", userId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 	aggregator.Close()
 	return communityResults, nil
@@ -266,10 +303,19 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 		if mongoErr.Err() != nil {
 			if mongo.IsNoDocumentFoundError(mongoErr.Err()) {
 				s.logger.Error("Community with id %s not found: %v", communityId, mongoErr.Err())
-				return network.NewNotFoundError("Community not found", mongoErr.Err())
+				return network.NewNotFoundError(
+					"Community not found",
+					fmt.Sprintf("Community with ID '%s' not found. It may have been deleted or never existed. Context - [ No Data ] ", communityId),
+					mongoErr.Err(),
+				)
 			}
 			s.logger.Error("Error updating community: %v", mongoErr.Err())
-			return network.NewInternalServerError("Error updating community", network.DB_ERROR, mongoErr.Err())
+			return network.NewInternalServerError(
+				"Error updating community",
+				fmt.Sprintf("Error updating community with ID '%s'. Context - [ Query Failed ] ", communityId),
+				network.DB_ERROR,
+				mongoErr.Err(),
+			)
 		}
 
 		communityInteractionCollection := session.Collection(model.CommunityInteractionsCollectionName)
@@ -278,10 +324,19 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 		if insertErr != nil {
 			if mongo.IsDuplicateKeyError(insertErr) {
 				s.logger.Warn("Community interaction already exists (race condition): %v", insertErr)
-				return network.NewConflictError("User has already joined the community", insertErr)
+				return network.NewConflictError(
+					"Community interaction already exists",
+					fmt.Sprintf("User %s is already a member of community %s. Context - [ Duplicate Key ] ", userId, communityId),
+					insertErr,
+				)
 			} else {
 				s.logger.Error("Failed to insert community interaction: %v", insertErr)
-				return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, insertErr)
+				return network.NewInternalServerError(
+					"Failed to insert community interaction",
+					fmt.Sprintf("Failed to insert community interaction for user %s in community %s. Context - [ Query Failed ] ", userId, communityId),
+					network.DB_ERROR,
+					insertErr,
+				)
 			}
 		}
 		return nil
@@ -293,7 +348,12 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 			return network.AsApiError(err)
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)
-		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Failed to commit transaction",
+			fmt.Sprintf("Failed to commit transaction for user %s in community %s. Context - [ Transaction Failed ] ", userId, communityId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	s.logger.Info("User %s successfully joined community %s", userId, communityId)
@@ -322,10 +382,19 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 		if updateErr.Err() != nil {
 			if mongo.IsNoDocumentFoundError(updateErr.Err()) {
 				s.logger.Error("Community with id %s not found: %v", communityId, updateErr.Err())
-				return network.NewNotFoundError("Community not found", updateErr.Err())
+				return network.NewNotFoundError(
+					"Community not found",
+					fmt.Sprintf("Community with ID '%s' not found. It may have been deleted or never existed. Context - [ No Data ] ", communityId),
+					updateErr.Err(),
+				)
 			}
 			s.logger.Error("Error updating community: %v", updateErr.Err())
-			return network.NewInternalServerError("Error updating community", network.DB_ERROR, updateErr.Err())
+			return network.NewInternalServerError(
+				"Error updating community",
+				fmt.Sprintf("Error updating community with ID '%s'. Context - [ Query Failed ] ", communityId),
+				network.DB_ERROR,
+				updateErr.Err(),
+			)
 		}
 
 		communityInteractionCollection := session.Collection(model.CommunityInteractionsCollectionName)
@@ -344,10 +413,19 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 			if mongo.IsNoDocumentFoundError(insertErr.Err()) {
 				// user hasnt joined the community yet
 				s.logger.Error("Community interaction not found: %v", insertErr.Err())
-				return network.NewNotFoundError("User hasn't joined the community", insertErr.Err())
+				return network.NewNotFoundError(
+					"Community interaction not found",
+					fmt.Sprintf("Community interaction not found for user %s in community %s. Context - [ No Data ] ", userId, communityId),
+					insertErr.Err(),
+				)
 			}
 			s.logger.Error("Failed to update community interaction: %v", insertErr.Err())
-			return network.NewInternalServerError("Failed to update community interaction", network.DB_ERROR, insertErr.Err())
+			return network.NewInternalServerError(
+				"Failed to update community interaction",
+				fmt.Sprintf("Failed to update community interaction for user %s in community %s. Context - [ Query Failed ] ", userId, communityId),
+				network.DB_ERROR,
+				insertErr.Err(),
+			)
 		}
 
 		// Also remove the user from moderators list if they are a moderator
@@ -359,7 +437,12 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 		)
 		if removeErr != nil {
 			s.logger.Error("Failed to remove user from moderators list: %v", removeErr)
-			return network.NewInternalServerError("Failed to remove user from moderators list", network.DB_ERROR, removeErr)
+			return network.NewInternalServerError(
+				"Failed to remove user from moderators list",
+				fmt.Sprintf("Failed to remove user %s from moderators list in community %s. Context - [ Query Failed ] ", userId, communityId),
+				network.DB_ERROR,
+				removeErr,
+			)
 		}
 
 		return nil
@@ -371,7 +454,12 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 			return network.AsApiError(err)
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)
-		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Failed to commit transaction",
+			fmt.Sprintf("Failed to commit transaction for user %s in community %s. Context - [ Transaction Failed ] ", userId, communityId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	s.logger.Info("User %s successfully left community %s", userId, communityId)
@@ -514,7 +602,12 @@ func (s *communityService) SearchCommunities(query string, page int, limit int, 
 
 	if err != nil {
 		s.logger.Error("Error executing community search: %v", err)
-		return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Error executing community search",
+			fmt.Sprintf("Error executing community search with query '%s'. Context - [ Query Failed ] ", query),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	aggregator.Close()
@@ -610,7 +703,12 @@ func (s *communityService) AutocompleteCommunities(query string, page int, limit
 	communitiesResults, err := aggregator.Exec()
 	if err != nil {
 		s.logger.Error("Error executing community autocomplete: %v", err)
-		return nil, network.NewInternalServerError("Error searching communities", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Error executing community autocomplete",
+			fmt.Sprintf("Error executing community autocomplete with query '%s'. Context - [ Query Failed ] ", query),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	aggregator.Close()
@@ -692,7 +790,12 @@ func (s *communityService) GetTrendingCommunities(page int, limit int) ([]*model
 
 	if err != nil {
 		s.logger.Error("Error executing trending communities query: %v", err)
-		return nil, network.NewInternalServerError("Error fetching trending communities", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Error executing trending communities query",
+			fmt.Sprintf("Error executing trending communities query. Context - [ Query Failed ] "),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	aggregator.Close()

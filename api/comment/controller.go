@@ -73,7 +73,11 @@ func (c *commentController) EditPostComment(ctx *gin.Context) {
 	commentId := ctx.Param("commentId")
 	if commentId == "" {
 		c.logger.Error("Comment ID is required")
-		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Comment ID is required",
+			"Please provide a valid comment ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -111,7 +115,11 @@ func (c *commentController) GetPostComments(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
 		c.logger.Error("Post ID is required")
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 	params, err := network.ReqQuery(ctx, dto.NewGetPostComentRequest())
@@ -134,13 +142,21 @@ func (c *commentController) GetPostCommentReplies(ctx *gin.Context) {
 	commentId := ctx.Param("commentId")
 	if commentId == "" {
 		c.logger.Error("Comment ID is required")
-		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Comment ID is required",
+			"Please provide a valid comment ID in the request params.",
+			nil,
+		)
 		return
 	}
 	postId := ctx.Param("postId")
 	if postId == "" {
 		c.logger.Error("Post ID is required")
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -185,7 +201,11 @@ func (c *commentController) EditPostCommentReply(ctx *gin.Context) {
 	commentId := ctx.Param("commentId")
 	if commentId == "" {
 		c.logger.Error("Comment ID is required")
-		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Comment ID is required",
+			"Please provide a valid comment ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -251,7 +271,11 @@ func (c *commentController) GetUserComments(ctx *gin.Context) {
 	userId := ctx.Param("userId")
 	if userId == "" {
 		c.logger.Error("User ID is required")
-		c.Send(ctx).BadRequestError("User ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"User ID is required",
+			"Please provide a valid user ID in the request params.",
+			nil,
+		)
 		return
 	}
 

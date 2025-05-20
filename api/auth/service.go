@@ -112,7 +112,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 	if user.Status == userModels.Deleted {
 		return nil, NewUserDeletedError(loginRequest.Email)
 	} else if user.Status == userModels.Banned {
-		return nil, NewUserBannedError(loginRequest.Email)
+		return nil, NewUserBannedError(loginRequest.Email, "Banned due to violation of terms of service")
 	}
 
 	err = s.userService.ValidateUserPassword(user, loginRequest.Password)
@@ -246,7 +246,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		if user.Status == userModels.Deleted {
 			return nil, NewUserDeletedError(user.Email)
 		} else if user.Status == userModels.Banned {
-			return nil, NewUserBannedError(user.Email)
+			return nil, NewUserBannedError(user.Email, "Banned due to violation of terms of service")
 		}
 
 		if session != nil {

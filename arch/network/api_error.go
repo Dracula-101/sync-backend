@@ -11,6 +11,7 @@ type apiError struct {
 	StatusCode int
 	ErrorCode  string
 	Message    string
+	Detail     string
 	Err        error
 }
 
@@ -150,11 +151,12 @@ func (e *apiError) GetErrors(isDebug bool) []ErrorDetail {
 	return errors
 }
 
-func newApiError(statusCode int, message string, errCode string, err error) ApiError {
+func newApiError(statusCode int, message string, detail string, errCode string, err error) ApiError {
 	apiError := apiError{
 		StatusCode: statusCode,
 		ErrorCode:  errCode,
 		Message:    message,
+		Detail:     detail,
 		Err:        err,
 	}
 	if err == nil {
@@ -164,106 +166,106 @@ func newApiError(statusCode int, message string, errCode string, err error) ApiE
 }
 
 // 400 Bad Request - Malformed request, invalid input
-func NewBadRequestError(message string, err error) ApiError {
-	return newApiError(http.StatusBadRequest, message, BadRequestErrorCode, err)
+func NewBadRequestError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusBadRequest, message, detail, BadRequestErrorCode, err)
 }
 
 // 401 Unauthorized - Missing or invalid authentication
-func NewUnauthorizedError(message string, err error) ApiError {
-	return newApiError(http.StatusUnauthorized, message, UnauthorizedErrorCode, err)
+func NewUnauthorizedError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusUnauthorized, message, detail, UnauthorizedErrorCode, err)
 }
 
 // 403 Forbidden - Valid auth but insufficient permissions
-func NewForbiddenError(message string, err error) ApiError {
-	return newApiError(http.StatusForbidden, message, ForbiddenErrorCode, err)
+func NewForbiddenError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusForbidden, message, detail, ForbiddenErrorCode, err)
 }
 
 // 404 Not Found - Resource doesn't exist
-func NewNotFoundError(message string, err error) ApiError {
-	return newApiError(http.StatusNotFound, message, NotFoundErrorCode, err)
+func NewNotFoundError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusNotFound, message, detail, NotFoundErrorCode, err)
 }
 
 // 405 Method Not Allowed - Wrong HTTP method
-func NewMethodNotAllowedError(message string, err error) ApiError {
-	return newApiError(http.StatusMethodNotAllowed, message, MethodNotAllowedErrorCode, err)
+func NewMethodNotAllowedError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusMethodNotAllowed, message, detail, MethodNotAllowedErrorCode, err)
 }
 
 // 406 Not Acceptable - Server can't fulfill requested format
-func NewNotAcceptableError(message string, err error) ApiError {
-	return newApiError(http.StatusNotAcceptable, message, NotAcceptableErrorCode, err)
+func NewNotAcceptableError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusNotAcceptable, message, detail, NotAcceptableErrorCode, err)
 }
 
 // 408 Request Timeout - Client took too long to send request
-func NewRequestTimeoutError(message string, err error) ApiError {
-	return newApiError(http.StatusRequestTimeout, message, RequestTimeoutErrorCode, err)
+func NewRequestTimeoutError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusRequestTimeout, message, detail, RequestTimeoutErrorCode, err)
 }
 
 // 409 Conflict - Request conflicts with current state
-func NewConflictError(message string, err error) ApiError {
-	return newApiError(http.StatusConflict, message, ConflictErrorCode, err)
+func NewConflictError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusConflict, message, detail, ConflictErrorCode, err)
 }
 
 // 410 Gone - Resource no longer available
-func NewGoneError(message string, err error) ApiError {
-	return newApiError(http.StatusGone, message, GoneErrorCode, err)
+func NewGoneError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusGone, message, detail, GoneErrorCode, err)
 }
 
 // 413 Payload Too Large - Request entity too large
-func NewPayloadTooLargeError(message string, err error) ApiError {
-	return newApiError(http.StatusRequestEntityTooLarge, message, PayloadTooLargeErrorCode, err)
+func NewPayloadTooLargeError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusRequestEntityTooLarge, message, detail, PayloadTooLargeErrorCode, err)
 }
 
 // 414 URI Too Long - Request URI too long
-func NewURITooLongError(message string, err error) ApiError {
-	return newApiError(http.StatusRequestURITooLong, message, URITooLongErrorCode, err)
+func NewURITooLongError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusRequestURITooLong, message, detail, URITooLongErrorCode, err)
 }
 
 // 415 Unsupported Media Type - Incorrect Content-Type
-func NewUnsupportedMediaTypeError(message string, err error) ApiError {
-	return newApiError(http.StatusUnsupportedMediaType, message, UnsupportedMediaTypeErrorCode, err)
+func NewUnsupportedMediaTypeError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusUnsupportedMediaType, message, detail, UnsupportedMediaTypeErrorCode, err)
 }
 
 // 419 Authentication Timeout - Custom status for expired sessions
-func NewSessionExpiredError(message string, err error) ApiError {
-	return newApiError(419, message, SessionExpiredErrorCode, err)
+func NewSessionExpiredError(message string, detail string, err error) ApiError {
+	return newApiError(419, message, detail, SessionExpiredErrorCode, err)
 }
 
 // 422 Unprocessable Entity - Semantic errors in request
-func NewUnprocessableEntityError(message string, err error) ApiError {
-	return newApiError(http.StatusUnprocessableEntity, message, UnprocessableEntityErrorCode, err)
+func NewUnprocessableEntityError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusUnprocessableEntity, message, detail, UnprocessableEntityErrorCode, err)
 }
 
 // 429 Too Many Requests - Rate limiting
-func NewTooManyRequestsError(message string, err error) ApiError {
-	return newApiError(http.StatusTooManyRequests, message, TooManyRequestsErrorCode, err)
+func NewTooManyRequestsError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusTooManyRequests, message, detail, TooManyRequestsErrorCode, err)
 }
 
 // 500 Internal Server Error - Unexpected server error
-func NewInternalServerError(message string, errCode string, err error) ApiError {
-	return newApiError(http.StatusInternalServerError, message, errCode, err)
+func NewInternalServerError(message string, detail string, errCode string, err error) ApiError {
+	return newApiError(http.StatusInternalServerError, message, detail, errCode, err)
 }
 
 // 501 Not Implemented - Feature not supported by server
-func NewNotImplementedError(message string, err error) ApiError {
-	return newApiError(http.StatusNotImplemented, message, NotImplementedErrorCode, err)
+func NewNotImplementedError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusNotImplemented, message, detail, NotImplementedErrorCode, err)
 }
 
 // 502 Bad Gateway - Invalid response from upstream server
-func NewBadGatewayError(message string, err error) ApiError {
-	return newApiError(http.StatusBadGateway, message, BadGatewayErrorCode, err)
+func NewBadGatewayError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusBadGateway, message, detail, BadGatewayErrorCode, err)
 }
 
 // 503 Service Unavailable - Server temporarily unavailable
-func NewServiceUnavailableError(message string, err error) ApiError {
-	return newApiError(http.StatusServiceUnavailable, message, ServiceUnavailableErrorCode, err)
+func NewServiceUnavailableError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusServiceUnavailable, message, detail, ServiceUnavailableErrorCode, err)
 }
 
 // 504 Gateway Timeout - Upstream server timeout
-func NewGatewayTimeoutError(message string, err error) ApiError {
-	return newApiError(http.StatusGatewayTimeout, message, GatewayTimeoutErrorCode, err)
+func NewGatewayTimeoutError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusGatewayTimeout, message, detail, GatewayTimeoutErrorCode, err)
 }
 
 // 505 HTTP Version Not Supported - Unsupported HTTP version
-func NewHTTPVersionNotSupportedError(message string, err error) ApiError {
-	return newApiError(http.StatusHTTPVersionNotSupported, message, HTTPVersionNotSupportedErrorCode, err)
+func NewHTTPVersionNotSupportedError(message string, detail string, err error) ApiError {
+	return newApiError(http.StatusHTTPVersionNotSupported, message, detail, HTTPVersionNotSupportedErrorCode, err)
 }

@@ -274,7 +274,13 @@ func (s *commentService) GetPostComments(userId string, postId string, page int,
 	comments, err := aggregate.Exec()
 	if err != nil {
 		s.logger.Error("Failed to get post comments - %v", err)
-		return nil, network.NewInternalServerError("Failed to get comments", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Failed to get comments",
+			fmt.Sprintf("It seems the comments for post '%s' could not be retrieved - Aggregation failed. Please try again later. [Context: postId=%s]", postId, postId),
+			network.DB_ERROR,
+			err,
+		)
+
 	}
 	if len(comments) == 0 {
 		return []*model.PublicComment{}, nil
@@ -401,7 +407,12 @@ func (s *commentService) GetPostCommentReplies(userId string, postId string, par
 	comments, err := aggregate.Exec()
 	if err != nil {
 		s.logger.Error("Failed to get post comments - %v", err)
-		return nil, network.NewInternalServerError("Failed to get comments", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Failed to get comments",
+			fmt.Sprintf("It seems the comments for post '%s' could not be retrieved - Aggregation failed. Please try again later. [Context: postId=%s]", postId, postId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 	if len(comments) == 0 {
 		return []*model.PublicComment{}, nil
@@ -415,27 +426,52 @@ func (s *commentService) CreatePostCommentReply(userId string, comment *dto.Crea
 	commentModel, err := s.commentQueryBuilder.SingleQuery().FindOne(commentFilter, nil)
 	if err != nil {
 		s.logger.Error("Failed to find comment - %v", err)
-		return nil, network.NewNotFoundError("Comment not found", fmt.Errorf("comment %s not found", comment.CommentId))
+		return nil, network.NewNotFoundError(
+			"Comment not found",
+			fmt.Sprintf("Comment with ID '%s' not found, it may have been deleted or the ID is incorrect", comment.CommentId),
+			nil,
+		)
 	}
 
 	switch commentModel.Status {
 	case model.CommentStatusDeleted:
 		s.logger.Error("Comment is deleted")
-		return nil, network.NewForbiddenError("Comment is deleted", fmt.Errorf("comment %s is deleted", comment.CommentId))
+		return nil, network.NewForbiddenError(
+			"Comment is deleted",
+			fmt.Sprintf("Comment with ID '%s' is deleted. It cannot be replied to.", comment.CommentId),
+			fmt.Errorf("comment %s is deleted", comment.CommentId),
+		)
 	case model.CommentStatusHidden:
 		s.logger.Error("Comment is hidden")
-		return nil, network.NewForbiddenError("Comment is hidden", fmt.Errorf("comment %s is hidden", comment.CommentId))
+		return nil, network.NewForbiddenError(
+			"Comment is hidden",
+			fmt.Sprintf("Comment with ID '%s' is hidden. It cannot be replied to.", comment.CommentId),
+			fmt.Errorf("comment %s is hidden", comment.CommentId),
+		)
 	case model.CommentStatusRemoved:
 		s.logger.Error("Comment is removed")
-		return nil, network.NewForbiddenError("Comment is removed", fmt.Errorf("comment %s is removed", comment.CommentId))
+		return nil, network.NewForbiddenError(
+			"Comment is removed",
+			fmt.Sprintf("Comment with ID '%s' is removed. It cannot be replied to.", comment.CommentId),
+			fmt.Errorf("comment %s is removed", comment.CommentId),
+		)
+
 	case model.CommentStatusArchived:
 		s.logger.Error("Comment is archived")
-		return nil, network.NewForbiddenError("Comment is archived", fmt.Errorf("comment %s is archived", comment.CommentId))
+		return nil, network.NewForbiddenError(
+			"Comment is archived",
+			fmt.Sprintf("Comment with ID '%s' is archived. It cannot be replied to.", comment.CommentId),
+			fmt.Errorf("comment %s is archived", comment.CommentId),
+		)
 	}
 
 	if commentModel.IsDeleted {
 		s.logger.Error("Comment is deleted")
-		return nil, network.NewForbiddenError("Comment is deleted", fmt.Errorf("comment %s is deleted", comment.CommentId))
+		return nil, network.NewForbiddenError(
+			"Comment is deleted",
+			fmt.Sprintf("Comment with ID '%s' is deleted. It cannot be replied to.", comment.CommentId),
+			fmt.Errorf("comment %s is deleted", comment.CommentId),
+		)
 	}
 
 	replyComment := model.NewComment(commentModel.PostId, userId, commentModel.CommunityId, comment.Reply, comment.CommentId)
@@ -447,7 +483,12 @@ func (s *commentService) CreatePostCommentReply(userId string, comment *dto.Crea
 	_, err = s.commentQueryBuilder.SingleQuery().InsertOne(replyComment)
 	if err != nil {
 		s.logger.Error("Failed to create post comment reply - %v", err)
-		return nil, network.NewInternalServerError("Failed to create comment reply", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Failed to create comment reply",
+			fmt.Sprintf("Failed to create comment reply - %s Context - [Query Failed]", err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	// update the comment with the new reply
@@ -464,7 +505,12 @@ func (s *commentService) CreatePostCommentReply(userId string, comment *dto.Crea
 	_, err = s.commentQueryBuilder.SingleQuery().UpdateOne(commentFilter, update, nil)
 	if err != nil {
 		s.logger.Error("Failed to update post comment with reply - %v", err)
-		return nil, network.NewInternalServerError("Failed to update comment with reply", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Failed to update comment with reply",
+			fmt.Sprintf("Failed to update comment with reply - %s Context - [Query Failed]", err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	return replyComment, nil
@@ -475,12 +521,20 @@ func (s *commentService) EditPostCommentReply(userId string, commentId string, c
 	commentModel, err := s.commentQueryBuilder.SingleQuery().FindOne(filter, nil)
 	if err != nil {
 		s.logger.Error("Failed to find comment - %v", err)
-		return nil, network.NewNotFoundError("Comment not found", fmt.Errorf("comment %s not found", commentId))
+		return nil, network.NewNotFoundError(
+			"Comment not found",
+			fmt.Sprintf("Comment with ID '%s' not found, it may have been deleted or the ID is incorrect", commentId),
+			nil,
+		)
 	}
 
 	if commentModel.AuthorId != userId {
 		s.logger.Error("User is not authorized to edit this comment")
-		return nil, network.NewForbiddenError("User is not authorized to edit this comment", fmt.Errorf("user %s is not authorized to edit comment %s", userId, commentId))
+		return nil, network.NewForbiddenError(
+			"User is not authorized to edit this comment",
+			fmt.Sprintf("User with ID '%s' is not authorized to edit comment with ID '%s', since it was created by user '%s'", userId, commentId, commentModel.AuthorId),
+			fmt.Errorf("user %s is not authorized to edit comment %s", userId, commentId),
+		)
 	}
 
 	commentModel.Content = comment.Reply
@@ -500,7 +554,12 @@ func (s *commentService) EditPostCommentReply(userId string, commentId string, c
 	_, err = s.commentQueryBuilder.SingleQuery().UpdateOne(filter, update, nil)
 	if err != nil {
 		s.logger.Error("Failed to update post comment reply - %v", err)
-		return nil, network.NewInternalServerError("Failed to update comment reply", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Failed to update comment reply",
+			fmt.Sprintf("Failed to update comment reply - %s Context - [Query Failed]", err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	return commentModel, nil
@@ -511,11 +570,19 @@ func (s *commentService) DeletePostCommentReply(userId string, commentId string)
 	commentModel, err := s.commentQueryBuilder.SingleQuery().FindOne(filter, nil)
 	if err != nil {
 		s.logger.Error("Failed to find comment - %v", err)
-		return network.NewNotFoundError("Comment not found", fmt.Errorf("comment %s not found", commentId))
+		return network.NewNotFoundError(
+			"Comment not found",
+			fmt.Sprintf("Comment with ID '%s' not found, it may have been deleted or the ID is incorrect", commentId),
+			nil,
+		)
 	}
 	if commentModel.AuthorId != userId {
 		s.logger.Error("User is not authorized to delete this comment")
-		return network.NewForbiddenError("User is not authorized to delete this comment", fmt.Errorf("user %s is not authorized to delete comment %s", userId, commentId))
+		return network.NewForbiddenError(
+			"User is not authorized to delete this comment",
+			fmt.Sprintf("User with ID '%s' is not authorized to delete comment with ID '%s', since it was created by user '%s'", userId, commentId, commentModel.AuthorId),
+			fmt.Errorf("user %s is not authorized to delete comment %s", userId, commentId),
+		)
 	}
 	_, err = s.commentQueryBuilder.SingleQuery().UpdateOne(
 		bson.M{"commentId": commentId},
@@ -533,7 +600,12 @@ func (s *commentService) DeletePostCommentReply(userId string, commentId string)
 	)
 	if err != nil {
 		s.logger.Error("Failed to delete post comment reply - %v", err)
-		return network.NewInternalServerError("Failed to delete comment reply", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Failed to delete comment reply",
+			fmt.Sprintf("Failed to delete comment reply - %s Context[ Query Failed : %v]", filter, err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	_, err = s.commentQueryBuilder.SingleQuery().UpdateOne(
@@ -552,7 +624,12 @@ func (s *commentService) DeletePostCommentReply(userId string, commentId string)
 	)
 	if err != nil {
 		s.logger.Error("Failed to update post comment reply - %v", err)
-		return network.NewInternalServerError("Failed to update comment reply", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Failed to update comment reply",
+			fmt.Sprintf("Failed to update comment reply - %s Context[ Query Failed : %v]", filter, err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 	return nil
 }
@@ -570,7 +647,12 @@ func (s *commentService) LikePostComment(userId string, commentId string) (*bool
 	)
 	if mongoErr != nil {
 		s.logger.Error("Failed to get comment synergy - %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to get comment synergy", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to get comment synergy",
+			fmt.Sprintf("Failed to get comment synergy - %s Context - [Query Failed]", err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	commentInteraction, mongoErr := s.commentInteractionQueryBuilder.SingleQuery().FindOne(
@@ -584,7 +666,12 @@ func (s *commentService) LikePostComment(userId string, commentId string) (*bool
 			return &falseValue, &commentSynergy.Synergy, nil
 		}
 		s.logger.Error("Failed to get comment interaction - %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to get comment interaction", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to get comment interaction",
+			fmt.Sprintf("Failed to get comment interaction - %s Context - [Query Failed]", err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 	var isLiked *bool
 	if commentInteraction != nil {
@@ -615,7 +702,12 @@ func (s *commentService) DislikePostComment(userId string, commentId string) (*b
 	)
 	if mongoErr != nil {
 		s.logger.Error("Failed to get comment synergy - %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to get comment synergy", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to get comment synergy",
+			fmt.Sprintf("Failed to get comment synergy - %s Context - [Query Failed]", err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	commentInteraction, mongoErr := s.commentInteractionQueryBuilder.SingleQuery().FindOne(
@@ -629,7 +721,12 @@ func (s *commentService) DislikePostComment(userId string, commentId string) (*b
 			return &falseValue, &commentSynergy.Synergy, nil
 		}
 		s.logger.Error("Failed to get comment interaction - %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to get comment interaction", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to get comment interaction",
+			fmt.Sprintf("Failed to get comment interaction - %s Context - [Query Failed]", err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	var isDisliked *bool
@@ -658,7 +755,12 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 
 	if err := tx.Start(); err != nil {
 		s.logger.Error("Failed to start transaction: %v", err)
-		return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Failed to start transaction",
+			fmt.Sprintf("Starting transaction failed - %s Context - [Transaction Failed]", err),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	var txErr error
@@ -684,10 +786,19 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 	if txErr != nil {
 		if mongo.IsNoDocumentFoundError(txErr) {
 			s.logger.Error("Comment not found or not active: %v", txErr)
-			return network.NewNotFoundError("Comment not found or not active", txErr)
+			return network.NewNotFoundError(
+				"Comment not found",
+				fmt.Sprintf("Comment with ID '%s' not found or not active", commentId),
+				txErr,
+			)
 		}
 		s.logger.Error("Failed to get comment: %v", txErr)
-		return network.NewInternalServerError("Failed to get comment", network.DB_ERROR, txErr)
+		return network.NewInternalServerError(
+			"Failed to get comment",
+			fmt.Sprintf("Failed to get comment - %s Context - [Query Failed]", txErr),
+			network.DB_ERROR,
+			txErr,
+		)
 	}
 
 	existingInteractions := []model.CommentInteraction{}
@@ -705,7 +816,12 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 	)
 	if txErr != nil {
 		s.logger.Error("Failed to get comment interactions: %v", txErr)
-		return network.NewInternalServerError("Failed to get comment interactions", network.DB_ERROR, txErr)
+		return network.NewInternalServerError(
+			"Failed to get comment interactions",
+			fmt.Sprintf("Failed to get comment interactions - %s Context - [Query Failed]", txErr),
+			network.DB_ERROR,
+			txErr,
+		)
 	}
 
 	synergyChange := 0
@@ -750,7 +866,12 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 		)
 		if txErr != nil {
 			s.logger.Error("Failed to clean up duplicate interactions: %v", txErr)
-			return network.NewInternalServerError("Failed to clean up interactions", network.DB_ERROR, txErr)
+			return network.NewInternalServerError(
+				"Failed to clean up duplicate interactions",
+				fmt.Sprintf("Failed to clean up duplicate interactions - %s Context - [Query Failed]", txErr),
+				network.DB_ERROR,
+				txErr,
+			)
 		}
 
 		if interactionType == model.CommentInteractionTypeLike {
@@ -774,7 +895,12 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 	if updateResult != nil {
 		s.logger.Error("Failed to update comment synergy: %v", updateResult)
 		txErr = updateResult
-		return network.NewInternalServerError("Failed to update comment", network.DB_ERROR, updateResult)
+		return network.NewInternalServerError(
+			"Failed to update comment",
+			fmt.Sprintf("Failed to update comment - %s Context - [Query Failed]", updateResult),
+			network.DB_ERROR,
+			txErr,
+		)
 	}
 
 	// Remove existing interaction if needed
@@ -786,7 +912,12 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 		)
 		if txErr != nil {
 			s.logger.Error("Failed to remove existing interaction: %v", txErr)
-			return network.NewInternalServerError("Failed to update interaction", network.DB_ERROR, txErr)
+			return network.NewInternalServerError(
+				"Failed to update interaction",
+				fmt.Sprintf("Failed to update interaction - %s Context - [Query Failed]", txErr),
+				network.DB_ERROR,
+				txErr,
+			)
 		}
 	}
 
@@ -800,7 +931,12 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 				txErr = nil
 			} else {
 				s.logger.Error("Failed to insert comment interaction: %v", txErr)
-				return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, txErr)
+				return network.NewInternalServerError(
+					"Failed to insert interaction",
+					fmt.Sprintf("Failed to insert interaction - %s Context - [Query Failed]", txErr),
+					network.DB_ERROR,
+					txErr,
+				)
 			}
 		}
 	}
@@ -916,7 +1052,12 @@ func (s *commentService) GetUserComments(userId string, page int, limit int) ([]
 	comments, err := aggregate.Exec()
 	if err != nil {
 		s.logger.Error("Failed to get my comments - %v", err)
-		return nil, network.NewInternalServerError("Failed to get comments", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError(
+			"Failed to get comments",
+			fmt.Sprintf("It seems the comments for user '%s' could not be retrieved - Aggregation failed. Please try again later. [Context: userId=%s]", userId, userId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
 	if len(comments) == 0 {

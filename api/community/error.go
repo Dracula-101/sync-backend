@@ -14,6 +14,7 @@ const (
 
 func NewCommunityNotFoundError(communityId string) network.ApiError {
 	return network.NewNotFoundError(
+		"Community Not Found",
 		fmt.Sprintf("Community with ID '%s' not found. It may have been deleted or never existed. [Context: communityId=%s]", communityId, communityId),
 		nil,
 	)
@@ -21,6 +22,7 @@ func NewCommunityNotFoundError(communityId string) network.ApiError {
 
 func NewDBError(action, extra string) network.ApiError {
 	return network.NewInternalServerError(
+		"Database Error",
 		fmt.Sprintf("Database error occurred during %s. Details: %s", action, extra),
 		ERR_DB,
 		nil,
@@ -29,6 +31,7 @@ func NewDBError(action, extra string) network.ApiError {
 
 func NewForbiddenError(action, userId, communityId string) network.ApiError {
 	return network.NewForbiddenError(
+		"Forbidden",
 		fmt.Sprintf("User '%s' is not authorized to %s community '%s'. [Context: userId=%s, communityId=%s]", userId, action, communityId, userId, communityId),
 		nil,
 	)
@@ -36,6 +39,7 @@ func NewForbiddenError(action, userId, communityId string) network.ApiError {
 
 func NewDuplicateCommunityError(slug string) network.ApiError {
 	return network.NewConflictError(
+		"Duplicate Community",
 		fmt.Sprintf("A community with the slug '%s' already exists. Please choose a different name. [Context: slug=%s]", slug, slug),
 		nil,
 	)

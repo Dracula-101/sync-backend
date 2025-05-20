@@ -205,11 +205,19 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 	}
 	if !post.IsActive() {
 		s.logger.Error("Cannot edit inactive post with ID: %s", postId)
-		return nil, network.NewForbiddenError("Cannot edit inactive post", fmt.Errorf("post with ID %s is not active", postId))
+		return nil, network.NewForbiddenError(
+			"Cannot edit inactive post",
+			fmt.Sprintf("Cannot edit post with ID %s as it is inactive", postId),
+			fmt.Errorf("post %s is inactive", postId),
+		)
 	}
 	if post.Author.UserId != userId {
 		s.logger.Error("User is not the author of the post: %s", postId)
-		return nil, network.NewForbiddenError("User is not the author of the post", fmt.Errorf("user with ID %s is not the author of post %s", userId, postId))
+		return nil, network.NewForbiddenError(
+			"User is not the author of the post",
+			fmt.Sprintf("Cannot edit post with ID %s as user %s is not the author", postId, userId),
+			fmt.Errorf("user %s is not the author of post %s", userId, postId),
+		)
 	}
 
 	filter := bson.M{"postId": postId, "authorId": userId}
@@ -238,11 +246,15 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 	updatePost, err := s.postQueryBuilder.SingleQuery().UpdateOne(filter, bson.M{"$set": update}, options)
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		s.logger.Error("Failed to edit post: %v", err)
-		return nil, network.NewInternalServerError("Failed to edit post", network.DB_ERROR, err)
+		return nil, network.NewInternalServerError("Failed to edit post", "Failed to update post details", network.DB_ERROR, err)
 	}
 	if updatePost == nil {
 		s.logger.Error("Post not found")
-		return nil, network.NewNotFoundError("Post not found", fmt.Errorf("post with ID %s not found", postId))
+		return nil, network.NewNotFoundError(
+			"Post not found",
+			fmt.Sprintf("Post with ID %s not found - it may have been deleted or never existed", postId),
+			fmt.Errorf("post %s not found", postId),
+		)
 	}
 	s.logger.Info("Post edited successfully with ID: %s -> New Id %s", postId, updatePost.UpsertedID)
 	if updatePost.UpsertedID != nil {
@@ -256,7 +268,11 @@ func (s *postService) LikePost(userId string, postId string) (*bool, *int, error
 	err := s.toggleInteraction(userId, postId, model.InteractionTypeLike)
 	if err != nil {
 		s.logger.Error("Failed to toggle like interaction: %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to toggle like interaction", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to toggle like interaction",
+			fmt.Sprintf("Failed to toggle like interaction for user %s on post %s. Context - [ Action Failed ]", userId, postId),
+			network.DB_ERROR,
+			err)
 	}
 
 	//get post synergy
@@ -266,7 +282,11 @@ func (s *postService) LikePost(userId string, postId string) (*bool, *int, error
 	)
 	if err != nil {
 		s.logger.Error("Failed to get post synergy: %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to get post synergy", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to get post synergy",
+			fmt.Sprintf("Failed to retrieve synergy count for post %s. Context - [ Query Failed ]", postId),
+			network.DB_ERROR,
+			err)
 	}
 	//get post interaction
 	postInteraction, err := s.postInteractionQueryBuilder.SingleQuery().FindOne(
@@ -280,7 +300,11 @@ func (s *postService) LikePost(userId string, postId string) (*bool, *int, error
 			return &falseValue, &postSynergy.Synergy, nil
 		}
 		s.logger.Error("Failed to get post interaction: %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to get post interaction", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to get post interaction",
+			fmt.Sprintf("Failed to retrieve interaction for user %s on post %s. Context - [ Query Failed ]", userId, postId),
+			network.DB_ERROR,
+			err)
 	}
 	var isLiked *bool
 	if postInteraction != nil {
@@ -301,7 +325,11 @@ func (s *postService) DislikePost(userId string, postId string) (*bool, *int, er
 	err := s.toggleInteraction(userId, postId, model.InteractionTypeDislike)
 	if err != nil {
 		s.logger.Error("Failed to toggle dislike interaction: %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to toggle dislike interaction", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to toggle dislike interaction",
+			fmt.Sprintf("Failed to toggle dislike interaction for user %s on post %s. Context - [ Action Failed ]", userId, postId),
+			network.DB_ERROR,
+			err)
 	}
 	//get post synergy
 	postSynergy, err := s.postQueryBuilder.SingleQuery().FindOne(
@@ -310,7 +338,11 @@ func (s *postService) DislikePost(userId string, postId string) (*bool, *int, er
 	)
 	if err != nil {
 		s.logger.Error("Failed to get post synergy: %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to get post synergy", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to get post synergy",
+			fmt.Sprintf("Failed to retrieve synergy count for post %s. Context - [ Query Failed ]", postId),
+			network.DB_ERROR,
+			err)
 	}
 	//get post interaction
 	postInteraction, err := s.postInteractionQueryBuilder.SingleQuery().FindOne(
@@ -324,7 +356,11 @@ func (s *postService) DislikePost(userId string, postId string) (*bool, *int, er
 			return &falseValue, &postSynergy.Synergy, nil
 		}
 		s.logger.Error("Failed to get post interaction: %v", err)
-		return nil, nil, network.NewInternalServerError("Failed to get post interaction", network.DB_ERROR, err)
+		return nil, nil, network.NewInternalServerError(
+			"Failed to get post interaction",
+			fmt.Sprintf("Failed to retrieve interaction for user %s on post %s. Context - [ Query Failed ]", userId, postId),
+			network.DB_ERROR,
+			err)
 	}
 
 	var isLiked *bool
@@ -369,13 +405,21 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 		)
 		if err != nil {
 			s.logger.Error("Failed to get post interactions: %v", err)
-			return network.NewInternalServerError("Failed to get post interactions", network.DB_ERROR, err)
+			return network.NewInternalServerError(
+				"Failed to get post interactions",
+				fmt.Sprintf("Failed to retrieve interactions for user %s on post %s. Context - [ Query Failed ]", userId, postId),
+				network.DB_ERROR,
+				err)
 		}
 
 		var existingInteractions []model.PostInteraction
 		if err := cursor.All(&existingInteractions); err != nil {
 			s.logger.Error("Failed to decode post interactions: %v", err)
-			return network.NewInternalServerError("Failed to decode post interactions", network.DB_ERROR, err)
+			return network.NewInternalServerError(
+				"Failed to decode post interactions",
+				fmt.Sprintf("Failed to process interaction data for user %s on post %s. Context - [ Data Processing Error ]", userId, postId),
+				network.DB_ERROR,
+				err)
 		}
 
 		synergyChange := 0
@@ -419,7 +463,11 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 			)
 			if deleteErr != nil {
 				s.logger.Error("Failed to clean up duplicate interactions: %v", deleteErr)
-				return network.NewInternalServerError("Failed to clean up interactions", network.DB_ERROR, deleteErr)
+				return network.NewInternalServerError(
+					"Failed to clean up interactions",
+					fmt.Sprintf("Failed to remove duplicate interactions for user %s on post %s. Context - [ Cleanup Failed ]", userId, postId),
+					network.DB_ERROR,
+					deleteErr)
 			}
 
 			if interactionType == model.InteractionTypeLike {
@@ -440,7 +488,11 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 
 		if updateResult.Err() != nil {
 			s.logger.Error("Failed to update post synergy: %v", updateResult.Err())
-			return network.NewInternalServerError("Failed to update post", network.DB_ERROR, updateResult.Err())
+			return network.NewInternalServerError(
+				"Failed to update post",
+				fmt.Sprintf("Failed to update synergy for post %s. Context - [ Update Failed ]", postId),
+				network.DB_ERROR,
+				updateResult.Err())
 		}
 
 		if needToRemove && removeID != "" {
@@ -450,7 +502,11 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 			)
 			if deleteErr != nil {
 				s.logger.Error("Failed to remove existing interaction: %v", deleteErr)
-				return network.NewInternalServerError("Failed to update interaction", network.DB_ERROR, deleteErr)
+				return network.NewInternalServerError(
+					"Failed to update interaction",
+					fmt.Sprintf("Failed to remove existing interaction for user %s on post %s. Context - [ Delete Failed ]", userId, postId),
+					network.DB_ERROR,
+					deleteErr)
 			}
 		}
 
@@ -462,7 +518,11 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 					s.logger.Warn("Post interaction already exists (race condition): %v", insertErr)
 				} else {
 					s.logger.Error("Failed to insert post interaction: %v", insertErr)
-					return network.NewInternalServerError("Failed to insert interaction", network.DB_ERROR, insertErr)
+					return network.NewInternalServerError(
+						"Failed to insert interaction",
+						fmt.Sprintf("Failed to record interaction for user %s on post %s. Context - [ Insert Failed ]", userId, postId),
+						network.DB_ERROR,
+						insertErr)
 				}
 			}
 		}
@@ -475,7 +535,11 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 			return network.AsApiError(err)
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)
-		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Failed to commit transaction",
+			fmt.Sprintf("Failed to commit interaction changes for user %s on post %s. Context - [ Transaction Failed ]", userId, postId),
+			network.DB_ERROR,
+			err)
 	}
 
 	s.logger.Info("Post interaction updated successfully for post ID: %s", postId)
@@ -486,11 +550,6 @@ func (s *postService) SavePost(userId string, postId string) error {
 	s.logger.Info("Saving post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
 
-	// if err := tx.Start(); err != nil {
-	// 	s.logger.Error("Failed to start transaction: %v", err)
-	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	// }
-
 	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		postInteractionCollection := session.Collection(model.PostInteractionCollectionName)
 		// check if the user has already saved the post
@@ -499,7 +558,11 @@ func (s *postService) SavePost(userId string, postId string) error {
 		)
 		if mongoErr != nil {
 			s.logger.Error("Failed to check if post is already saved: %v", mongoErr)
-			return network.NewInternalServerError("Failed to check if post is already saved", network.DB_ERROR, mongoErr)
+			return network.NewInternalServerError(
+				"Failed to check if post is already saved",
+				fmt.Sprintf("Failed to check save status for user %s on post %s. Context - [ Query Failed ]", userId, postId),
+				network.DB_ERROR,
+				mongoErr)
 		}
 		if exists > 0 {
 			s.logger.Warn("Post already saved by user: %s", postId)
@@ -517,14 +580,22 @@ func (s *postService) SavePost(userId string, postId string) error {
 		)
 		if err.Err() != nil {
 			s.logger.Error("Failed to save post: %v", err)
-			return network.NewInternalServerError("Failed to save post", network.DB_ERROR, fmt.Errorf("failed to save post: %v", err))
+			return network.NewInternalServerError(
+				"Failed to save post",
+				fmt.Sprintf("Failed to update save count for post %s. Context - [ Update Failed ]", postId),
+				network.DB_ERROR,
+				fmt.Errorf("failed to save post: %v", err))
 		}
 		// insert the interaction
 		postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeSave)
 		_, insertErr := postInteractionCollection.InsertOne(postInteraction)
 		if insertErr != nil {
 			s.logger.Error("Failed to insert post interaction: %v", insertErr)
-			return network.NewInternalServerError("Failed to insert post interaction", network.DB_ERROR, fmt.Errorf("failed to insert post interaction: %v", insertErr))
+			return network.NewInternalServerError(
+				"Failed to insert post interaction",
+				fmt.Sprintf("Failed to record save interaction for user %s on post %s. Context - [ Insert Failed ]", userId, postId),
+				network.DB_ERROR,
+				fmt.Errorf("failed to insert post interaction: %v", insertErr))
 		}
 
 		return nil
@@ -536,35 +607,70 @@ func (s *postService) SavePost(userId string, postId string) error {
 			return err
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)
-		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Failed to commit transaction",
+			fmt.Sprintf("Failed to commit save action for user %s on post %s. Context - [ Transaction Failed ]", userId, postId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
-	s.logger.Info("Post saved successfully with ID: %s", postId)
+	s.logger.Info("Post saved successfully: %s", postId)
 	return nil
 }
 
 func (s *postService) SharePost(userId string, postId string) error {
 	s.logger.Info("Sharing post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
-	// if err := tx.Start(); err != nil {
-	// 	s.logger.Error("Failed to start transaction: %v", err)
-	// 	return network.NewInternalServerError("Failed to start transaction", network.DB_ERROR, err)
-	// }
 
 	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		postInteractionCollection := session.Collection(model.PostInteractionCollectionName)
+		// check if the user has already shared the post
+		exists, mongoErr := postInteractionCollection.CountDocuments(
+			bson.M{"postId": postId, "userId": userId, "interactionType": model.InteractionTypeShare},
+		)
+		if mongoErr != nil {
+			s.logger.Error("Failed to check if post is already shared: %v", mongoErr)
+			return network.NewInternalServerError(
+				"Failed to check if post is already shared",
+				fmt.Sprintf("Failed to check share status for user %s on post %s. Context - [ Query Failed ]", userId, postId),
+				network.DB_ERROR,
+				mongoErr)
+		}
+		if exists > 0 {
+			s.logger.Warn("Post already shared by user: %s", postId)
+			return nil
+		}
+
 		postCollection := session.Collection(model.PostCollectionName)
-		// update the viewCount and lastActivityAt
-		result := postCollection.FindOneAndUpdate(
+		// update the shareCount and lastActivityAt
+		err := postCollection.FindOneAndUpdate(
 			bson.M{"postId": postId, "status": model.PostStatusActive},
 			bson.M{
 				"$inc": bson.M{"shareCount": 1},
 				"$set": bson.M{"lastActivityAt": primitive.NewDateTimeFromTime(time.Now())},
 			},
 		)
-		if err := result.Err(); err != nil {
-			s.logger.Error("Failed to share post: %v", err)
-			return network.NewInternalServerError("Failed to share post", network.DB_ERROR, fmt.Errorf("failed to share post: %v", err))
+		if err.Err() != nil {
+			s.logger.Error("Failed to update share count: %v", err)
+			return network.NewInternalServerError(
+				"Failed to update share count",
+				fmt.Sprintf("Failed to update share count for post %s. Context - [ Update Failed ]", postId),
+				network.DB_ERROR,
+				fmt.Errorf("failed to update share count: %v", err))
 		}
+		// insert the interaction
+		postInteraction := model.NewPostInteraction(userId, postId, model.InteractionTypeShare)
+		_, insertErr := postInteractionCollection.InsertOne(postInteraction)
+		if insertErr != nil {
+			s.logger.Error("Failed to insert post share interaction: %v", insertErr)
+			return network.NewInternalServerError(
+				"Failed to insert post share interaction",
+				fmt.Sprintf("Failed to record share interaction for user %s on post %s. Context - [ Insert Failed ]", userId, postId),
+				network.DB_ERROR,
+				fmt.Errorf("failed to insert post share interaction: %v", insertErr))
+		}
+
 		return nil
 	})
 
@@ -574,44 +680,72 @@ func (s *postService) SharePost(userId string, postId string) error {
 			return err
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)
-		return network.NewInternalServerError("Failed to commit transaction", network.DB_ERROR, err)
+		return network.NewInternalServerError(
+			"Failed to commit transaction",
+			fmt.Sprintf("Failed to commit share action for user %s on post %s. Context - [ Transaction Failed ]", userId, postId),
+			network.DB_ERROR,
+			err,
+		)
 	}
 
-	s.logger.Info("Post shared successfully with ID: %s", postId)
+	s.logger.Info("Post shared successfully: %s", postId)
 	return nil
 }
 
 func (s *postService) GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error) {
 	s.logger.Info("Getting posts for user with ID: %s", userId)
-	filter := bson.M{"authorId": userId}
-	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), nil)
+	filter := bson.M{"authorId": userId, "status": model.PostStatusActive}
+	options := options.Find().SetSort(bson.D{primitive.E{Key: "createdAt", Value: -1}})
+
+	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), options)
 	if err != nil {
 		s.logger.Error("Failed to get posts: %v", err)
-		return nil, 0, network.NewInternalServerError("Failed to get posts", network.DB_ERROR, err)
+		return nil, 0, network.NewInternalServerError(
+			"Failed to get posts",
+			fmt.Sprintf("Failed to retrieve posts for user %s. Context - [ Query Failed ]", userId),
+			network.DB_ERROR,
+			err)
 	}
+
 	nPosts, err := s.postQueryBuilder.SingleQuery().FilterCount(filter)
 	if err != nil {
 		s.logger.Error("Failed to count posts: %v", err)
-		return nil, 0, network.NewInternalServerError("Failed to count posts", network.DB_ERROR, err)
+		return nil, 0, network.NewInternalServerError(
+			"Failed to count posts",
+			fmt.Sprintf("Failed to count posts for user %s. Context - [ Query Failed ]", userId),
+			network.DB_ERROR,
+			err)
 	}
+
 	s.logger.Info("Posts retrieved successfully for user with ID: %s", userId)
 	return dbPosts, int(nPosts), nil
 }
 
 func (s *postService) GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error) {
 	s.logger.Info("Getting posts for community with ID: %s", communityId)
-	filter := bson.M{"communityId": communityId}
+	filter := bson.M{"communityId": communityId, "status": model.PostStatusActive}
 	options := options.Find().SetSort(bson.D{primitive.E{Key: "createdAt", Value: -1}})
+
 	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), options)
 	if err != nil {
 		s.logger.Error("Failed to get posts: %v", err)
-		return nil, 0, network.NewInternalServerError("Failed to get posts", network.DB_ERROR, err)
+		return nil, 0, network.NewInternalServerError(
+			"Failed to get posts",
+			fmt.Sprintf("Failed to retrieve posts for community %s. Context - [ Query Failed ]", communityId),
+			network.DB_ERROR,
+			err)
 	}
+
 	nPosts, err := s.postQueryBuilder.SingleQuery().FilterCount(filter)
 	if err != nil {
 		s.logger.Error("Failed to count posts: %v", err)
-		return nil, 0, network.NewInternalServerError("Failed to count posts", network.DB_ERROR, err)
+		return nil, 0, network.NewInternalServerError(
+			"Failed to count posts",
+			fmt.Sprintf("Failed to count posts for community %s. Context - [ Query Failed ]", communityId),
+			network.DB_ERROR,
+			err)
 	}
+
 	s.logger.Info("Posts retrieved successfully for community with ID: %s", communityId)
 	return dbPosts, int(nPosts), nil
 }

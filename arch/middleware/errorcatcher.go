@@ -42,9 +42,19 @@ func (m *errorCatcher) Handler(ctx *gin.Context) {
 
 			// Return appropriate response to client
 			if err, ok := r.(error); ok {
-				m.Send(ctx).InternalServerError(err.Error(), network.UnknownErrorCode, err)
+				m.Send(ctx).InternalServerError(
+					err.Error(),
+					"Server encountered an expected error and cannot process the request [Context - MAJOR ERROR]",
+					network.UnknownErrorCode,
+					err,
+				)
 			} else {
-				m.Send(ctx).InternalServerError("Something went wrong", network.UnknownErrorCode, nil)
+				m.Send(ctx).InternalServerError(
+					"Something went wrong",
+					"Server encountered an expected error and cannot process the request",
+					network.UnknownErrorCode,
+					nil,
+				)
 			}
 
 			ctx.Abort()
