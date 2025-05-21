@@ -28,7 +28,10 @@ func Server() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, os.Interrupt, syscall.SIGQUIT, syscall.SIGINT)
 	go func() {
-		router.Start(env.Host, uint16(env.Port))
+		if err := router.Start(env.Host, uint16(env.Port)); err != nil {
+			shutdown()
+			os.Exit(1)
+		}
 	}()
 	<-stop
 }

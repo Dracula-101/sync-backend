@@ -65,9 +65,12 @@ func (r *router) LoadControllers(controllers []Controller) {
 	}
 }
 
-func (r *router) Start(ip string, port uint16) {
+func (r *router) Start(ip string, port uint16) error {
 	address := fmt.Sprintf("%s:%d", ip, port)
-	r.engine.Run(address)
+	if err := r.engine.Run(address); err != nil {
+		return fmt.Errorf("failed to start server: %w", err)
+	}
+	return nil
 }
 
 func (r *router) RegisterValidationParsers(tagNameFunc validator.TagNameFunc) {

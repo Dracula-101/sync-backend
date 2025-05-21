@@ -111,7 +111,7 @@ type BaseRouter interface {
 	GetEngine() *gin.Engine
 	RegisterValidationParsers(tagNameFunc validator.TagNameFunc)
 	LoadRootMiddlewares(middlewares []RootMiddleware)
-	Start(ip string, port uint16)
+	Start(ip string, port uint16) error
 }
 
 type Router interface {
