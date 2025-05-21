@@ -2,8 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Go Version](https://img.shields.io/badge/go-1.24.2-00ADD8.svg)](https://go.dev/)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/yourusername/sync-backend)
-[![Last Updated](https://img.shields.io/badge/updated-May%2021%2C%202025-informational.svg)](https://github.com/yourusername/sync-backend)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/Dracula-101/sync-backend)
+[![Last Updated](https://img.shields.io/badge/updated-May%2021%2C%202025-informational.svg)](https://github.com/Dracula-101/sync-backend)
 
 A Go-powered backend service for the Sync social media platform - built for performance, scalability, and developer friendliness. Handles authentication, content management, social interactions, and user data with robust security measures.
 
@@ -11,7 +11,7 @@ A Go-powered backend service for the Sync social media platform - built for perf
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/sync-backend.git
+git clone https://github.com/Dracula-101/sync-backend.git
 cd sync-backend
 
 # Set up configuration (update database credentials in .env)
@@ -128,28 +128,36 @@ The application uses a combination of YAML files and environment variables:
 Example `.env` file structure:
 ```
 # Server
+HOST=localhost
 PORT=8080
 ENV=development
+LOG_LEVEL=info
 
-# MongoDB
-MONGO_URI=mongodb://localhost:27017/sync
-MONGO_USER=syncuser
-MONGO_PASSWORD=yourpassword
+JWT_SECRET=<your_jwt_secret>
 
-# Redis
-REDIS_URI=redis://localhost:6379
+# Database connections
+DB_HOST=
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+
+# IP Geolocation DB
+IP_DB_HOST=
+IP_DB_PORT=
+IP_DB_USER=
+IP_DB_PASSWORD=
+IP_DB_NAME=
+
+# Redis connections
+REDIS_HOST=
+REDIS_PORT=
 REDIS_PASSWORD=
+REDIS_DB=
 
-# PostgreSQL
-PG_HOST=localhost
-PG_PORT=5432
-PG_DATABASE=sync_geo
-PG_USER=postgres
-PG_PASSWORD=yourpassword
-
-# JWT Auth
-JWT_SECRET=your-secret-key
-JWT_REFRESH_SECRET=your-refresh-secret
+# Cloudinary for uploading media
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 ```
 
 ## 🏗️ Architecture
@@ -174,7 +182,6 @@ JWT_REFRESH_SECRET=your-refresh-secret
 
 - **Authentication**:
   - **JWT** - Stateless authentication with [golang-jwt/jwt](https://github.com/golang-jwt/jwt)
-  - **OAuth** - Google authentication integration
   - **Session Management** - Multi-device login with revocation
 
 ## 🛠️ Adding New Features
@@ -194,33 +201,69 @@ The codebase follows a consistent pattern to make adding new features straightfo
 **Example of adding a new "notification" feature:**
 
 ```go
+// api/notification/service.go
+
+type NotificationService interface {
+  CreateNotification(userID string, notification Notification) error
+  GetNotifications(userID string) ([]Notification, error)
+  DeleteNotification(notificationID string) error
+}
+
+type notificationService struct {
+  logger utils.AppLogger
+  // other dependencies...
+}
+
+func NewNotificationService() *notificationService {
+  return &notificationService{
+    logger: utils.NewServiceLogger("notification"),
+    // other initializations...
+  }
+}
+
+// Implement methods for creating, retrieving, and deleting notifications
+```
+
+
+```go
 // api/notification/controller.go
+
 package notification
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/yourusername/sync-backend/arch/network"
+  "sync-backend/arch/network"
+  "sync-backend/arch/common"
+	"sync-backend/utils"
+
+	"github.com/gin-gonic/gin"
 )
 
-type Controller struct {
-    service *Service
-    router  *gin.RouterGroup
+type notificationController struct {
+  	logger utils.AppLogger
+    network.BaseController
+    common.ContextPayload
+  	authProvider     network.AuthenticationProvider
+    service          *NotificationService
+    
 }
 
-func NewController(router *gin.RouterGroup, service *Service) *Controller {
-    return &Controller{
-        service: service, 
-        router:  router,
+func NewNotificationController(
+  authProvider network.AuthenticationProvider,
+  service *NotificationService,
+) *network.Controller {
+    return &notificationController{
+      logger:           utils.NewServiceLogger("notification"),
+      BaseController:   network.NewBaseController("/api/v1/notification", authProvider),
+      ContextPayload:   common.NewContextPayload(),
+      authProvider:     authProvider,
+      service:          service,
     }
 }
 
-func (c *Controller) RegisterRoutes() {
-    notifications := c.router.Group("/notifications")
-    {
-        notifications.GET("", c.GetUserNotifications)
-        notifications.PATCH("/:id/read", c.MarkAsRead)
-        // Add more routes as needed
-    }
+func (c *controller) MountRoutes(group *gin.RouterGroup) {
+    group.GET("/notifications", c.GetNotifications)
+    group.POST("/notifications", c.CreateNotification)
+    group.DELETE("/notifications/:id", c.DeleteNotification)
 }
 
 // Add handler implementations...
@@ -229,10 +272,26 @@ func (c *Controller) RegisterRoutes() {
 Then register in `arch/application/module.go`:
 
 ```go
-// Add to InitControllers function
-notificationService := notification.NewService(db, redisClient)
-notificationController := notification.NewController(v1Router, notificationService)
-notificationController.RegisterRoutes()
+// Add to Controllers function
+func (m *appModule) Controllers() []network.Controller {
+  // Other controllers...
+  notificationController := notification.NewNotificationController(
+    m.authProvider,
+    m.notificationService,
+  )
+}
+
+func NewAppModule(
+  // Other dependencies...
+) Module {
+  // Other initializations...
+  notificationService := notification.NewNotificationService()
+  return &appModule{
+    // Other dependencies...
+    notificationService: notificationService,
+  }
+}
+
 ```
 
 ## 🤝 Contributing
@@ -240,7 +299,7 @@ notificationController.RegisterRoutes()
 Contributions are welcome! Here's how to contribute to Sync Backend:
 
 1. **Fork** the repository
-2. **Clone** your fork (`git clone https://github.com/your-username/sync-backend.git`)
+2. **Clone** your fork (`git clone https://github.com/Dracula-101/sync-backend.git`)
 3. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
 4. **Make** your changes
    - Follow the existing code style
@@ -273,7 +332,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📬 Contact
 
-Project Link: [https://github.com/yourusername/sync-backend](https://github.com/yourusername/sync-backend)
+Project Link: [https://github.com/Dracula-101/sync-backend](https://github.com/Dracula-101/sync-backend)
 
 ---
 
