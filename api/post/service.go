@@ -292,10 +292,12 @@ func (s *postService) DeletePost(userId string, postId string) network.ApiError 
 
 	filter := bson.M{"postId": postId, "authorId": userId}
 	update := bson.M{
-		"status":         model.PostStatusDeleted,
-		"deletedAt":      primitive.NewDateTimeFromTime(time.Now()),
-		"deletedBy":      userId,
-		"metadata":       bson.M{"updatedAt": primitive.NewDateTimeFromTime(time.Now()), "updatedBy": userId},
+		"status":    model.PostStatusDeleted,
+		"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
+		"metadata": bson.M{
+			"updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"deletedBy": userId,
+		},
 		"lastActivityAt": primitive.NewDateTimeFromTime(time.Now()),
 	}
 	updatePost, updateErr := s.postQueryBuilder.SingleQuery().UpdateOne(filter, bson.M{"$set": update}, nil)

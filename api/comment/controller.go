@@ -34,8 +34,8 @@ func (c *commentController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting comment routes")
 	group.Use(c.authenticatorProvider.Middleware())
 	group.POST("/post/create", c.locationProvider.Middleware(), c.CreatePostComment)
-	group.POST("/post/edit/:commentId", c.EditPostComment)
-	group.POST("/post/delete/:commentId", c.DeletePostComment)
+	group.PUT("/post/:commentId", c.EditPostComment)
+	group.DELETE("/post/:commentId", c.DeletePostComment)
 	group.GET("/post/:postId", c.GetPostComments)
 	group.GET("/post/:postId/reply/:commentId", c.GetPostCommentReplies)
 
