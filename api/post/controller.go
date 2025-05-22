@@ -34,9 +34,11 @@ func NewPostController(authenticatorProvider network.AuthenticationProvider, upl
 func (c *postController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting post routes")
 	group.Use(c.authenticatorProvider.Middleware())
-	group.POST("/create", c.uploadProvider.Middleware("media"), c.CreatePost)
 	group.GET("/get/:postId", c.GetPost)
-	group.POST("/edit/:postId", c.EditPost)
+	group.POST("/create", c.uploadProvider.Middleware("media"), c.CreatePost)
+	group.PUT("/:postId", c.EditPost)
+	group.DELETE("/:postId", c.DeletePost)
+
 	group.POST("/like/:postId", c.LikePost)
 	group.POST("/dislike/:postId", c.DislikePost)
 	group.POST("/save/:postId", c.SavePost)
@@ -146,6 +148,26 @@ func (c *postController) EditPost(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessMsgResponse("Post edited successfully")
+}
+
+func (c *postController) DeletePost(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
+		return
+	}
+
+	userId := c.MustGetUserId(ctx)
+	err := c.postService.DeletePost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessMsgResponse("Post deleted successfully")
 }
 
 func (c *postController) LikePost(ctx *gin.Context) {

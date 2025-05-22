@@ -7,6 +7,7 @@ import (
 	"sync-backend/api/common/media"
 	mediaMadels "sync-backend/api/common/media/model"
 	"sync-backend/api/community/model"
+	postModel "sync-backend/api/post/model"
 	"sync-backend/arch/mongo"
 	"sync-backend/arch/network"
 	"sync-backend/utils"
@@ -19,8 +20,11 @@ import (
 
 type CommunityService interface {
 	/* COMMUNITY CRUD */
-	CreateCommunity(name string, description string, tags []string, avatarFilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError)
 	GetCommunityById(id string) (*model.Community, network.ApiError)
+	CreateCommunity(name string, description string, tags []string, avatarFilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError)
+	UpdateCommunity(id string, description string, avatarFilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError)
+	DeleteCommunity(id string, userId string) network.ApiError
+
 	CheckUserInCommunity(userId string, communityId string) network.ApiError
 	GetCommunities(userId string, page int, limit int) ([]*model.Community, network.ApiError)
 
@@ -155,6 +159,196 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 	}
 
 	return community, nil
+}
+
+func (s *communityService) UpdateCommunity(id string, description string, avatarFilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError) {
+
+	s.logger.Info("Updating community with id: %s", id)
+	filter := bson.M{"communityId": id}
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOne(filter, nil)
+	if err != nil && !mongo.IsNoDocumentFoundError(err) {
+		s.logger.Error("Error fetching community: %v", err)
+		return nil, NewDBError("fetching community", err.Error())
+	}
+	if community == nil {
+		s.logger.Error("Community not found")
+		return nil, NewCommunityNotFoundError(id)
+	}
+	isOwner := false
+	if community.OwnerId == userId {
+		isOwner = true
+	}
+	isModerator := false
+	if slices.Contains(community.Moderators, userId) {
+		isModerator = true
+	}
+	if !isOwner && !isModerator {
+		s.logger.Error("User is not the owner or moderator of the community")
+		if !isOwner {
+			return nil, NewNotAuthorizedError("user is not the owner of the community", userId, id)
+		} else {
+			return nil, NewNotAuthorizedError("user is not the moderator of the community", userId, id)
+		}
+	}
+	var avatarPhoto mediaMadels.MediaInfo
+	if avatarFilePath != "" {
+		avatarPhoto, err = s.mediaService.UploadMedia(avatarFilePath, userId+"_avatar", "community")
+		if err != nil {
+			s.logger.Error("Error uploading media: %v", err)
+			return nil, NewDBError("uploading media", err.Error())
+		}
+	}
+	var backgroundPhoto mediaMadels.MediaInfo
+	if backgroundFilePath != "" {
+		backgroundPhoto, err = s.mediaService.UploadMedia(backgroundFilePath, userId+"_background", "community")
+		if err != nil {
+			s.logger.Error("Error uploading media: %v", err)
+			return nil, NewDBError("uploading media", err.Error())
+		}
+	}
+
+	avatarPhotoInfo := community.Media.Avatar
+	if avatarFilePath != "" {
+		avatarPhotoInfo = model.Image{
+			ID:     avatarPhoto.Id,
+			Url:    avatarPhoto.Url,
+			Width:  avatarPhoto.Width,
+			Height: avatarPhoto.Height,
+		}
+	}
+
+	backgroundPhotoInfo := community.Media.Background
+	if backgroundFilePath != "" {
+		backgroundPhotoInfo = model.Image{
+			ID:     backgroundPhoto.Id,
+			Url:    backgroundPhoto.Url,
+			Width:  backgroundPhoto.Width,
+			Height: backgroundPhoto.Height,
+		}
+	}
+
+	community.Description = description
+	community.Media.Avatar = avatarPhotoInfo
+	community.Media.Background = backgroundPhotoInfo
+	community.Metadata.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+	community.Metadata.UpdatedBy = userId
+
+	update := bson.M{
+		"$set": bson.M{
+			"description":        community.Description,
+			"media.avatar":       community.Media.Avatar,
+			"media.background":   community.Media.Background,
+			"metadata.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"metadata.updatedBy": userId,
+		},
+	}
+	_, err = s.communityQueryBuilder.Query(s.Context()).UpdateOne(filter, update, nil)
+	if err != nil {
+		s.logger.Error("Error updating community: %v", err)
+		return nil, NewDBError("updating community", err.Error())
+	}
+	return community, nil
+}
+
+func (s *communityService) DeleteCommunity(id string, userId string) network.ApiError {
+	s.logger.Info("Deleting community with id: %s", id)
+	filter := bson.M{"communityId": id}
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOne(filter, nil)
+	if err != nil && !mongo.IsNoDocumentFoundError(err) {
+		s.logger.Error("Error fetching community: %v", err)
+		return NewDBError("fetching community", err.Error())
+	}
+	if community == nil {
+		s.logger.Error("Community not found")
+		return NewCommunityNotFoundError(id)
+	}
+
+	if community.OwnerId != userId {
+		s.logger.Error("User is not the owner of the community")
+		return NewNotAuthorizedError("user is not the owner of the community", userId, id)
+	}
+	if community.Status != string(model.CommunityStatusActive) {
+		s.logger.Error("Community is not active")
+		return NewNotAuthorizedError("community is not active", userId, id)
+	}
+
+	// Start a transaction for consistent state
+	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
+	err = tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		communityCollection := session.Collection(model.CommunityCollectionName)
+		communityCollection.FindOneAndUpdate(
+			bson.M{"communityId": id},
+			bson.M{
+				"$set": bson.M{
+					"status":    model.CommunityStatusDeleted,
+					"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
+				},
+			},
+		)
+		if err != nil {
+			if mongo.IsNoDocumentFoundError(err) {
+				s.logger.Error("Community with id %s not found: %v", id, err)
+				return network.NewNotFoundError("community not found", fmt.Sprintf("Community with ID '%s' not found. It may have been deleted or never existed. Context - [ No Data ] ", id), err)
+			}
+			s.logger.Error("Error updating community: %v", err)
+			return network.NewInternalServerError("error updating community", fmt.Sprintf("Error updating community with ID '%s'. Context - [ Query Failed ] ", id), network.DB_ERROR, err)
+		}
+
+		// Delete all community interactions
+		communityInteractionCollection := session.Collection(model.CommunityInteractionsCollectionName)
+		_, err = communityInteractionCollection.UpdateMany(
+			bson.M{"communityId": id},
+			bson.M{
+				"$set": bson.M{
+					"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
+				},
+			},
+		)
+		if err != nil {
+			s.logger.Error("Error deleting community interactions: %v", err)
+			return network.NewInternalServerError("error deleting community interactions", fmt.Sprintf("Error deleting community interactions for community %s. Context - [ Query Failed ] ", id), network.DB_ERROR, err)
+		}
+
+		// Delete all post in the community
+		postCollection := session.Collection(postModel.PostCollectionName)
+		_, err = postCollection.UpdateMany(
+			bson.M{"communityId": id},
+			bson.M{
+				"$set": bson.M{
+					"status":    postModel.PostStatusDeleted,
+					"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
+				},
+			},
+		)
+
+		// Delete all post interactions in the community
+		postInteractionCollection := session.Collection(postModel.PostInteractionCollectionName)
+		_, err = postInteractionCollection.UpdateMany(
+			bson.M{"communityId": id},
+			bson.M{
+				"$set": bson.M{
+					"status":    postModel.PostStatusDeleted,
+					"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
+				},
+			},
+		)
+		if err != nil {
+			s.logger.Error("Error deleting post interactions: %v", err)
+			return network.NewInternalServerError("error deleting post interactions", fmt.Sprintf("Error deleting post interactions for community %s. Context - [ Query Failed ] ", id), network.DB_ERROR, err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		if network.IsApiError(err) {
+			s.logger.Error("Failed to delete community: %v", err)
+			return network.AsApiError(err)
+		}
+		s.logger.Error("Failed to commit transaction: %v", err)
+		return network.NewInternalServerError("failed to commit transaction", fmt.Sprintf("Failed to commit transaction for community %s. Context - [ Transaction Failed ] ", id), network.DB_ERROR, err)
+	}
+	s.logger.Info("Community with id %s deleted successfully", id)
+	return nil
 }
 
 func (s *communityService) GetCommunityById(id string) (*model.Community, network.ApiError) {
@@ -792,7 +986,7 @@ func (s *communityService) GetTrendingCommunities(page int, limit int) ([]*model
 		s.logger.Error("Error executing trending communities query: %v", err)
 		return nil, network.NewInternalServerError(
 			"Error executing trending communities query",
-			fmt.Sprintf("Error executing trending communities query. Context - [ Query Failed ] "),
+			"There was an error executing some operations. Context - [ Aggregation Failed ] ",
 			network.DB_ERROR,
 			err,
 		)

@@ -44,3 +44,11 @@ func NewDuplicateCommunityError(slug string) network.ApiError {
 		nil,
 	)
 }
+
+func NewNotAuthorizedError(action, userId, communityId string) network.ApiError {
+	return network.NewForbiddenError(
+		"Not Authorized",
+		fmt.Sprintf("User '%s' is not authorized to %s community '%s'. [Context: userId=%s, communityId=%s]", userId, action, communityId, userId, communityId),
+		nil,
+	)
+}

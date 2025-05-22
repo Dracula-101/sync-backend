@@ -17,16 +17,18 @@ import (
 )
 
 type PostService interface {
-	CreatePost(title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool) (*model.Post, error)
-	GetPost(postId string, userId string) (*model.PublicPost, error)
-	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, error)
-	LikePost(userId string, postId string) (*bool, *int, error)
-	DislikePost(userId string, postId string) (*bool, *int, error)
-	SavePost(userId string, postId string) error
-	SharePost(userId string, postId string) error
+	CreatePost(title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool) (*model.Post, network.ApiError)
+	GetPost(postId string, userId string) (*model.PublicPost, network.ApiError)
+	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, network.ApiError)
+	DeletePost(userId string, postId string) network.ApiError
 
-	GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error)
-	GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error)
+	LikePost(userId string, postId string) (*bool, *int, network.ApiError)
+	DislikePost(userId string, postId string) (*bool, *int, network.ApiError)
+	SavePost(userId string, postId string) network.ApiError
+	SharePost(userId string, postId string) network.ApiError
+
+	GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err network.ApiError)
+	GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err network.ApiError)
 }
 
 type postService struct {
@@ -57,7 +59,7 @@ func NewPostService(db mongo.Database, userService user.UserService, communitySe
 
 func (s *postService) CreatePost(
 	title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool,
-) (*model.Post, error) {
+) (*model.Post, network.ApiError) {
 	s.logger.Info("Creating post with title: %s", title)
 	var fileUrls []model.Media
 	for _, file := range media {
@@ -94,7 +96,7 @@ func (s *postService) CreatePost(
 	return post, nil
 }
 
-func (s *postService) GetPost(postId string, userId string) (*model.PublicPost, error) {
+func (s *postService) GetPost(postId string, userId string) (*model.PublicPost, network.ApiError) {
 	s.logger.Info("Getting post with ID: %s", postId)
 	// use aggregation to get the post with author and community details
 	aggregate := s.getPostAggregateBuilder.SingleAggregate()
@@ -197,11 +199,11 @@ func (s *postService) GetPost(postId string, userId string) (*model.PublicPost, 
 	return posts[0], nil
 }
 
-func (s *postService) EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (newPostId *string, err error) {
+func (s *postService) EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (newPostId *string, err network.ApiError) {
 	s.logger.Info("Editing post with ID: %s", postId)
-	post, err := s.GetPost(postId, userId)
-	if err != nil {
-		return nil, err
+	post, updateErr := s.GetPost(postId, userId)
+	if updateErr != nil {
+		return nil, updateErr
 	}
 	if !post.IsActive() {
 		s.logger.Error("Cannot edit inactive post with ID: %s", postId)
@@ -243,10 +245,10 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 		"updatedBy": userId,
 	}
 	options := options.Update().SetUpsert(true)
-	updatePost, err := s.postQueryBuilder.SingleQuery().UpdateOne(filter, bson.M{"$set": update}, options)
-	if err != nil && !mongo.IsNoDocumentFoundError(err) {
-		s.logger.Error("Failed to edit post: %v", err)
-		return nil, network.NewInternalServerError("Failed to edit post", "Failed to update post details", network.DB_ERROR, err)
+	updatePost, queryErr := s.postQueryBuilder.SingleQuery().UpdateOne(filter, bson.M{"$set": update}, options)
+	if queryErr != nil && !mongo.IsNoDocumentFoundError(queryErr) {
+		s.logger.Error("Failed to edit post: %v", updateErr)
+		return nil, network.NewInternalServerError("Failed to edit post", "Failed to update post details", network.DB_ERROR, queryErr)
 	}
 	if updatePost == nil {
 		s.logger.Error("Post not found")
@@ -264,7 +266,62 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 	return nil, nil
 }
 
-func (s *postService) LikePost(userId string, postId string) (*bool, *int, error) {
+func (s *postService) DeletePost(userId string, postId string) network.ApiError {
+	s.logger.Info("Deleting post with ID: %s", postId)
+	post, err := s.GetPost(postId, userId)
+	if err != nil {
+		s.logger.Error("Failed to get post: %v", err)
+		return err
+	}
+	if post.Author.UserId != userId {
+		s.logger.Error("User is not the author of the post: %s", postId)
+		return network.NewForbiddenError(
+			"User is not the author of the post",
+			fmt.Sprintf("Cannot delete post with ID %s as user %s is not the author", postId, userId),
+			fmt.Errorf("user %s is not the author of post %s", userId, postId),
+		)
+	}
+	if !post.IsActive() {
+		s.logger.Error("Cannot delete inactive post with ID: %s", postId)
+		return network.NewForbiddenError(
+			"Cannot delete inactive post",
+			fmt.Sprintf("Cannot delete post with ID %s as it is inactive", postId),
+			fmt.Errorf("post %s is inactive", postId),
+		)
+	}
+
+	filter := bson.M{"postId": postId, "authorId": userId}
+	update := bson.M{
+		"status":         model.PostStatusDeleted,
+		"deletedAt":      primitive.NewDateTimeFromTime(time.Now()),
+		"deletedBy":      userId,
+		"metadata":       bson.M{"updatedAt": primitive.NewDateTimeFromTime(time.Now()), "updatedBy": userId},
+		"lastActivityAt": primitive.NewDateTimeFromTime(time.Now()),
+	}
+	updatePost, updateErr := s.postQueryBuilder.SingleQuery().UpdateOne(filter, bson.M{"$set": update}, nil)
+	if updateErr != nil && !mongo.IsNoDocumentFoundError(updateErr) {
+		s.logger.Error("Failed to delete post: %v", updateErr)
+		return network.NewInternalServerError(
+			"Failed to delete post",
+			fmt.Sprintf("Failed to delete post with ID %s", postId),
+			network.DB_ERROR,
+			updateErr,
+		)
+	}
+	if updatePost == nil {
+		s.logger.Error("Post not found")
+		return network.NewNotFoundError(
+			"Post not found",
+			fmt.Sprintf("Post with ID %s not found - it may have been deleted or never existed", postId),
+			fmt.Errorf("post %s not found", postId),
+		)
+	}
+
+	s.logger.Info("Post deleted successfully with ID: %s", postId)
+	return nil
+}
+
+func (s *postService) LikePost(userId string, postId string) (*bool, *int, network.ApiError) {
 	err := s.toggleInteraction(userId, postId, model.InteractionTypeLike)
 	if err != nil {
 		s.logger.Error("Failed to toggle like interaction: %v", err)
@@ -276,35 +333,35 @@ func (s *postService) LikePost(userId string, postId string) (*bool, *int, error
 	}
 
 	//get post synergy
-	postSynergy, err := s.postQueryBuilder.SingleQuery().FindOne(
+	postSynergy, mongoErr := s.postQueryBuilder.SingleQuery().FindOne(
 		bson.M{"postId": postId},
 		options.FindOne().SetProjection(bson.M{"synergy": -1}),
 	)
-	if err != nil {
-		s.logger.Error("Failed to get post synergy: %v", err)
+	if mongoErr != nil {
+		s.logger.Error("Failed to get post synergy: %v", mongoErr)
 		return nil, nil, network.NewInternalServerError(
 			"Failed to get post synergy",
 			fmt.Sprintf("Failed to retrieve synergy count for post %s. Context - [ Query Failed ]", postId),
 			network.DB_ERROR,
-			err)
+			mongoErr)
 	}
 	//get post interaction
-	postInteraction, err := s.postInteractionQueryBuilder.SingleQuery().FindOne(
+	postInteraction, mongoErr := s.postInteractionQueryBuilder.SingleQuery().FindOne(
 		bson.M{"postId": postId, "userId": userId},
 		options.FindOne().SetProjection(bson.M{"interactionType": 1}),
 	)
-	if err != nil {
-		if mongo.IsNoDocumentFoundError(err) {
+	if mongoErr != nil {
+		if mongo.IsNoDocumentFoundError(mongoErr) {
 			// user has unliked the post
 			falseValue := false
 			return &falseValue, &postSynergy.Synergy, nil
 		}
-		s.logger.Error("Failed to get post interaction: %v", err)
+		s.logger.Error("Failed to get post interaction: %v", mongoErr)
 		return nil, nil, network.NewInternalServerError(
 			"Failed to get post interaction",
 			fmt.Sprintf("Failed to retrieve interaction for user %s on post %s. Context - [ Query Failed ]", userId, postId),
 			network.DB_ERROR,
-			err)
+			mongoErr)
 	}
 	var isLiked *bool
 	if postInteraction != nil {
@@ -321,7 +378,7 @@ func (s *postService) LikePost(userId string, postId string) (*bool, *int, error
 	return isLiked, &postSynergy.Synergy, nil
 }
 
-func (s *postService) DislikePost(userId string, postId string) (*bool, *int, error) {
+func (s *postService) DislikePost(userId string, postId string) (*bool, *int, network.ApiError) {
 	err := s.toggleInteraction(userId, postId, model.InteractionTypeDislike)
 	if err != nil {
 		s.logger.Error("Failed to toggle dislike interaction: %v", err)
@@ -332,35 +389,35 @@ func (s *postService) DislikePost(userId string, postId string) (*bool, *int, er
 			err)
 	}
 	//get post synergy
-	postSynergy, err := s.postQueryBuilder.SingleQuery().FindOne(
+	postSynergy, mongoErr := s.postQueryBuilder.SingleQuery().FindOne(
 		bson.M{"postId": postId},
 		options.FindOne().SetProjection(bson.M{"synergy": -1}),
 	)
-	if err != nil {
-		s.logger.Error("Failed to get post synergy: %v", err)
+	if mongoErr != nil {
+		s.logger.Error("Failed to get post synergy: %v", mongoErr)
 		return nil, nil, network.NewInternalServerError(
 			"Failed to get post synergy",
 			fmt.Sprintf("Failed to retrieve synergy count for post %s. Context - [ Query Failed ]", postId),
 			network.DB_ERROR,
-			err)
+			mongoErr)
 	}
 	//get post interaction
-	postInteraction, err := s.postInteractionQueryBuilder.SingleQuery().FindOne(
+	postInteraction, mongoErr := s.postInteractionQueryBuilder.SingleQuery().FindOne(
 		bson.M{"postId": postId, "userId": userId},
 		options.FindOne().SetProjection(bson.M{"interactionType": 1}),
 	)
-	if err != nil {
-		if mongo.IsNoDocumentFoundError(err) {
+	if mongoErr != nil {
+		if mongo.IsNoDocumentFoundError(mongoErr) {
 			// user has unliked the post
 			falseValue := false
 			return &falseValue, &postSynergy.Synergy, nil
 		}
-		s.logger.Error("Failed to get post interaction: %v", err)
+		s.logger.Error("Failed to get post interaction: %v", mongoErr)
 		return nil, nil, network.NewInternalServerError(
 			"Failed to get post interaction",
 			fmt.Sprintf("Failed to retrieve interaction for user %s on post %s. Context - [ Query Failed ]", userId, postId),
 			network.DB_ERROR,
-			err)
+			mongoErr)
 	}
 
 	var isLiked *bool
@@ -378,7 +435,7 @@ func (s *postService) DislikePost(userId string, postId string) (*bool, *int, er
 	return isLiked, &postSynergy.Synergy, nil
 }
 
-func (s *postService) toggleInteraction(userId string, postId string, interactionType model.InteractionType) error {
+func (s *postService) toggleInteraction(userId string, postId string, interactionType model.InteractionType) network.ApiError {
 	action := "liking"
 	if interactionType == model.InteractionTypeDislike {
 		action = "disliking"
@@ -546,7 +603,7 @@ func (s *postService) toggleInteraction(userId string, postId string, interactio
 	return nil
 }
 
-func (s *postService) SavePost(userId string, postId string) error {
+func (s *postService) SavePost(userId string, postId string) network.ApiError {
 	s.logger.Info("Saving post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
 
@@ -604,7 +661,7 @@ func (s *postService) SavePost(userId string, postId string) error {
 	if err != nil {
 		if network.IsApiError(err) {
 			s.logger.Error("Failed to save post: %v", err)
-			return err
+			return network.AsApiError(err)
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)
 		return network.NewInternalServerError(
@@ -619,7 +676,7 @@ func (s *postService) SavePost(userId string, postId string) error {
 	return nil
 }
 
-func (s *postService) SharePost(userId string, postId string) error {
+func (s *postService) SharePost(userId string, postId string) network.ApiError {
 	s.logger.Info("Sharing post with ID: %s", postId)
 	tx := s.transaction.GetTransaction(mongo.DefaultShortTransactionTimeout)
 
@@ -677,7 +734,7 @@ func (s *postService) SharePost(userId string, postId string) error {
 	if err != nil {
 		if network.IsApiError(err) {
 			s.logger.Error("Failed to share post: %v", err)
-			return err
+			return network.AsApiError(err)
 		}
 		s.logger.Error("Failed to commit transaction: %v", err)
 		return network.NewInternalServerError(
@@ -692,58 +749,58 @@ func (s *postService) SharePost(userId string, postId string) error {
 	return nil
 }
 
-func (s *postService) GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error) {
+func (s *postService) GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err network.ApiError) {
 	s.logger.Info("Getting posts for user with ID: %s", userId)
 	filter := bson.M{"authorId": userId, "status": model.PostStatusActive}
 	options := options.Find().SetSort(bson.D{primitive.E{Key: "createdAt", Value: -1}})
 
-	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), options)
-	if err != nil {
-		s.logger.Error("Failed to get posts: %v", err)
+	dbPosts, mongoErr := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), options)
+	if mongoErr != nil {
+		s.logger.Error("Failed to get posts: %v", mongoErr)
 		return nil, 0, network.NewInternalServerError(
 			"Failed to get posts",
 			fmt.Sprintf("Failed to retrieve posts for user %s. Context - [ Query Failed ]", userId),
 			network.DB_ERROR,
-			err)
+			mongoErr)
 	}
 
-	nPosts, err := s.postQueryBuilder.SingleQuery().FilterCount(filter)
-	if err != nil {
-		s.logger.Error("Failed to count posts: %v", err)
+	nPosts, mongoErr := s.postQueryBuilder.SingleQuery().FilterCount(filter)
+	if mongoErr != nil {
+		s.logger.Error("Failed to count posts: %v", mongoErr)
 		return nil, 0, network.NewInternalServerError(
 			"Failed to count posts",
 			fmt.Sprintf("Failed to count posts for user %s. Context - [ Query Failed ]", userId),
 			network.DB_ERROR,
-			err)
+			mongoErr)
 	}
 
 	s.logger.Info("Posts retrieved successfully for user with ID: %s", userId)
 	return dbPosts, int(nPosts), nil
 }
 
-func (s *postService) GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err error) {
+func (s *postService) GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err network.ApiError) {
 	s.logger.Info("Getting posts for community with ID: %s", communityId)
 	filter := bson.M{"communityId": communityId, "status": model.PostStatusActive}
 	options := options.Find().SetSort(bson.D{primitive.E{Key: "createdAt", Value: -1}})
 
-	dbPosts, err := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), options)
-	if err != nil {
-		s.logger.Error("Failed to get posts: %v", err)
+	dbPosts, mongoErr := s.postQueryBuilder.SingleQuery().FilterPaginated(filter, int64(page), int64(limit), options)
+	if mongoErr != nil {
+		s.logger.Error("Failed to get posts: %v", mongoErr)
 		return nil, 0, network.NewInternalServerError(
 			"Failed to get posts",
 			fmt.Sprintf("Failed to retrieve posts for community %s. Context - [ Query Failed ]", communityId),
 			network.DB_ERROR,
-			err)
+			mongoErr)
 	}
 
-	nPosts, err := s.postQueryBuilder.SingleQuery().FilterCount(filter)
-	if err != nil {
-		s.logger.Error("Failed to count posts: %v", err)
+	nPosts, mongoErr := s.postQueryBuilder.SingleQuery().FilterCount(filter)
+	if mongoErr != nil {
+		s.logger.Error("Failed to count posts: %v", mongoErr)
 		return nil, 0, network.NewInternalServerError(
 			"Failed to count posts",
 			fmt.Sprintf("Failed to count posts for community %s. Context - [ Query Failed ]", communityId),
 			network.DB_ERROR,
-			err)
+			mongoErr)
 	}
 
 	s.logger.Info("Posts retrieved successfully for community with ID: %s", communityId)
