@@ -84,7 +84,8 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 	store := redis.NewStore(context, redisLogger, &redisConfig)
 	store.Connect()
 
-	router := network.NewRouter(env.Env, serverLogger)
+	versionInt, _ := strconv.Atoi(config.API.Version)
+	router := network.NewRouter(env.Env, config.API.Prefix, versionInt, serverLogger)
 	module := NewAppModule(context, env, config, db, ipDb, store, router.GetEngine())
 	router.RegisterValidationParsers(network.CustomTagNameFunc())
 	router.LoadRootMiddlewares(module.RootMiddlewares())

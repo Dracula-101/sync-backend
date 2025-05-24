@@ -34,7 +34,7 @@ func NewAuthController(
 ) network.Controller {
 	return &authController{
 		logger:           utils.NewServiceLogger("AuthController"),
-		BaseController:   network.NewBaseController("/api/v1/auth", authProvider),
+		BaseController:   network.NewBaseController("/auth", authProvider),
 		ContextPayload:   common.NewContextPayload(),
 		authProvider:     authProvider,
 		uploadProvider:   uploadProvider,

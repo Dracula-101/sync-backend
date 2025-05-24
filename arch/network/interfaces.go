@@ -46,7 +46,7 @@ type ResponseSender interface {
 
 type BaseController interface {
 	ResponseSender
-	Path() string
+	Path(basePath string) string
 }
 
 type Controller interface {

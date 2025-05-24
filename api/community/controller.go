@@ -35,7 +35,7 @@ func NewCommunityController(
 ) network.Controller {
 	return &communityController{
 		logger:           utils.NewServiceLogger("CommunityController"),
-		BaseController:   network.NewBaseController("/api/v1/community", authProvider),
+		BaseController:   network.NewBaseController("/community", authProvider),
 		ContextPayload:   common.NewContextPayload(),
 		authProvider:     authProvider,
 		uploadProvider:   uploadProvider,

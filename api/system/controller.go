@@ -14,13 +14,9 @@ type Controller struct {
 
 func NewSystemController(service SystemService) *Controller {
 	return &Controller{
-		BaseController: network.NewBaseController("SystemController", nil),
+		BaseController: network.NewBaseController("/status", nil),
 		service:        service,
 	}
-}
-
-func (c *Controller) Path() string {
-	return "/api/v1/system"
 }
 
 func (c *Controller) MountRoutes(router *gin.RouterGroup) {

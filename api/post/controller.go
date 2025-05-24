@@ -22,7 +22,7 @@ type postController struct {
 
 func NewPostController(authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider, postService PostService) network.Controller {
 	return &postController{
-		BaseController:        network.NewBaseController("/api/v1/post", authenticatorProvider),
+		BaseController:        network.NewBaseController("/post", authenticatorProvider),
 		ContextPayload:        common.NewContextPayload(),
 		logger:                utils.NewServiceLogger("PostController"),
 		authenticatorProvider: authenticatorProvider,

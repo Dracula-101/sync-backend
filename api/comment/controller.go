@@ -21,7 +21,7 @@ type commentController struct {
 
 func NewCommentController(authenticatorProvider network.AuthenticationProvider, locationProvider network.LocationProvider, commentService CommentService) *commentController {
 	return &commentController{
-		BaseController:        network.NewBaseController("/api/v1/comment", authenticatorProvider),
+		BaseController:        network.NewBaseController("/comment", authenticatorProvider),
 		ContextPayload:        common.NewContextPayload(),
 		logger:                utils.NewServiceLogger("CommentController"),
 		authenticatorProvider: authenticatorProvider,

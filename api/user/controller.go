@@ -34,7 +34,7 @@ func NewUserController(
 ) network.Controller {
 	return &userController{
 		logger:           utils.NewServiceLogger("UserController"),
-		BaseController:   network.NewBaseController("/api/v1/user", nil),
+		BaseController:   network.NewBaseController("/user", nil),
 		ContextPayload:   common.NewContextPayload(),
 		authProvider:     authProvider,
 		uploadProvider:   uploadProvider,

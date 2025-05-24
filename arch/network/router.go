@@ -10,10 +10,12 @@ import (
 )
 
 type router struct {
-	engine *gin.Engine
+	engine  *gin.Engine
+	prefix  string
+	version int
 }
 
-func NewRouter(env string, appLogger utils.AppLogger) Router {
+func NewRouter(env string, prefix string, version int, appLogger utils.AppLogger) Router {
 	var mode string
 	switch env {
 	case "debug":
@@ -43,7 +45,9 @@ func NewRouter(env string, appLogger utils.AppLogger) Router {
 	eng.NoMethod(NotAllowed())
 	eng.NoRoute(NotFound())
 	r := router{
-		engine: eng,
+		engine:  eng,
+		prefix:  prefix,
+		version: version,
 	}
 	return &r
 }
@@ -60,7 +64,7 @@ func (r *router) LoadRootMiddlewares(middlewares []RootMiddleware) {
 
 func (r *router) LoadControllers(controllers []Controller) {
 	for _, c := range controllers {
-		g := r.engine.Group(c.Path())
+		g := r.engine.Group(c.Path("api/v1"))
 		c.MountRoutes(g)
 	}
 }
