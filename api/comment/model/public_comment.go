@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type PublicComment struct {
+type PublicGetComment struct {
 	Id               string                    `json:"id"`
 	PostId           string                    `json:"postId"`
 	ParentId         string                    `json:"parentId,omitempty"`

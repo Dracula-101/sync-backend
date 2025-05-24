@@ -21,8 +21,8 @@ type CommentService interface {
 	CreatePostComment(userId string, comment *dto.CreatePostCommentRequest) (*model.Comment, network.ApiError)
 	EditPostComment(userId string, commentId string, comment *dto.EditPostCommentRequest) (*model.Comment, network.ApiError)
 	DeletePostComment(userId string, commentId string) network.ApiError
-	GetPostComments(userId string, postId string, page int, limit int) ([]*model.PublicComment, network.ApiError)
-	GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.PublicComment, network.ApiError)
+	GetPostComments(userId string, postId string, page int, limit int) ([]*model.PublicGetComment, network.ApiError)
+	GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.PublicGetComment, network.ApiError)
 
 	CreatePostCommentReply(userId string, comment *dto.CreateCommentReplyRequest) (*model.Comment, network.ApiError)
 	EditPostCommentReply(userId string, commentId string, comment *dto.EditCommentReplyRequest) (*model.Comment, network.ApiError)
@@ -31,7 +31,7 @@ type CommentService interface {
 	LikePostComment(userId string, commentId string) (*bool, *int, network.ApiError)
 	DislikePostComment(userId string, commentId string) (*bool, *int, network.ApiError)
 
-	GetUserComments(userId string, page int, limit int) ([]*model.PublicComment, network.ApiError)
+	GetUserComments(userId string, page int, limit int) ([]*model.PublicGetComment, network.ApiError)
 }
 
 type commentService struct {
@@ -41,7 +41,7 @@ type commentService struct {
 	commentInteractionQueryBuilder mongo.QueryBuilder[model.CommentInteraction]
 	postQueryBuilder               mongo.QueryBuilder[post.Post]
 	communityQueryBuilder          mongo.QueryBuilder[community.Community]
-	commentAggregateBuilder        mongo.AggregateBuilder[model.Comment, model.PublicComment]
+	commentAggregateBuilder        mongo.AggregateBuilder[model.Comment, model.PublicGetComment]
 	transaction                    mongo.TransactionBuilder
 }
 
@@ -53,7 +53,7 @@ func NewCommentService(db mongo.Database) CommentService {
 		commentInteractionQueryBuilder: mongo.NewQueryBuilder[model.CommentInteraction](db, model.CommentInteractionCollectionName),
 		postQueryBuilder:               mongo.NewQueryBuilder[post.Post](db, post.PostCollectionName),
 		communityQueryBuilder:          mongo.NewQueryBuilder[community.Community](db, community.CommunityCollectionName),
-		commentAggregateBuilder:        mongo.NewAggregateBuilder[model.Comment, model.PublicComment](db, model.CommentCollectionName),
+		commentAggregateBuilder:        mongo.NewAggregateBuilder[model.Comment, model.PublicGetComment](db, model.CommentCollectionName),
 		transaction:                    mongo.NewTransactionBuilder(db),
 	}
 }
@@ -156,7 +156,7 @@ func (s *commentService) DeletePostComment(userId string, commentId string) netw
 	return nil
 }
 
-func (s *commentService) GetPostComments(userId string, postId string, page int, limit int) ([]*model.PublicComment, network.ApiError) {
+func (s *commentService) GetPostComments(userId string, postId string, page int, limit int) ([]*model.PublicGetComment, network.ApiError) {
 	s.logger.Debug("GetPostComments - postId: %s, page: %d, limit: %d", postId, page, limit)
 	aggregate := s.commentAggregateBuilder.SingleAggregate()
 	aggregate.Match(bson.M{"postId": postId, "status": model.CommentStatusActive, "isDeleted": false, "parentId": bson.M{"$exists": false}})
@@ -283,13 +283,13 @@ func (s *commentService) GetPostComments(userId string, postId string, page int,
 
 	}
 	if len(comments) == 0 {
-		return []*model.PublicComment{}, nil
+		return []*model.PublicGetComment{}, nil
 	} else {
 		return comments, nil
 	}
 }
 
-func (s *commentService) GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.PublicComment, network.ApiError) {
+func (s *commentService) GetPostCommentReplies(userId string, postId string, parentId string, page int, limit int) ([]*model.PublicGetComment, network.ApiError) {
 	s.logger.Debug("GetPostComments - postId: %s, page: %d, limit: %d", postId, page, limit)
 	aggregate := s.commentAggregateBuilder.SingleAggregate()
 	aggregate.Match(bson.M{"postId": postId, "status": model.CommentStatusActive, "isDeleted": false, "parentId": parentId})
@@ -415,7 +415,7 @@ func (s *commentService) GetPostCommentReplies(userId string, postId string, par
 		)
 	}
 	if len(comments) == 0 {
-		return []*model.PublicComment{}, nil
+		return []*model.PublicGetComment{}, nil
 	} else {
 		return comments, nil
 	}
@@ -975,7 +975,7 @@ func (s *commentService) toggleCommentInteraction(userId string, commentId strin
 	return nil
 }
 
-func (s *commentService) GetUserComments(userId string, page int, limit int) ([]*model.PublicComment, network.ApiError) {
+func (s *commentService) GetUserComments(userId string, page int, limit int) ([]*model.PublicGetComment, network.ApiError) {
 	s.logger.Debug("GetMyUserComments - userId: %s, page: %d, limit: %d", userId, page, limit)
 	aggregate := s.commentAggregateBuilder.SingleAggregate()
 	aggregate.Match(bson.M{"authorId": userId})
@@ -1091,7 +1091,7 @@ func (s *commentService) GetUserComments(userId string, page int, limit int) ([]
 	}
 
 	if len(comments) == 0 {
-		return []*model.PublicComment{}, nil
+		return []*model.PublicGetComment{}, nil
 	} else {
 		return comments, nil
 	}

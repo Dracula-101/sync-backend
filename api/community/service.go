@@ -20,7 +20,7 @@ import (
 
 type CommunityService interface {
 	/* COMMUNITY CRUD */
-	GetCommunityById(id string) (*model.Community, network.ApiError)
+	GetCommunityById(id string) (*model.PublicGetCommunity, network.ApiError)
 	CreateCommunity(name string, description string, tags []string, avatarFilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError)
 	UpdateCommunity(id string, description string, avatarFilePath string, backgroundFilePath string, userId string) (*model.Community, network.ApiError)
 	DeleteCommunity(id string, userId string) network.ApiError
@@ -46,6 +46,7 @@ type communityService struct {
 	communityAggregateBuilder        mongo.AggregateBuilder[model.Community, model.Community]
 	communityInteractionQueryBuilder mongo.QueryBuilder[model.CommunityInteraction]
 	communityTagQueryBuilder         mongo.QueryBuilder[model.CommunityTag]
+	getCommunityByIdPipeline         mongo.AggregateBuilder[model.Community, model.PublicGetCommunity]
 	communitySearchPipeline          mongo.AggregateBuilder[model.Community, model.CommunitySearchResult]
 	communityAutocompletePipeline    mongo.AggregateBuilder[model.Community, model.CommunityAutocomplete]
 	transaction                      mongo.TransactionBuilder
@@ -60,6 +61,7 @@ func NewCommunityService(db mongo.Database, mediaService media.MediaService) Com
 		communityAggregateBuilder:        mongo.NewAggregateBuilder[model.Community, model.Community](db, model.CommunityCollectionName),
 		communityInteractionQueryBuilder: mongo.NewQueryBuilder[model.CommunityInteraction](db, model.CommunityInteractionsCollectionName),
 		communityTagQueryBuilder:         mongo.NewQueryBuilder[model.CommunityTag](db, model.CommunityTagCollectionName),
+		getCommunityByIdPipeline:         mongo.NewAggregateBuilder[model.Community, model.PublicGetCommunity](db, model.CommunityCollectionName),
 		communitySearchPipeline:          mongo.NewAggregateBuilder[model.Community, model.CommunitySearchResult](db, model.CommunityCollectionName),
 		communityAutocompletePipeline:    mongo.NewAggregateBuilder[model.Community, model.CommunityAutocomplete](db, model.CommunityCollectionName),
 		transaction:                      mongo.NewTransactionBuilder(db),
@@ -351,19 +353,106 @@ func (s *communityService) DeleteCommunity(id string, userId string) network.Api
 	return nil
 }
 
-func (s *communityService) GetCommunityById(id string) (*model.Community, network.ApiError) {
+func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunity, network.ApiError) {
 	s.logger.Info("Fetching community with id: %s", id)
-	filter := bson.M{"communityId": id}
-	community, err := s.communityQueryBuilder.Query(s.Context()).FindOne(filter, nil)
-	if err != nil && !mongo.IsNoDocumentFoundError(err) {
-		s.logger.Error("Error fetching community: %v", err)
-		return nil, NewDBError("fetching community", err.Error())
+	getCommunityByIdPipeline := s.getCommunityByIdPipeline.SingleAggregate()
+	getCommunityByIdPipeline.AllowDiskUse(true)
+	getCommunityByIdPipeline.Match(bson.M{"communityId": id, "status": model.CommunityStatusActive})
+
+	// Lookup community interactions to check if user has joined
+	getCommunityByIdPipeline.Lookup(model.CommunityInteractionsCollectionName, "communityId", "communityId", "interactions")
+
+	// Lookup moderator details from users collection
+	getCommunityByIdPipeline.AddFields(bson.M{"moderatorIds": "$moderators"})
+
+	// Lookup user details for moderators
+	getCommunityByIdPipeline.Lookup("users", "moderators", "userId", "moderatorUsers")
+
+	// Add fields to process the interaction data
+	getCommunityByIdPipeline.AddFields(bson.M{
+		"interactions": bson.M{
+			"$filter": bson.M{
+				"input": "$interactions",
+				"as":    "interaction",
+				"cond": bson.M{
+					"$and": []bson.M{
+						{"$eq": []string{"$$interaction.interactionType", string(model.CommunityInteractionTypeJoin)}},
+						{"$eq": []string{"$$interaction.status", string(model.CommunityInteractionStatusActive)}},
+					},
+				},
+			},
+		},
+		"moderators": bson.M{
+			"$map": bson.M{
+				"input": "$moderatorUsers",
+				"as":    "moderator",
+				"in": bson.M{
+					"userId":     "$$moderator.userId",
+					"username":   "$$moderator.username",
+					"email":      "$$moderator.email",
+					"avatar":     "$$moderator.avatar.profile.url",
+					"background": "$$moderator.avatar.background.url",
+					"status":     "$$moderator.status",
+				},
+			},
+		},
+	})
+
+	// Add isJoined field
+	getCommunityByIdPipeline.AddFields(bson.M{
+		"isJoined": bson.M{
+			"$cond": bson.M{
+				"if":   bson.M{"$gt": []any{bson.M{"$size": "$interactions"}, 0}},
+				"then": true,
+				"else": false,
+			},
+		},
+	})
+
+	// Project the needed fields (include only the fields you want)
+	getCommunityByIdPipeline.Project(bson.M{
+		"communityId": 1,
+		"slug":        1,
+		"name":        1,
+		"description": 1,
+		"shortDesc":   1,
+		"ownerId":     1,
+		"isPrivate":   1,
+		"memberCount": 1,
+		"postCount":   1,
+		"media":       1,
+		"tags":        1,
+		"rules":       1,
+		"moderators":  1, // Now contains user details
+		"stats":       1,
+		"settings":    1,
+		"isJoined":    1,
+		"metadata":    1,
+		"status":      1,
+	})
+
+	communityResults, err := getCommunityByIdPipeline.Exec()
+	if err != nil {
+		s.logger.Error("Error executing community query: %v", err)
+		return nil, network.NewInternalServerError(
+			"Error executing community query",
+			fmt.Sprintf("Error executing community query for id %s. Context - [ Query Failed ] ", id),
+			network.DB_ERROR,
+			err,
+		)
 	}
-	if community == nil {
+
+	if len(communityResults) == 0 {
 		s.logger.Error("Community not found")
-		return nil, NewCommunityNotFoundError(id)
+		return nil, network.NewNotFoundError(
+			"Community not found",
+			fmt.Sprintf("Community with ID '%s' not found. It may have been deleted or never existed. Context - [ No Data ] ", id),
+			errors.New("community not found"),
+		)
 	}
-	return community, nil
+
+	getCommunityByIdPipeline.Close()
+	return communityResults[0], nil
 }
 
 func (s *communityService) CheckUserInCommunity(userId string, communityId string) network.ApiError {
