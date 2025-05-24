@@ -17,74 +17,49 @@ type TransactionSession interface {
 }
 
 // ClientHandle represents an abstracted MongoDB client
-// It allows access to collections through the abstraction layer
 type ClientHandle interface {
-	// Collection returns a handle to a collection in the default database
 	Collection(name string) CollectionHandle
 }
 
 // CollectionHandle represents an abstracted MongoDB collection
-// It provides all common operations for working with collections without MongoDB dependencies
 type CollectionHandle interface {
-	// InsertOne inserts a single document and returns its ID
 	InsertOne(document interface{}) (interface{}, error)
-	// InsertMany inserts multiple documents and returns their IDs
 	InsertMany(documents []interface{}) ([]interface{}, error)
 
-	// UpdateOne updates a single document and returns the number of modified documents
 	UpsertOne(filter interface{}, update interface{}) (int64, error)
 	UpdateOne(filter interface{}, update interface{}) (int64, error)
-	// UpdateMany updates multiple documents and returns the number of modified documents
 	UpdateMany(filter interface{}, update interface{}) (int64, error)
-	// DeleteOne deletes a single document and returns the number of deleted documents
+
 	DeleteOne(filter interface{}) (int64, error)
-	// DeleteMany deletes multiple documents and returns the number of deleted documents
 	DeleteMany(filter interface{}) (int64, error)
-	// FindOne finds a single document matching the filter
+
 	FindOne(filter interface{}) SingleResultHandle
-	// Find finds all documents matching the filter
 	Find(filter interface{}) (MultipleResultHandle, error)
-	// FindOneAndUpdate finds a document and updates it, returning the updated document
+
 	FindOneAndUpdate(filter interface{}, update interface{}) SingleResultHandle
-	// FindOneAndDelete finds a document and deletes it, returning the deleted document
 	FindOneAndDelete(filter interface{}) SingleResultHandle
-	// FindOneAndReplace finds a document and replaces it, returning the new document
 	FindOneAndReplace(filter interface{}, replacement interface{}) SingleResultHandle
-	// CountDocuments counts the number of documents matching the filter
 	CountDocuments(filter interface{}) (int64, error)
-	// Aggregate performs an aggregation pipeline operation
+
 	Aggregate(pipeline interface{}) (MultipleResultHandle, error)
 }
 
 // SingleResultHandle represents a handle to a single document result
-// It provides methods for error handling and decoding the document
 type SingleResultHandle interface {
-	// Decode decodes the result into the provided value
 	Decode(v interface{}) error
-	// Err returns any error encountered during the operation
 	Err() error
-	// IsNotFound returns true if no document was found
 	IsNotFound() bool
 }
 
 // MultipleResultHandle represents a handle to multiple document results
-// It provides methods for iterating through results and error handling
 type MultipleResultHandle interface {
-	// All decodes all results into the provided slice
 	All(v interface{}) error
-	// Next advances the cursor to the next document and returns true if one exists
 	Next() bool
-	// Decode decodes the current document into the provided value
 	Decode(v interface{}) error
-	// Err returns any error encountered during iteration
 	Err() error
-	// Close releases resources associated with the cursor
 	Close() error
-	// TryNext attempts to advance the cursor and decode in one operation
 	TryNext(v interface{}) bool
-	// Remaining returns the number of documents left in the current batch
 	Remaining() int64
-	// ID returns the cursor ID
 	ID() interface{}
 }
 
