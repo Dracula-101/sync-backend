@@ -44,6 +44,7 @@ func NewRouter(env string, prefix string, version int, appLogger utils.AppLogger
 	eng.HandleMethodNotAllowed = true
 	eng.NoMethod(NotAllowed())
 	eng.NoRoute(NotFound())
+
 	r := router{
 		engine:  eng,
 		prefix:  prefix,
@@ -64,7 +65,7 @@ func (r *router) LoadRootMiddlewares(middlewares []RootMiddleware) {
 
 func (r *router) LoadControllers(controllers []Controller) {
 	for _, c := range controllers {
-		g := r.engine.Group(c.Path("api/v1"))
+		g := r.engine.Group(c.Path(fmt.Sprintf("%s/v%d", r.prefix, r.version)))
 		c.MountRoutes(g)
 	}
 }
