@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync-backend/api/common/location"
 	"sync-backend/api/community"
-	"sync-backend/api/community/model"
+	communityModel "sync-backend/api/community/model"
 	"sync-backend/api/user/dto"
 	"sync-backend/arch/common"
 	coreMW "sync-backend/arch/middleware"
@@ -279,7 +279,7 @@ func (c *userController) GetMyCommunities(ctx *gin.Context) {
 		return
 	}
 
-	var finalCommunities []model.Community
+	var finalCommunities []communityModel.Community
 	for _, community := range communities {
 		if community != nil {
 			finalCommunities = append(finalCommunities, *community)
@@ -318,7 +318,7 @@ func (c *userController) GetJoinedCommunities(ctx *gin.Context) {
 		return
 	}
 
-	var finalCommunities []model.Community
+	var finalCommunities []communityModel.Community
 	for _, community := range communities {
 		if community != nil {
 			finalCommunities = append(finalCommunities, *community)
