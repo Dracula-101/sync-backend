@@ -1145,8 +1145,7 @@ func (s *communityService) AddModerator(userId string, communityId string, moder
 	)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
-			s.logger.Error("Community with id %s not found: %v", communityId, err)
-			return NewCommunityNotFoundError(communityId)
+			
 		}
 		if mongo.IsDuplicateKeyError(err) {
 			s.logger.Error("Moderator already exists in the community: %v", err)

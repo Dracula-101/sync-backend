@@ -260,14 +260,7 @@ func NewCommunity(args NewCommunityArgs) *Community {
 		IsPrivate:   false,
 		MemberCount: 1,
 		PostCount:   0,
-		Moderators: []ModeratorInfo{
-			{
-				ID:      primitive.NewObjectID(),
-				UserId:  args.OwnerId,
-				AddedBy: args.OwnerId,
-				AddedAt: now,
-			},
-		},
+		Moderators:  []ModeratorInfo{},
 		Media: CommunityMedia{
 			Avatar:       args.Avatar,
 			Background:   args.Background,

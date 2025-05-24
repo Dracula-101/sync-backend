@@ -35,7 +35,6 @@ type ModeratorService interface {
 	HasModeratorPermission(userId string, communityId string, permission model.ModeratorPermission) (bool, network.ApiError)
 	IsModeratorOrHigher(userId string, communityId string) (bool, network.ApiError)
 	IsAdmin(userId string, communityId string) (bool, network.ApiError)
-	IsCommunityOwner(userId string, communityId string) (bool, network.ApiError)
 
 	// User ban management
 	IsUserBanned(userId string, communityId string) (bool, *model.BanInfo, network.ApiError)
@@ -411,31 +410,6 @@ func (s *moderatorService) IsAdmin(userId string, communityId string) (bool, net
 		return false, network.NewInternalServerError(
 			"Error checking if user is admin",
 			fmt.Sprintf("Database error when checking if user '%s' is an admin in community '%s'. Context - [ Query Failed ]", userId, communityId),
-			network.DB_ERROR,
-			err,
-		)
-	}
-
-	return count > 0, nil
-}
-
-// IsCommunityOwner checks if the user is the owner of the community
-func (s *moderatorService) IsCommunityOwner(userId string, communityId string) (bool, network.ApiError) {
-	// Check if the user is the owner
-	count, err := s.moderatorQueryBuilder.SingleQuery().CountDocuments(
-		bson.M{
-			"userId":      userId,
-			"communityId": communityId,
-			"role":        model.RoleOwner,
-			"status":      "active",
-		},
-		nil,
-	)
-
-	if err != nil {
-		return false, network.NewInternalServerError(
-			"Error checking if user is community owner",
-			fmt.Sprintf("Database error when checking if user '%s' is the owner of community '%s'. Context - [ Query Failed ]", userId, communityId),
 			network.DB_ERROR,
 			err,
 		)

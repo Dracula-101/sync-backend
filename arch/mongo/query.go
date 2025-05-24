@@ -257,7 +257,7 @@ func (q *query[T]) FindOneAndUpdate(filter bson.M, update bson.M, opts *options.
 	q.logger.Info("[ MONGO ] - Executing FindOneAndUpdate query with filter: %v, update: %v", filter, update)
 	var doc T
 	err := q.collection.FindOneAndUpdate(q.context, filter, update, opts).Decode(&doc)
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		q.logger.Error("[ MONGO ] - Error executing FindOneAndUpdate query: %v", err)
 		return nil, err
 	}
@@ -270,7 +270,7 @@ func (q *query[T]) FindOneAndReplace(filter bson.M, replacement *T, opts *option
 	q.logger.Info("[ MONGO ] - Executing FindOneAndReplace query with filter: %v, replacement: %v", filter, replacement)
 	var doc T
 	err := q.collection.FindOneAndReplace(q.context, filter, replacement, opts).Decode(&doc)
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		q.logger.Error("[ MONGO ] - Error executing FindOneAndReplace query: %v", err)
 		return nil, err
 	}
@@ -283,7 +283,7 @@ func (q *query[T]) FindOneAndDelete(filter bson.M, opts *options.FindOneAndDelet
 	q.logger.Info("[ MONGO ] - Executing FindOneAndDelete query with filter: %v", filter)
 	var doc T
 	err := q.collection.FindOneAndDelete(q.context, filter, opts).Decode(&doc)
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		q.logger.Error("[ MONGO ] - Error executing FindOneAndDelete query: %v", err)
 		return nil, err
 	}

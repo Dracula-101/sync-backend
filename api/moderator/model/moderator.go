@@ -19,8 +19,6 @@ const ModeratorCollectionName = "moderators"
 type ModeratorRole string
 
 const (
-	// Owner has all permissions and can manage the community
-	RoleOwner ModeratorRole = "owner"
 	// Admin has all permissions and can manage other moderators
 	RoleAdmin ModeratorRole = "admin"
 	// Moderator can moderate content, users, and apply basic moderation actions
@@ -63,14 +61,6 @@ const (
 
 // RolePermissionMap maps moderator roles to their default permissions
 var RolePermissionMap = map[ModeratorRole][]ModeratorPermission{
-	RoleOwner: {
-		PermissionRemoveContent, PermissionApproveContent, PermissionPinContent,
-		PermissionLockContent, PermissionMarkNSFW, PermissionWarnUser,
-		PermissionMuteUser, PermissionBanUser, PermissionUnbanUser,
-		PermissionEditRules, PermissionEditCommunity, PermissionManageFlairs,
-		PermissionManageModerators, PermissionViewReports, PermissionProcessReports,
-		PermissionViewModLog, PermissionViewAnalytics,
-	},
 	RoleAdmin: {
 		PermissionRemoveContent, PermissionApproveContent, PermissionPinContent,
 		PermissionLockContent, PermissionMarkNSFW, PermissionWarnUser,

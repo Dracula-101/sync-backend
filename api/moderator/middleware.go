@@ -149,20 +149,10 @@ func (m *moderatorAuthMiddleware) RequiresAdmin(communityIdParam string) gin.Han
 			return
 		}
 
-		// Also check if user is owner as an alternative
-		isOwner := false
 		if !isAdmin {
-			isOwner, apiErr = m.moderatorService.IsCommunityOwner(*userId, communityId)
-			if apiErr != nil {
-				m.Send(ctx).MixedError(apiErr)
-				return
-			}
-		}
-
-		if !isAdmin && !isOwner {
 			m.Send(ctx).ForbiddenError(
 				"Permission denied",
-				"You must be an admin or owner to access this resource",
+				"You must be an admin to access this resource",
 				errors.New("not an admin or owner"),
 			)
 			return
