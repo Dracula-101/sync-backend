@@ -46,9 +46,9 @@ func NewCommunityController(
 func (c *communityController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting community routes")
 	group.Use(c.authProvider.Middleware())
-	group.POST("/create", c.uploadProvider.Middleware("avatar_photo"), c.uploadProvider.Middleware("background_photo"), c.CreateCommunity)
+	group.POST("/create", c.uploadProvider.Middleware("avatar_photo", "background_photo"), c.CreateCommunity)
 	group.GET("/:communityId", c.GetCommunityById)
-	group.PUT("/:communityId", c.uploadProvider.Middleware("avatar_photo"), c.uploadProvider.Middleware("background_photo"), c.UpdateCommunity)
+	group.PUT("/:communityId", c.uploadProvider.Middleware("avatar_photo", "background_photo"), c.UpdateCommunity)
 	group.DELETE("/:communityId", c.DeleteCommunity)
 
 	group.GET("/search", c.SearchCommunities)
@@ -83,6 +83,7 @@ func (c *communityController) CreateCommunity(ctx *gin.Context) {
 		c.Send(ctx).MixedError(err)
 		return
 	}
+
 	c.Send(ctx).SuccessDataResponse("Community created successfully", dto.CreateCommunityResponse{
 		CommunityId: community.CommunityId,
 		Name:        community.Name,

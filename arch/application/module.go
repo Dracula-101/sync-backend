@@ -11,6 +11,7 @@ import (
 	"sync-backend/api/common/session"
 	"sync-backend/api/common/token"
 	"sync-backend/api/community"
+	"sync-backend/api/moderator"
 	"sync-backend/api/post"
 	"sync-backend/api/system"
 	"sync-backend/api/user"
@@ -46,6 +47,7 @@ type appModule struct {
 	CommunityService community.CommunityService
 	PostService      post.PostService
 	CommentService   comment.CommentService
+	ModeratorService moderator.ModeratorService
 	SystemService    system.SystemService
 }
 
@@ -60,6 +62,7 @@ func (m *appModule) Controllers() []network.Controller {
 		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.LocationService),
 		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService),
 		comment.NewCommentController(m.AuthenticationProvider(), m.LocationProvider(), m.CommentService),
+		moderator.NewModeratorController(m.AuthenticationProvider(), m.UploadProvider(), m.ModeratorService, m.CommunityService, m.UserService),
 		system.NewSystemController(m.SystemService),
 	}
 }
@@ -98,6 +101,7 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 	communityService := community.NewCommunityService(db, mediaService)
 	postService := post.NewPostService(db, userService, communityService, mediaService)
 	commentService := comment.NewCommentService(db)
+	moderatorService := moderator.NewModeratorService(db)
 
 	return &appModule{
 		Context: context,
@@ -120,5 +124,6 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 		CommunityService: communityService,
 		PostService:      postService,
 		CommentService:   commentService,
+		ModeratorService: moderatorService,
 	}
 }

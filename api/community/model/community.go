@@ -33,7 +33,7 @@ type Community struct {
 	Media       CommunityMedia     `bson:"media" json:"media"`
 	Rules       []CommunityRule    `bson:"rules" json:"rules"`
 	Tags        []CommunityTagInfo `bson:"tags" json:"tags"`
-	Moderators  []string           `bson:"moderators" json:"moderators"`
+	Moderators  []ModeratorInfo    `bson:"moderators" json:"moderators"`
 	Settings    CommunitySettings  `bson:"settings" json:"settings"`
 	Stats       CommunityStats     `bson:"stats" json:"stats"`
 	Status      string             `bson:"status" json:"status"`
@@ -48,6 +48,13 @@ const (
 	CommunityStatusDeleted  CommunityStatus = "deleted"
 	CommunityStatusBanned   CommunityStatus = "banned"
 )
+
+type ModeratorInfo struct {
+	ID      primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	UserId  string             `bson:"userId" json:"userId"`
+	AddedBy string             `bson:"addedBy" json:"addedBy"`
+	AddedAt primitive.DateTime `bson:"addedAt" json:"addedAt"`
+}
 
 type CommunityMedia struct {
 	Avatar       Image   `bson:"avatar" json:"avatar"`
@@ -253,7 +260,14 @@ func NewCommunity(args NewCommunityArgs) *Community {
 		IsPrivate:   false,
 		MemberCount: 1,
 		PostCount:   0,
-		Moderators:  []string{args.OwnerId},
+		Moderators: []ModeratorInfo{
+			{
+				ID:      primitive.NewObjectID(),
+				UserId:  args.OwnerId,
+				AddedBy: args.OwnerId,
+				AddedAt: now,
+			},
+		},
 		Media: CommunityMedia{
 			Avatar:       args.Avatar,
 			Background:   args.Background,

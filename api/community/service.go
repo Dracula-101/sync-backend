@@ -36,6 +36,10 @@ type CommunityService interface {
 	SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError)
 	AutocompleteCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunityAutocomplete, network.ApiError)
 	GetTrendingCommunities(page int, limit int) ([]*model.CommunitySearchResult, network.ApiError)
+
+	/* MODERATION */
+	AddModerator(communityId string, userId string, moderatorId string) network.ApiError
+	RemoveModerator(communityId string, userId string, moderatorId string) network.ApiError
 }
 
 type communityService struct {
@@ -181,8 +185,11 @@ func (s *communityService) UpdateCommunity(id string, description string, avatar
 		isOwner = true
 	}
 	isModerator := false
-	if slices.Contains(community.Moderators, userId) {
-		isModerator = true
+	for _, moderator := range community.Moderators {
+		if moderator.UserId == userId {
+			isModerator = true
+			break
+		}
 	}
 	if !isOwner && !isModerator {
 		s.logger.Error("User is not the owner or moderator of the community")
@@ -362,11 +369,19 @@ func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunit
 	// Lookup community interactions to check if user has joined
 	getCommunityByIdPipeline.Lookup(model.CommunityInteractionsCollectionName, "communityId", "communityId", "interactions")
 
-	// Lookup moderator details from users collection
-	getCommunityByIdPipeline.AddFields(bson.M{"moderatorIds": "$moderators"})
+	// Extract just the userIds from the moderators array for lookup
+	getCommunityByIdPipeline.AddFields(bson.M{
+		"moderatorIds": bson.M{
+			"$map": bson.M{
+				"input": "$moderators",
+				"as": "moderator",
+				"in": "$$moderator.userId",
+			},
+		},
+	})
 
 	// Lookup user details for moderators
-	getCommunityByIdPipeline.Lookup("users", "moderators", "userId", "moderatorUsers")
+	getCommunityByIdPipeline.Lookup("users", "moderatorIds", "userId", "moderatorUsers")
 
 	// Add fields to process the interaction data
 	getCommunityByIdPipeline.AddFields(bson.M{
@@ -382,17 +397,48 @@ func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunit
 				},
 			},
 		},
-		"moderators": bson.M{
+		"enrichedModerators": bson.M{
 			"$map": bson.M{
-				"input": "$moderatorUsers",
+				"input": "$moderators",
 				"as":    "moderator",
 				"in": bson.M{
-					"userId":     "$$moderator.userId",
-					"username":   "$$moderator.username",
-					"email":      "$$moderator.email",
-					"avatar":     "$$moderator.avatar.profile.url",
-					"background": "$$moderator.avatar.background.url",
-					"status":     "$$moderator.status",
+					"$mergeObjects": []interface{}{
+						"$$moderator",
+						bson.M{
+							"userDetails": bson.M{
+								"$arrayElemAt": []interface{}{
+									bson.M{
+										"$filter": bson.M{
+											"input": "$moderatorUsers",
+											"as":    "user",
+											"cond":  bson.M{"$eq": []string{"$$user.userId", "$$moderator.userId"}},
+										},
+									},
+									0,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	// Format moderators with user details
+	getCommunityByIdPipeline.AddFields(bson.M{
+		"formattedModerators": bson.M{
+			"$map": bson.M{
+				"input": "$enrichedModerators",
+				"as":    "mod",
+				"in": bson.M{
+					"userId":     "$$mod.userId",
+					"addedBy":    "$$mod.addedBy",
+					"addedAt":    "$$mod.addedAt",
+					"username":   "$$mod.userDetails.username",
+					"email":      "$$mod.userDetails.email",
+					"avatar":     bson.M{"$ifNull": []interface{}{"$$mod.userDetails.avatar.profile.url", ""}},
+					"background": bson.M{"$ifNull": []interface{}{"$$mod.userDetails.avatar.background.url", ""}},
+					"status":     bson.M{"$ifNull": []interface{}{"$$mod.userDetails.status", ""}},
 				},
 			},
 		},
@@ -409,7 +455,7 @@ func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunit
 		},
 	})
 
-	// Project the needed fields (include only the fields you want)
+	// Project the needed fields
 	getCommunityByIdPipeline.Project(bson.M{
 		"communityId": 1,
 		"slug":        1,
@@ -423,7 +469,7 @@ func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunit
 		"media":       1,
 		"tags":        1,
 		"rules":       1,
-		"moderators":  1, // Now contains user details
+		"moderators":  "$formattedModerators", // Use the formatted moderators with user details
 		"stats":       1,
 		"settings":    1,
 		"isJoined":    1,
@@ -1083,4 +1129,63 @@ func (s *communityService) GetTrendingCommunities(page int, limit int) ([]*model
 
 	aggregator.Close()
 	return communitiesResults, nil
+}
+
+func (s *communityService) AddModerator(userId string, communityId string, moderatorId string) network.ApiError {
+	s.logger.Info("Adding moderator %s to community %s by user %s", moderatorId, communityId, userId)
+
+	// Check if the user is the owner or a moderator of the community
+	filter := bson.M{"communityId": communityId, "status": model.CommunityStatusActive}
+	update := bson.M{
+		"$addToSet": bson.M{"moderators": bson.M{"userId": moderatorId, "addedBy": userId, "addedAt": primitive.NewDateTimeFromTime(time.Now())}},
+		"$set":      bson.M{"metadata.updatedAt": primitive.NewDateTimeFromTime(time.Now()), "metadata.updatedBy": userId},
+	}
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update,
+		options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(false),
+	)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.logger.Error("Community with id %s not found: %v", communityId, err)
+			return NewCommunityNotFoundError(communityId)
+		}
+		if mongo.IsDuplicateKeyError(err) {
+			s.logger.Error("Moderator already exists in the community: %v", err)
+			return NewConflictError("moderator already exists in the community", fmt.Sprintf("User %s is already a moderator of community %s. Context - [ Duplicate ] ", moderatorId, communityId), err)
+		} else {
+			s.logger.Error("Error adding moderator to community: %v", err)
+			return NewDBError("adding moderator to community", err.Error())
+		}
+	}
+	// Check if the community was found and updated
+	if community == nil {
+		s.logger.Error("Community not found or not updated")
+		return NewCommunityNotFoundError(communityId)
+	}
+	return nil
+}
+
+func (s *communityService) RemoveModerator(userId string, communityId string, moderatorId string) network.ApiError {
+	s.logger.Info("Removing moderator %s from community %s by user %s", moderatorId, communityId, userId)
+
+	// Check if the user is the owner or a moderator of the community
+	filter := bson.M{"communityId": communityId, "status": model.CommunityStatusActive}
+	update := bson.M{
+		"$pull": bson.M{"moderators": bson.M{"userId": moderatorId}},
+		"$set":  bson.M{"metadata.updatedAt": primitive.NewDateTimeFromTime(time.Now()), "metadata.updatedBy": userId},
+	}
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update, options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(false))
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.logger.Error("Community with id %s not found: %v", communityId, err)
+			return NewCommunityNotFoundError(communityId)
+		}
+		s.logger.Error("Error removing moderator from community: %v", err)
+		return NewDBError("removing moderator from community", err.Error())
+	}
+	// Check if the community was found and updated
+	if community == nil {
+		s.logger.Error("Community not found or not updated")
+		return NewCommunityNotFoundError(communityId)
+	}
+	return nil
 }

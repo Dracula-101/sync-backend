@@ -52,3 +52,11 @@ func NewNotAuthorizedError(action, userId, communityId string) network.ApiError 
 		nil,
 	)
 }
+
+func NewConflictError(message, detail string, err error) network.ApiError {
+	return network.NewConflictError(
+		message,
+		detail,
+		err,
+	)
+}

@@ -40,6 +40,10 @@ type UserService interface {
 	UnfollowUser(userId string, unfollowUserId string) error
 	BlockUser(userId string, blockUserId string) error
 	UnblockUser(userId string, unblockUserId string) error
+
+	/* MODERATOR */
+	AddModerator(userId string, communityId string) error
+	RemoveModerator(userId string, communityId string) error
 }
 
 type userService struct {
@@ -627,5 +631,89 @@ func (s *userService) UnblockUser(userId string, unblockUserId string) error {
 	}
 
 	s.log.Debug("User %s unblocked user %s successfully", userId, unblockUserId)
+	return nil
+}
+
+func (s *userService) AddModerator(userId string, communityId string) error {
+	s.log.Debug("Adding moderator %s to community %s", userId, communityId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to add as moderator does not exist: %s", userId)
+			return NewUserNotFoundError(userId)
+		}
+		s.log.Error("Error checking if user exists: %v", err)
+		return NewDBError("checking if user exists", err.Error())
+	}
+
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	if err := transaction.Start(); err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
+	}
+
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$addToSet": bson.M{
+					"moderatedCommunities": communityId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error adding moderator: %v", err)
+			return NewDBError("adding moderator", err.Error())
+		}
+		return nil
+	})
+
+	if err != nil {
+		s.log.Error("Error adding moderator: %v", err)
+		return NewDBError("adding moderator", err.Error())
+	}
+
+	s.log.Debug("Moderator %s added to community %s successfully", userId, communityId)
+	return nil
+}
+
+func (s *userService) RemoveModerator(userId string, communityId string) error {
+	s.log.Debug("Removing moderator %s from community %s", userId, communityId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to remove as moderator does not exist: %s", userId)
+			return NewUserNotFoundError(userId)
+		}
+		s.log.Error("Error checking if user exists: %v", err)
+		return NewDBError("checking if user exists", err.Error())
+	}
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	if err := transaction.Start(); err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
+	}
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$pull": bson.M{
+					"moderatedCommunities": communityId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error removing moderator: %v", err)
+			return NewDBError("removing moderator", err.Error())
+		}
+		return nil
+	})
+	if err != nil {
+		s.log.Error("Error removing moderator: %v", err)
+		return NewDBError("removing moderator", err.Error())
+	}
+	s.log.Debug("Moderator %s removed from community %s successfully", userId, communityId)
 	return nil
 }

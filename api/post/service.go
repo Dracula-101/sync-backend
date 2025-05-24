@@ -34,7 +34,6 @@ type PostService interface {
 type postService struct {
 	network.BaseService
 	mediaService                media.MediaService
-	userService                 user.UserService
 	logger                      utils.AppLogger
 	communityService            community.CommunityService
 	postQueryBuilder            mongo.QueryBuilder[model.Post]
@@ -48,7 +47,6 @@ func NewPostService(db mongo.Database, userService user.UserService, communitySe
 		BaseService:                 network.NewBaseService(),
 		logger:                      utils.NewServiceLogger("PostService"),
 		mediaService:                mediaService,
-		userService:                 userService,
 		communityService:            communityService,
 		postQueryBuilder:            mongo.NewQueryBuilder[model.Post](db, model.PostCollectionName),
 		postInteractionQueryBuilder: mongo.NewQueryBuilder[model.PostInteraction](db, model.PostInteractionCollectionName),
