@@ -49,6 +49,7 @@ func NewCommunityController(
 		ContextPayload:   common.NewContextPayload(),
 		authProvider:     authProvider,
 		uploadProvider:   uploadProvider,
+		userService:      userService,
 		communityService: communityService,
 		moderatorService: moderatorService,
 	}
@@ -135,6 +136,11 @@ func (c *communityController) CreateCommunity(ctx *gin.Context) {
 	})
 	c.uploadProvider.DeleteUploadedFiles(ctx, "avatar_photo")
 	c.uploadProvider.DeleteUploadedFiles(ctx, "background_photo")
+
+	// Add owner as a moderator
+	c.moderatorService.AddModerator(*userId, community.CommunityId, moderatorModel.RoleAdmin, *userId)
+	c.communityService.AddModerator(community.CommunityId, *userId, *userId)
+	c.userService.AddModerator(*userId, community.CommunityId)
 }
 
 func (c *communityController) UpdateCommunity(ctx *gin.Context) {
