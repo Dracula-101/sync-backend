@@ -2,8 +2,6 @@ package auth
 
 import (
 	"sync-backend/api/auth/dto"
-	"sync-backend/api/common/location"
-	"sync-backend/api/user"
 	"sync-backend/arch/common"
 	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/network"
@@ -20,8 +18,6 @@ type authController struct {
 	uploadProvider   coreMW.UploadProvider
 	locationProvider network.LocationProvider
 	authService      AuthService
-	userService      user.UserService
-	locationService  location.LocationService
 }
 
 func NewAuthController(
@@ -29,8 +25,6 @@ func NewAuthController(
 	locationProvider network.LocationProvider,
 	uploadProvider coreMW.UploadProvider,
 	authService AuthService,
-	userService user.UserService,
-	locationService location.LocationService,
 ) network.Controller {
 	return &authController{
 		logger:           utils.NewServiceLogger("AuthController"),
@@ -40,8 +34,6 @@ func NewAuthController(
 		uploadProvider:   uploadProvider,
 		locationProvider: locationProvider,
 		authService:      authService,
-		userService:      userService,
-		locationService:  locationService,
 	}
 }
 
@@ -58,25 +50,6 @@ func (c *authController) MountRoutes(group *gin.RouterGroup) {
 func (c *authController) SignUp(ctx *gin.Context) {
 	body, err := network.ReqForm(ctx, dto.NewSignUpRequest())
 	if err != nil {
-		return
-	}
-	exists, err := c.userService.FindUserByEmail(body.Email)
-	if err != nil {
-		c.Send(ctx).MixedError(err)
-		return
-	}
-	if exists != nil {
-		c.Send(ctx).MixedError(NewUserExistsByEmailError(body.Email))
-		return
-	}
-
-	exists, err = c.userService.FindUserByUsername(body.UserName)
-	if err != nil {
-		c.Send(ctx).MixedError(err)
-		return
-	}
-	if exists != nil {
-		c.Send(ctx).MixedError(NewUserExistsByUsernameError(body.UserName))
 		return
 	}
 

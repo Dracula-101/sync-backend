@@ -55,12 +55,12 @@ func (s *authService) SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpRespo
 
 	user, err := s.userService.CreateUser(signUpRequest.UserName, signUpRequest.Email, signUpRequest.Password, signUpRequest.ProfileFilePath, signUpRequest.BackgroundFilePath, signUpRequest.Locale, signUpRequest.TimeZone, signUpRequest.Country)
 	if err != nil {
-		return nil, NewUserError("creating user", err.Error())
+		return nil, err
 	}
 
-	token, err := s.tokenService.GenerateTokenPair(user.UserId)
-	if err != nil {
-		return nil, NewTokenError("generating token", err.Error())
+	token, tokenErr := s.tokenService.GenerateTokenPair(user.UserId)
+	if tokenErr != nil {
+		return nil, NewTokenError("generating token", tokenErr.Error())
 	}
 
 	deviceInfo := sessionModels.DeviceInfo{
@@ -84,9 +84,9 @@ func (s *authService) SignUp(signUpRequest *dto.SignUpRequest) (*dto.SignUpRespo
 		IpAddress:  signUpRequest.IpAddress,
 	}
 
-	_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
-	if err != nil {
-		return nil, NewSessionError("creating session", err.Error())
+	_, sessionErr := s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
+	if sessionErr != nil {
+		return nil, NewSessionError("creating session", sessionErr.Error())
 	}
 
 	signUpResponse := dto.NewSignUpResponse(*user.GetUserInfo(), token.AccessToken, token.RefreshToken)
@@ -98,7 +98,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 	s.logger.Info("Logging in user with email: %s", loginRequest.Email)
 	user, err := s.userService.FindUserByEmail(loginRequest.Email)
 	if err != nil {
-		return nil, NewUserError("finding user", err.Error())
+		return nil, err
 	}
 	if user == nil {
 		return nil, NewUserNotFoundError(loginRequest.Email)
@@ -117,12 +117,12 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 
 	err = s.userService.ValidateUserPassword(user, loginRequest.Password)
 	if err != nil {
-		return nil, NewInvalidPasswordError(loginRequest.Email)
+		return nil, err
 	}
 
-	session, err := s.sessionService.GetUserActiveSession(user.UserId)
-	if err != nil {
-		return nil, NewSessionError("getting user session", err.Error())
+	session, sessionErr := s.sessionService.GetUserActiveSession(user.UserId)
+	if sessionErr != nil {
+		return nil, NewSessionError("getting user session", sessionErr.Error())
 	}
 	loginHistory := userModels.LoginHistory{
 		LoginTime: primitive.NewDateTimeFromTime(time.Now()),
@@ -185,7 +185,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 	s.logger.Info("Logging in user with Google")
 	user, err := s.userService.FindUserAuthProvider(googleLoginRequest.GoogleIdToken, googleLoginRequest.Username, userModels.GoogleProviderName)
 	if err != nil {
-		return nil, NewUserError("finding user", err.Error())
+		return nil, err
 	}
 	loginHistory := userModels.LoginHistory{
 		LoginTime: primitive.NewDateTimeFromTime(time.Now()),
@@ -238,9 +238,9 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 		s.logger.Success("User logged in with Google successfully: %s", user.Email)
 	} else {
 		s.logger.Debug("User found, updating session")
-		session, err = s.sessionService.GetUserActiveSession(user.UserId)
-		if err != nil {
-			return nil, NewSessionError("getting user session", err.Error())
+		session, sessionErr := s.sessionService.GetUserActiveSession(user.UserId)
+		if sessionErr != nil {
+			return nil, NewSessionError("getting user session", sessionErr.Error())
 		}
 
 		if user.Status == userModels.Deleted {
@@ -259,7 +259,7 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 			if err != nil {
 				return nil, NewTokenError("generating token", err.Error())
 			}
-			session, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
+			_, err = s.sessionService.CreateSession(user.UserId, token.AccessToken, token.RefreshToken, token.AccessTokenExpiresIn.Time(), deviceInfo, locationInfo)
 			if err != nil {
 				return nil, NewSessionError("creating session", err.Error())
 			}
@@ -293,7 +293,7 @@ func (s *authService) ForgotPassword(forgotPasswordRequest *dto.ForgotPassReques
 	s.logger.Info("Processing forgot password for email: %s", forgotPasswordRequest.Email)
 	user, err := s.userService.FindUserByEmail(forgotPasswordRequest.Email)
 	if err != nil {
-		return NewUserError("finding user", err.Error())
+		return err
 	}
 	if user == nil {
 		return NewUserNotFoundError(forgotPasswordRequest.Email)

@@ -11,39 +11,40 @@ import (
 	"sync-backend/api/user/model"
 	"sync-backend/arch/common"
 	"sync-backend/arch/mongo"
+	"sync-backend/arch/network"
 	"sync-backend/utils"
 )
 
 type UserService interface {
 	/* CREATING USER */
-	CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, error)
-	CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error)
+	CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, network.ApiError)
+	CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, network.ApiError)
 
 	/* FINDING USER */
-	FindUserById(userId string) (*model.User, error)
-	FindUserByEmail(email string) (*model.User, error)
-	FindUserByUsername(username string) (*model.User, error)
-	FindUserAuthProvider(userId string, username string, providerName string) (*model.User, error)
+	FindUserById(userId string) (*model.User, network.ApiError)
+	FindUserByEmail(email string) (*model.User, network.ApiError)
+	FindUserByUsername(username string) (*model.User, network.ApiError)
+	FindUserAuthProvider(userId string, username string, providerName string) (*model.User, network.ApiError)
 
 	/* USER INFO UPDATE */
-	UpdateLoginHistory(userId string, loginHistory model.LoginHistory) error
+	UpdateLoginHistory(userId string, loginHistory model.LoginHistory) network.ApiError
 
 	/* USER AUTHENTICATION */
-	ValidateUserPassword(user *model.User, password string) error
+	ValidateUserPassword(user *model.User, password string) network.ApiError
 
 	/* USER COMMUNITY */
-	JoinCommunity(userId string, communityId string) error
-	LeaveCommunity(userId string, communityId string) error
+	JoinCommunity(userId string, communityId string) network.ApiError
+	LeaveCommunity(userId string, communityId string) network.ApiError
 
 	/* USER FOLLOWING */
-	FollowUser(userId string, followUserId string) error
-	UnfollowUser(userId string, unfollowUserId string) error
-	BlockUser(userId string, blockUserId string) error
-	UnblockUser(userId string, unblockUserId string) error
+	FollowUser(userId string, followUserId string) network.ApiError
+	UnfollowUser(userId string, unfollowUserId string) network.ApiError
+	BlockUser(userId string, blockUserId string) network.ApiError
+	UnblockUser(userId string, unblockUserId string) network.ApiError
 
 	/* MODERATOR */
-	AddModerator(userId string, communityId string) error
-	RemoveModerator(userId string, communityId string) error
+	AddModerator(userId string, communityId string) network.ApiError
+	RemoveModerator(userId string, communityId string) network.ApiError
 }
 
 type userService struct {
@@ -62,7 +63,7 @@ func NewUserService(db mongo.Database, mediaService media.MediaService) UserServ
 	}
 }
 
-func (s *userService) CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, error) {
+func (s *userService) CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, network.ApiError) {
 	s.log.Debug("Creating user with email: %s", email)
 	filter := bson.M{
 		"$or": []bson.M{
@@ -160,7 +161,7 @@ func (s *userService) CreateUser(userName string, email string, password string,
 	return user, nil
 }
 
-func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error) {
+func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, network.ApiError) {
 	s.log.Debug("Creating user with Google ID token: %s", googleIdToken[0:10]+"***********")
 	googleUser, err := utils.DecodeGoogleJWTToken(googleIdToken)
 	if err != nil {
@@ -248,7 +249,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 	}
 }
 
-func (s *userService) FindUserById(userId string) (*model.User, error) {
+func (s *userService) FindUserById(userId string) (*model.User, network.ApiError) {
 	s.log.Debug("Getting user by ID: %s", userId)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
 	if err != nil {
@@ -275,7 +276,7 @@ func (s *userService) FindUserById(userId string) (*model.User, error) {
 	return user, nil
 }
 
-func (s *userService) FindUserByEmail(email string) (*model.User, error) {
+func (s *userService) FindUserByEmail(email string) (*model.User, network.ApiError) {
 	s.log.Debug("Finding user by email: %s", email)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email}, nil)
 	if err != nil {
@@ -301,7 +302,7 @@ func (s *userService) FindUserByEmail(email string) (*model.User, error) {
 	return user, nil
 }
 
-func (s *userService) FindUserByUsername(username string) (*model.User, error) {
+func (s *userService) FindUserByUsername(username string) (*model.User, network.ApiError) {
 	s.log.Debug("Finding user by username: %s", username)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"username": username}, nil)
 	if err != nil {
@@ -327,7 +328,7 @@ func (s *userService) FindUserByUsername(username string) (*model.User, error) {
 	return user, nil
 }
 
-func (s *userService) FindUserAuthProvider(userId string, username string, providerName string) (*model.User, error) {
+func (s *userService) FindUserAuthProvider(userId string, username string, providerName string) (*model.User, network.ApiError) {
 	s.log.Debug("Finding auth provider by user ID: %s and provider name: %s", userId, providerName)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId, "username": username, "providers.providerName": providerName}, nil)
 	if err != nil {
@@ -352,7 +353,7 @@ func (s *userService) FindUserAuthProvider(userId string, username string, provi
 	return nil, nil
 }
 
-func (s *userService) UpdateLoginHistory(userId string, loginHistory model.LoginHistory) error {
+func (s *userService) UpdateLoginHistory(userId string, loginHistory model.LoginHistory) network.ApiError {
 	s.log.Debug("Updating login history for user ID: %s", userId)
 
 	result, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
@@ -376,7 +377,7 @@ func (s *userService) UpdateLoginHistory(userId string, loginHistory model.Login
 	return nil
 }
 
-func (s *userService) ValidateUserPassword(user *model.User, password string) error {
+func (s *userService) ValidateUserPassword(user *model.User, password string) network.ApiError {
 	s.log.Debug("Validating password for user: %s", user.Email)
 
 	isValid, err := utils.CheckPasswordHash(password, user.PasswordHash)
@@ -391,7 +392,7 @@ func (s *userService) ValidateUserPassword(user *model.User, password string) er
 	return nil
 }
 
-func (s *userService) JoinCommunity(userId string, communityId string) error {
+func (s *userService) JoinCommunity(userId string, communityId string) network.ApiError {
 	s.log.Debug("Joining community %s for user %s", communityId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
 		"$addToSet": bson.M{
@@ -407,7 +408,7 @@ func (s *userService) JoinCommunity(userId string, communityId string) error {
 	return nil
 }
 
-func (s *userService) LeaveCommunity(userId string, communityId string) error {
+func (s *userService) LeaveCommunity(userId string, communityId string) network.ApiError {
 	s.log.Debug("Leaving community %s for user %s", communityId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
 		"$pull": bson.M{
@@ -423,7 +424,7 @@ func (s *userService) LeaveCommunity(userId string, communityId string) error {
 	return nil
 }
 
-func (s *userService) FollowUser(userId string, followUserId string) error {
+func (s *userService) FollowUser(userId string, followUserId string) network.ApiError {
 	s.log.Debug("Following user %s for user %s", followUserId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": followUserId}, nil)
 	if err != nil {
@@ -482,7 +483,7 @@ func (s *userService) FollowUser(userId string, followUserId string) error {
 	return nil
 }
 
-func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
+func (s *userService) UnfollowUser(userId string, unfollowUserId string) network.ApiError {
 	s.log.Debug("Unfollowing user %s for user %s", unfollowUserId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": unfollowUserId}, nil)
 	if err != nil {
@@ -542,7 +543,7 @@ func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
 	return nil
 }
 
-func (s *userService) BlockUser(userId string, blockUserId string) error {
+func (s *userService) BlockUser(userId string, blockUserId string) network.ApiError {
 	s.log.Debug("Blocking user %s for user %s", blockUserId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": blockUserId}, nil)
 	if err != nil {
@@ -587,7 +588,7 @@ func (s *userService) BlockUser(userId string, blockUserId string) error {
 	return nil
 }
 
-func (s *userService) UnblockUser(userId string, unblockUserId string) error {
+func (s *userService) UnblockUser(userId string, unblockUserId string) network.ApiError {
 	s.log.Debug("Unblocking user %s for user %s", unblockUserId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": unblockUserId}, nil)
 	if err != nil {
@@ -634,7 +635,7 @@ func (s *userService) UnblockUser(userId string, unblockUserId string) error {
 	return nil
 }
 
-func (s *userService) AddModerator(userId string, communityId string) error {
+func (s *userService) AddModerator(userId string, communityId string) network.ApiError {
 	s.log.Debug("Adding moderator %s to community %s", userId, communityId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
 	if err != nil {
@@ -678,7 +679,7 @@ func (s *userService) AddModerator(userId string, communityId string) error {
 	return nil
 }
 
-func (s *userService) RemoveModerator(userId string, communityId string) error {
+func (s *userService) RemoveModerator(userId string, communityId string) network.ApiError {
 	s.log.Debug("Removing moderator %s from community %s", userId, communityId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
 	if err != nil {
