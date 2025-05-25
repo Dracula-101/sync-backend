@@ -39,11 +39,19 @@ func NewAuthController(
 
 func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting auth routes")
+
+	/* ACCOUNT CREATION */
 	group.POST("/signup", c.locationProvider.Middleware(), c.uploadProvider.Middleware("profile_photo", "background_photo"), c.SignUp)
 	group.POST("/login", c.locationProvider.Middleware(), c.Login)
 	group.POST("/google", c.locationProvider.Middleware(), c.GoogleLogin)
+
+	/* AUTHENTICATION */
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
+
+	/* PASSWORD MANAGEMENT */
 	group.POST("/forgot-password", c.ForgotPassword)
+
+	/* TOKEN MANAGEMENT */
 	group.POST("/refresh-token", c.locationProvider.Middleware(), c.RefreshToken)
 }
 

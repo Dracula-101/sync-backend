@@ -32,20 +32,26 @@ func NewCommentController(authenticatorProvider network.AuthenticationProvider, 
 
 func (c *commentController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting comment routes")
+
 	group.Use(c.authenticatorProvider.Middleware())
+
+	/* POST COMMENT ROUTES */
 	group.POST("/post/create", c.locationProvider.Middleware(), c.CreatePostComment)
 	group.PUT("/post/:commentId", c.EditPostComment)
 	group.DELETE("/post/:commentId", c.DeletePostComment)
 	group.GET("/post/:postId", c.GetPostComments)
 	group.GET("/post/:postId/reply/:commentId", c.GetPostCommentReplies)
 
+	/* POST COMMENT REPLY ROUTES */
 	group.POST("/post/reply/create", c.locationProvider.Middleware(), c.CreatePostCommentReply)
 	group.POST("/post/reply/edit/:commentId", c.EditPostCommentReply)
 	group.POST("/post/reply/delete/:commentId", c.DeletePostCommentReply)
 
+	/* POST COMMENT LIKE/DISLIKE ROUTES */
 	group.POST("/like/:commentId", c.LikePostComment)
 	group.POST("/dislike/:commentId", c.DislikePostComment)
 
+	/* USER COMMENT ROUTES */
 	group.GET("/user/:userId", c.GetUserComments)
 	group.GET("/user", c.GetMyUserComments)
 }

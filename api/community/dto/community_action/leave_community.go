@@ -1,4 +1,4 @@
-package dto
+package communitydto
 
 import "github.com/go-playground/validator/v10"
 

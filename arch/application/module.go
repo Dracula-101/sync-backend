@@ -58,11 +58,10 @@ func (m *appModule) GetInstance() *appModule {
 func (m *appModule) Controllers() []network.Controller {
 	return []network.Controller{
 		auth.NewAuthController(m.AuthenticationProvider(), m.LocationProvider(), m.UploadProvider(), m.AuthService),
-		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.CommunityService),
-		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.LocationService),
+		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.ModeratorService),
+		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.LocationService),
 		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService),
 		comment.NewCommentController(m.AuthenticationProvider(), m.LocationProvider(), m.CommentService),
-		moderator.NewModeratorController(m.AuthenticationProvider(), m.UploadProvider(), m.ModeratorService, m.CommunityService, m.UserService),
 		system.NewSystemController(m.SystemService),
 	}
 }
