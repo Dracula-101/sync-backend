@@ -12,6 +12,7 @@ import (
 	"sync-backend/api/common/token"
 	"sync-backend/api/community"
 	"sync-backend/api/moderator"
+	modMW "sync-backend/api/moderator/middleware"
 	"sync-backend/api/post"
 	"sync-backend/api/system"
 	"sync-backend/api/user"
@@ -58,7 +59,7 @@ func (m *appModule) GetInstance() *appModule {
 func (m *appModule) Controllers() []network.Controller {
 	return []network.Controller{
 		auth.NewAuthController(m.AuthenticationProvider(), m.LocationProvider(), m.UploadProvider(), m.AuthService),
-		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.ModeratorService),
+		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.ModeratorService, m.ModeratorMiddleware()),
 		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.LocationService),
 		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService),
 		comment.NewCommentController(m.AuthenticationProvider(), m.LocationProvider(), m.CommentService),
@@ -76,6 +77,10 @@ func (m *appModule) LocationProvider() network.LocationProvider {
 
 func (m *appModule) UploadProvider() coreMW.UploadProvider {
 	return coreMW.NewUploadProvider()
+}
+
+func (m *appModule) ModeratorMiddleware() modMW.ModeratorMiddleware {
+	return modMW.NewModeratorMiddleware(m.ModeratorService, m.Store)
 }
 
 func (m *appModule) RootMiddlewares() []network.RootMiddleware {

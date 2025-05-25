@@ -109,11 +109,6 @@ func (e *apiError) GetErrors(isDebug bool) []ErrorDetail {
 
 	var errors []ErrorDetail
 	if isDebug {
-		// Capture stacktrace, file, line, function
-		stackBuf := make([]byte, 2048)
-		stackSize := runtime.Stack(stackBuf, false)
-		stacktrace := string(stackBuf[:stackSize])
-
 		// Get file, line, function from the call stack
 		var file, function string
 		var line int
@@ -129,7 +124,6 @@ func (e *apiError) GetErrors(isDebug bool) []ErrorDetail {
 			e.Message,
 			fmt.Sprintf("Details: %s", e.Detail),
 			fmt.Sprintf("Error: %s", e.Err.Error()),
-			stacktrace,
 			file,
 			function,
 			e.Err.Error(),

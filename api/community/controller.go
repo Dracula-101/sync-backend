@@ -8,6 +8,7 @@ import (
 	reportdto "sync-backend/api/community/dto/report_action"
 	"sync-backend/api/community/model"
 	"sync-backend/api/moderator"
+	modMW "sync-backend/api/moderator/middleware"
 	moderatorModel "sync-backend/api/moderator/model"
 	"sync-backend/api/user"
 	"sync-backend/arch/common"
@@ -29,11 +30,12 @@ type communityController struct {
 	logger utils.AppLogger
 	network.BaseController
 	common.ContextPayload
-	authProvider     network.AuthenticationProvider
-	uploadProvider   coreMW.UploadProvider
-	userService      user.UserService
-	communityService CommunityService
-	moderatorService moderator.ModeratorService
+	authProvider        network.AuthenticationProvider
+	uploadProvider      coreMW.UploadProvider
+	userService         user.UserService
+	communityService    CommunityService
+	moderatorService    moderator.ModeratorService
+	moderatorMiddleware modMW.ModeratorMiddleware
 }
 
 func NewCommunityController(
@@ -42,16 +44,18 @@ func NewCommunityController(
 	userService user.UserService,
 	communityService CommunityService,
 	moderatorService moderator.ModeratorService,
+	moderatorMiddleware modMW.ModeratorMiddleware,
 ) network.Controller {
 	return &communityController{
-		logger:           utils.NewServiceLogger("CommunityController"),
-		BaseController:   network.NewBaseController("/community", authProvider),
-		ContextPayload:   common.NewContextPayload(),
-		authProvider:     authProvider,
-		uploadProvider:   uploadProvider,
-		userService:      userService,
-		communityService: communityService,
-		moderatorService: moderatorService,
+		logger:              utils.NewServiceLogger("CommunityController"),
+		BaseController:      network.NewBaseController("/community", authProvider),
+		ContextPayload:      common.NewContextPayload(),
+		authProvider:        authProvider,
+		uploadProvider:      uploadProvider,
+		userService:         userService,
+		communityService:    communityService,
+		moderatorService:    moderatorService,
+		moderatorMiddleware: moderatorMiddleware,
 	}
 }
 
@@ -73,7 +77,7 @@ func (c *communityController) MountRoutes(group *gin.RouterGroup) {
 
 	/* USER COMMUNITY ROUTES */
 	userGroup := group.Group("/user")
-	userGroup.POST("/join/:communityId", c.JoinCommunity)
+	userGroup.POST("/join/:communityId", c.moderatorMiddleware.CheckUserNotBanned(":communityId"), c.JoinCommunity)
 	userGroup.POST("/leave/:communityId", c.LeaveCommunity)
 	userGroup.GET("/owner", c.GetMyCommunities)
 	userGroup.GET("/joined", c.GetJoinedCommunities)
@@ -81,17 +85,17 @@ func (c *communityController) MountRoutes(group *gin.RouterGroup) {
 	/* MODERATOR ROUTES */
 	moderatorGroup := group.Group("/moderator")
 	moderatorGroup.POST("/:communityId/add", c.AddModerator)
-	moderatorGroup.DELETE("/:communityId/remove/:userId", c.RemoveModerator)
-	moderatorGroup.PATCH("/:communityId/update/:userId", c.UpdateModerator)
-	moderatorGroup.GET("/:communityId/list", c.ListModerators)
-	moderatorGroup.GET("/:communityId/get/:userId", c.GetModerator)
+	moderatorGroup.DELETE("/:communityId/remove", c.moderatorMiddleware.RequiresModerator("communityId"), c.RemoveModerator)
+	moderatorGroup.POST("/:communityId/update", c.moderatorMiddleware.RequiresModerator("communityId"), c.UpdateModerator)
+	moderatorGroup.GET("/:communityId/list", c.moderatorMiddleware.RequiresModerator("communityId"), c.ListModerators)
+	moderatorGroup.GET("/:communityId/get/:userId", c.moderatorMiddleware.RequiresModerator("communityId"), c.GetModerator)
 
 	/* MODERATOR PERMISSION CHECKS */
 	moderatorGroup.GET("/:communityId/check-permission/:permission", c.CheckModeratorPermission)
 
 	/* MODERATOR REPORTS AND LOGS */
-	moderatorGroup.POST("/:communityId/ban/:userId", c.BanUser)
-	moderatorGroup.POST("/:communityId/unban/:userId", c.UnbanUser)
+	moderatorGroup.POST("/:communityId/ban/:userId", c.moderatorMiddleware.RequiresModerator("communityId"), c.BanUser)
+	moderatorGroup.POST("/:communityId/unban/:userId", c.moderatorMiddleware.RequiresModerator("communityId"), c.UnbanUser)
 
 	/* MODERATOR REPORTS */
 	moderatorGroup.POST("/report/create", c.CreateReport)
@@ -482,11 +486,10 @@ func (c *communityController) AddModerator(ctx *gin.Context) {
 // RemoveModerator handles removing a moderator from a community
 func (c *communityController) RemoveModerator(ctx *gin.Context) {
 	communityId := ctx.Param("communityId")
-	userId := ctx.Param("userId")
-	if communityId == "" || userId == "" {
+	if communityId == "" {
 		c.Send(ctx).BadRequestError(
-			"Community ID and User ID are required",
-			"Please provide valid Community ID and User ID in the request params",
+			"Community ID is required",
+			"Please provide valid Community ID in the request params",
 			nil,
 		)
 		return
@@ -498,20 +501,20 @@ func (c *communityController) RemoveModerator(ctx *gin.Context) {
 		return
 	}
 
-	apiErr := c.moderatorService.RemoveModerator(communityId, userId, *requesterId, body.Reason)
+	apiErr := c.moderatorService.RemoveModerator(communityId, body.UserId, *requesterId, body.Reason)
 	if apiErr != nil {
 		c.Send(ctx).MixedError(apiErr)
 		return
 	}
 
 	// Remove moderator info from community
-	err = c.communityService.RemoveModerator(communityId, userId, *requesterId)
+	err = c.communityService.RemoveModerator(communityId, body.UserId, *requesterId)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return
 	}
 
-	insertErr := c.userService.RemoveModerator(userId, communityId)
+	insertErr := c.userService.RemoveModerator(body.UserId, communityId)
 	if insertErr != nil {
 		c.Send(ctx).InternalServerError(
 			"Failed to remove moderator info from user",
@@ -528,11 +531,10 @@ func (c *communityController) RemoveModerator(ctx *gin.Context) {
 // UpdateModerator handles updating a moderator's role or permissions
 func (c *communityController) UpdateModerator(ctx *gin.Context) {
 	communityId := ctx.Param("communityId")
-	userId := ctx.Param("userId")
-	if communityId == "" || userId == "" {
+	if communityId == "" {
 		c.Send(ctx).BadRequestError(
-			"Community ID and User ID are required",
-			"Please provide valid Community ID and User ID in the request params",
+			"Community ID is required",
+			"Please provide valid Community ID in the request params",
 			nil,
 		)
 		return
@@ -564,7 +566,7 @@ func (c *communityController) UpdateModerator(ctx *gin.Context) {
 		role = &r
 	}
 
-	moderator, apiErr := c.moderatorService.UpdateModerator(communityId, userId, *requesterId, role, permissions, status, &body.Notes)
+	moderator, apiErr := c.moderatorService.UpdateModerator(communityId, body.UserId, *requesterId, role, permissions, status, &body.Notes)
 	if apiErr != nil {
 		c.Send(ctx).MixedError(apiErr)
 		return

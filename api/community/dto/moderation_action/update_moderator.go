@@ -10,7 +10,7 @@ import (
 // UpdateModeratorRequest represents the request to update a moderator's role or permissions
 type UpdateModeratorRequest struct {
 	UserId      string              `uri:"userId" binding:"required" validate:"required"`
-	Role        model.ModeratorRole `json:"role,omitempty" validate:"omitempty,oneof=admin moderator content_mod user_mod auto_mod"`
+	Role        model.ModeratorRole `json:"role" binding:"required" validate:"required,oneof=admin moderator content_mod user_mod auto_mod"`
 	Permissions []string            `json:"permissions,omitempty"`
 	Status      string              `json:"status,omitempty" validate:"omitempty,oneof=active inactive"`
 	Notes       string              `json:"notes,omitempty"`
@@ -31,9 +31,9 @@ func (r *UpdateModeratorRequest) ValidateErrors(errs validator.ValidationErrors)
 		case "required":
 			msgs = append(msgs, fmt.Sprintf("%s is required", err.Field()))
 		case "oneof":
-			if err.Field() == "Role" {
+			if err.Field() == "role" {
 				msgs = append(msgs, fmt.Sprintf("%s must be one of: admin, moderator, content_mod, user_mod, auto_mod", err.Field()))
-			} else if err.Field() == "Status" {
+			} else if err.Field() == "status" {
 				msgs = append(msgs, fmt.Sprintf("%s must be one of: active, inactive", err.Field()))
 			}
 		default:

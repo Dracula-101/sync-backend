@@ -23,13 +23,12 @@ type ErrorDetail struct {
 	Code            string `json:"code"`                       // machine‐readable error code
 	Field           string `json:"field,omitempty"`            // optional: which input field
 	Message         string `json:"message"`                    // human‐readable error message
-	Error           string `json:"error,omitempty"`            // optional: machine‐readable error code
 	Detail          string `json:"detail,omitempty"`           // optional: developer detail
-	Stacktrace      string `json:"stacktrace,omitempty"`       // debug only
-	File            string `json:"file,omitempty"`             // debug only
-	Line            int    `json:"line,omitempty"`             // debug only
-	Function        string `json:"function,omitempty"`         // debug only
+	Error           string `json:"error,omitempty"`            // optional: machine‐readable error code
 	InternalMessage string `json:"internal_message,omitempty"` // debug only
+	File            string `json:"file,omitempty"`             // debug only
+	Function        string `json:"function,omitempty"`         // debug only
+	Line            int    `json:"line,omitempty"`             // debug only
 }
 
 func (envelope Envelope) GetStatusCode() int {
@@ -105,7 +104,7 @@ func NewErrorDetail(code string, field string, message string, detail string, er
 	}
 }
 
-func NewErrorDetailWithDebug(code, field, message, detail, err, stacktrace, file, function, internalMessage string, line int) ErrorDetail {
+func NewErrorDetailWithDebug(code, field, message, detail, err, file, function, internalMessage string, line int) ErrorDetail {
 	return ErrorDetail{
 		Timestamp:       time.Now().UTC().Format(time.RFC3339),
 		Code:            code,
@@ -113,7 +112,6 @@ func NewErrorDetailWithDebug(code, field, message, detail, err, stacktrace, file
 		Message:         message,
 		Detail:          detail,
 		Error:           err,
-		Stacktrace:      stacktrace,
 		File:            file,
 		Line:            line,
 		Function:        function,

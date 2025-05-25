@@ -121,20 +121,52 @@ const (
 
 // Helper: Convert validator.ValidationErrors to []ErrorDetail
 func validationErrorsToDetails(validationErrors validator.ValidationErrors, bindType string, msgs []string) []ErrorDetail {
-	details := make([]ErrorDetail, len(msgs))
-	for i, msg := range msgs {
-		field := ""
-		if i < len(validationErrors) {
-			field = fmt.Sprintf("%s:%s", bindType, validationErrors[i].Field())
-		}
-		details[i] = NewErrorDetail(
+	details := make([]ErrorDetail, 0, len(validationErrors))
+
+	// Create error details for each validation error
+	for index, fieldError := range validationErrors {
+		fieldName := fieldError.Field()
+		field := fmt.Sprintf("%s:%s", bindType, fieldName)
+
+		detail := NewErrorDetail(
 			ErrCodeFieldValidation,
 			field,
-			msg,
-			fmt.Sprintf("Error: Field validation for %s failed on the %s tag", validationErrors[i].Field(), validationErrors[i].Tag()),
-			validationErrors[i],
+			msgs[index],
+			fmt.Sprintf("Validation for '%s' failed on the '%s' tag with value '%v'",
+				fieldName, fieldError.Tag(), fieldError.Value()),
+			fieldError,
 		)
+		details = append(details, detail)
 	}
+
+	// Add any custom messages that weren't handled
+	alreadyProcessedFields := make(map[string]bool)
+	for _, err := range validationErrors {
+		alreadyProcessedFields[err.Field()] = true
+	}
+
+	for _, msg := range msgs {
+		// Check if this message is for a field we've already processed
+		isProcessed := false
+		for fieldName := range alreadyProcessedFields {
+			if strings.Contains(strings.ToLower(msg), strings.ToLower(fieldName)) {
+				isProcessed = true
+				break
+			}
+		}
+
+		if !isProcessed {
+			detail := NewErrorDetail(
+				ErrCodeFieldValidation,
+				fmt.Sprintf("%s:unknown", bindType),
+				msg,
+				"Additional validation error",
+				errors.New(msg),
+			)
+			details = append(details, detail)
+		}
+	}
+
 	return details
 }
 
@@ -147,10 +179,42 @@ func getRequiredFields(dto any) []string {
 	}
 	for i := 0; i < dt.NumField(); i++ {
 		field := dt.Field(i)
-		if tag, ok := field.Tag.Lookup("binding"); ok && (tag == "required" || tag == "required,dive") {
-			requiredFields = append(requiredFields, field.Name)
-		} else if tag, ok := field.Tag.Lookup("validate"); ok && (tag == "required" || tag == "required,dive") {
-			requiredFields = append(requiredFields, field.Name)
+		// Check if field is required
+		isRequired := false
+		if tag, ok := field.Tag.Lookup("binding"); ok && (tag == "required" || strings.HasPrefix(tag, "required,")) {
+			isRequired = true
+		} else if tag, ok := field.Tag.Lookup("validate"); ok && (tag == "required" || strings.HasPrefix(tag, "required,")) {
+			isRequired = true
+		}
+
+		// If required, get the proper field name from JSON tag
+		if isRequired {
+			fieldName := field.Name // Default to struct field name
+			if jsonTag, ok := field.Tag.Lookup("json"); ok {
+				parts := strings.Split(jsonTag, ",")
+				if parts[0] != "" && parts[0] != "-" {
+					fieldName = parts[0]
+				}
+			}
+			if jsonTag, ok := field.Tag.Lookup("form"); ok {
+				parts := strings.Split(jsonTag, ",")
+				if parts[0] != "" && parts[0] != "-" {
+					fieldName = parts[0]
+				}
+			}
+			if jsonTag, ok := field.Tag.Lookup("query"); ok {
+				parts := strings.Split(jsonTag, ",")
+				if parts[0] != "" && parts[0] != "-" {
+					fieldName = parts[0]
+				}
+			}
+			if jsonTag, ok := field.Tag.Lookup("uri"); ok {
+				parts := strings.Split(jsonTag, ",")
+				if parts[0] != "" && parts[0] != "-" {
+					fieldName = parts[0]
+				}
+			}
+			requiredFields = append(requiredFields, fieldName)
 		}
 	}
 	return requiredFields
@@ -279,12 +343,7 @@ func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statu
 			return e
 		}
 		details := validationErrorsToDetails(validationErrors, bindType, msgs)
-		errResponse := NewEnvelopeWithErrors(
-			false,
-			statusCode,
-			ErrMsgValidationFailed,
-			details,
-		)
+		errResponse := NewEnvelopeWithErrors(false, statusCode, ErrMsgValidationFailed, details)
 		ctx.JSON(statusCode, errResponse)
 
 		// For compatibility with your original error return approach
