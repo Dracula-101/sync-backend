@@ -83,12 +83,12 @@
 								{
 									"key": "profile_photo",
 									"type": "file",
-									"src": "/C:/Users/HP/Downloads/Doc Scanner/res/drawable-nodpi/user_profile_portrait.png"
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png"
 								},
 								{
 									"key": "background_photo",
 									"type": "file",
-									"src": "/C:/Users/HP/Downloads/user_image_placeholder.png"
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png"
 								}
 							]
 						},
@@ -1799,12 +1799,29 @@
 					]
 				},
 				{
-					"name": "Get Wavelength",
+					"name": "Edit Wavelength",
 					"request": {
-						"method": "GET",
-						"header": [],
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "31893801387",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "description",
+									"value": "New Community Description",
+									"type": "text"
+								}
+							]
+						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/e04c757e-56a4-4ce5-9fb8-0f18c89b4f6",
+							"raw": "{{local}}/api/v1/community/fb454b41-3aa9-428a-b62a-36e6c85144d6",
 							"host": [
 								"{{local}}"
 							],
@@ -1812,7 +1829,83 @@
 								"api",
 								"v1",
 								"community",
-								"e04c757e-56a4-4ce5-9fb8-0f18c89b4f6"
+								"fb454b41-3aa9-428a-b62a-36e6c85144d6"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "31893801387",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "description",
+											"value": "New Community Description",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/community/5641fbf9-911f-4c1a-a76a-0c7ba544c06e",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"community",
+										"5641fbf9-911f-4c1a-a76a-0c7ba544c06e"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 22 May 2025 14:48:02 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "134"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-22T20:18:02.4788996+05:30\"\n    },\n    \"message\": \"Community updated successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Wavelength",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/api/v1/community/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"ac861a38-8460-4645-8d94-b93ea2de8adf"
 							]
 						}
 					},
@@ -2205,6 +2298,568 @@
 							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:08:40.2009228+05:30\"\n    },\n    \"message\": \"Communities fetched successfully\",\n    \"data\": [\n        {\n            \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n            \"slug\": \"coding-community\",\n            \"name\": \"Coding Community\",\n            \"description\": \"This community where you find like minded people who like shares and Business\",\n            \"shortDesc\": \"This community where you find like minded people who like shares and Business\",\n            \"ownerId\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n            \"isPrivate\": false,\n            \"members\": null,\n            \"memberCount\": 2,\n            \"postCount\": 0,\n            \"stats\": {\n                \"dailyActiveUsers\": 1,\n                \"weeklyActiveUsers\": 1,\n                \"monthlyActiveUsers\": 1,\n                \"growthRate\": 0,\n                \"engagementRate\": 0,\n                \"topTags\": [],\n                \"popularityScore\": 0,\n                \"lastUpdated\": \"2025-05-11T17:25:04.839Z\"\n            },\n            \"status\": \"active\"\n        },\n        {\n            \"id\": \"5641fbf9-911f-4c1a-a76a-0c7ba544c06e\",\n            \"slug\": \"new-community\",\n            \"name\": \"New Community\",\n            \"description\": \"This is a new community\",\n            \"shortDesc\": \"This is a new community\",\n            \"ownerId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n            \"isPrivate\": false,\n            \"members\": null,\n            \"memberCount\": 1,\n            \"postCount\": 0,\n            \"stats\": {\n                \"dailyActiveUsers\": 1,\n                \"weeklyActiveUsers\": 1,\n                \"monthlyActiveUsers\": 1,\n                \"growthRate\": 0,\n                \"engagementRate\": 0,\n                \"topTags\": [],\n                \"popularityScore\": 0,\n                \"lastUpdated\": \"2025-05-20T07:56:42.875Z\"\n            },\n            \"status\": \"active\"\n        }\n    ]\n}"
 						}
 					]
+				},
+				{
+					"name": "Get User Communities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/api/v1/community/user/communities/owner",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"user",
+								"communities",
+								"owner"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local}}/api/v1/user/communities/owner",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"communities",
+										"owner"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 20 May 2025 18:40:43 GMT"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:10:43.9867533+05:30\"\n    },\n    \"message\": \"Communities fetched successfully\",\n    \"data\": {\n        \"communities\": [\n            {\n                \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                \"slug\": \"coding-community\",\n                \"name\": \"Coding Community\",\n                \"description\": \"This community where you find like minded people who like shares and Business\",\n                \"shortDesc\": \"This community where you find like minded people who like shares and Business\",\n                \"ownerId\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                \"isPrivate\": false,\n                \"memberCount\": 2,\n                \"postCount\": 0,\n                \"media\": {\n                    \"avatar\": {\n                        \"id\": \"6820dd7016118268b1ee8e4c\",\n                        \"url\": \"https://www.shutterstock.com/image-vector/sound-wave-simple-icon-black-260nw-2126255804.jpg\",\n                        \"width\": 512,\n                        \"height\": 512\n                    },\n                    \"background\": {\n                        \"id\": \"6820dd7016118268b1ee8e4d\",\n                        \"url\": \"https://placehold.co/1200x400.png\",\n                        \"width\": 1920,\n                        \"height\": 1080\n                    },\n                    \"favicon\": \"\",\n                    \"gallery\": [],\n                    \"featuredPost\": \"\"\n                },\n                \"rules\": [\n                    {\n                        \"id\": \"6820dd7016118268b1ee8e4e\",\n                        \"title\": \"Be respectful\",\n                        \"description\": \"Treat others with respect. No personal attacks, harassment, or hate speech.\",\n                        \"priority\": 1,\n                        \"isRequired\": true,\n                        \"reportOption\": true,\n                        \"metadata\": {\n                            \"createdAt\": \"2025-05-11T17:25:04.839Z\",\n                            \"updatedAt\": \"2025-05-11T17:25:04.839Z\",\n                            \"createdBy\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                            \"version\": 1\n                        }\n                    }\n                ],\n                \"tags\": [\n                    {\n                        \"id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",\n                        \"name\": \"Gaming\",\n                        \"description\": \"Video games, board games, game development, and gaming culture discussions\",\n                        \"icon\": \"🎮\"\n                    },\n                    {\n                        \"id\": \"5c2f7e9a-844a-4d3c-94e0-b61a6a81fb34\",\n                        \"name\": \"Entertainment\",\n                        \"description\": \"TV shows, movies, music, celebrities, and pop culture content\",\n                        \"icon\": \"🎭\"\n                    }\n                ],\n                \"moderators\": [\n                    \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\"\n                ],\n                \"settings\": {\n                    \"joinPolicy\": \"open\",\n                    \"postApproval\": false,\n                    \"allowedPostTypes\": [\n                        \"text\",\n                        \"image\",\n                        \"link\",\n                        \"poll\"\n                    ],\n                    \"enableDirectMessages\": true,\n                    \"showInDiscovery\": true,\n                    \"enableComments\": true,\n                    \"defaultCommentSort\": \"top\",\n                    \"defaultPostSort\": \"hot\",\n                    \"enablePolls\": true,\n                    \"enableEvents\": true,\n                    \"allowCrossposting\": true,\n                    \"allowUserFlairs\": true,\n                    \"allowPostFlairs\": true,\n                    \"allowNSFWContent\": false,\n                    \"requirePostTag\": false,\n                    \"language\": \"en\",\n                    \"contentFilters\": [],\n                    \"minAccountAgeToPost\": 0,\n                    \"minSynergyToPost\": 0\n                },\n                \"stats\": {\n                    \"dailyActiveUsers\": 1,\n                    \"weeklyActiveUsers\": 1,\n                    \"monthlyActiveUsers\": 1,\n                    \"growthRate\": 0,\n                    \"engagementRate\": 0,\n                    \"topTags\": [],\n                    \"popularityScore\": 0,\n                    \"lastUpdated\": \"2025-05-11T17:25:04.839Z\"\n                },\n                \"status\": \"active\",\n                \"metadata\": {\n                    \"createdAt\": \"2025-05-11T17:25:04.839Z\",\n                    \"updatedAt\": \"2025-05-20T18:40:31.107Z\",\n                    \"createdBy\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                    \"version\": 1\n                }\n            }\n        ],\n        \"total\": 1\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Joined Communities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/api/v1/community/user/communities/joined",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"user",
+								"communities",
+								"joined"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local}}/api/v1/user/communities/joined",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"communities",
+										"joined"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 20 May 2025 18:40:56 GMT"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:10:55.9998051+05:30\"\n    },\n    \"message\": \"Communities fetched successfully\",\n    \"data\": {\n        \"communities\": [\n            {\n                \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                \"slug\": \"coding-community\",\n                \"name\": \"Coding Community\",\n                \"description\": \"This community where you find like minded people who like shares and Business\",\n                \"shortDesc\": \"This community where you find like minded people who like shares and Business\",\n                \"ownerId\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                \"isPrivate\": false,\n                \"memberCount\": 2,\n                \"postCount\": 0,\n                \"media\": {\n                    \"avatar\": {\n                        \"id\": \"6820dd7016118268b1ee8e4c\",\n                        \"url\": \"https://www.shutterstock.com/image-vector/sound-wave-simple-icon-black-260nw-2126255804.jpg\",\n                        \"width\": 512,\n                        \"height\": 512\n                    },\n                    \"background\": {\n                        \"id\": \"6820dd7016118268b1ee8e4d\",\n                        \"url\": \"https://placehold.co/1200x400.png\",\n                        \"width\": 1920,\n                        \"height\": 1080\n                    },\n                    \"favicon\": \"\",\n                    \"gallery\": [],\n                    \"featuredPost\": \"\"\n                },\n                \"rules\": [\n                    {\n                        \"id\": \"6820dd7016118268b1ee8e4e\",\n                        \"title\": \"Be respectful\",\n                        \"description\": \"Treat others with respect. No personal attacks, harassment, or hate speech.\",\n                        \"priority\": 1,\n                        \"isRequired\": true,\n                        \"reportOption\": true,\n                        \"metadata\": {\n                            \"createdAt\": \"2025-05-11T17:25:04.839Z\",\n                            \"updatedAt\": \"2025-05-11T17:25:04.839Z\",\n                            \"createdBy\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                            \"version\": 1\n                        }\n                    }\n                ],\n                \"tags\": [\n                    {\n                        \"id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",\n                        \"name\": \"Gaming\",\n                        \"description\": \"Video games, board games, game development, and gaming culture discussions\",\n                        \"icon\": \"🎮\"\n                    },\n                    {\n                        \"id\": \"5c2f7e9a-844a-4d3c-94e0-b61a6a81fb34\",\n                        \"name\": \"Entertainment\",\n                        \"description\": \"TV shows, movies, music, celebrities, and pop culture content\",\n                        \"icon\": \"🎭\"\n                    }\n                ],\n                \"moderators\": [\n                    \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\"\n                ],\n                \"settings\": {\n                    \"joinPolicy\": \"open\",\n                    \"postApproval\": false,\n                    \"allowedPostTypes\": [\n                        \"text\",\n                        \"image\",\n                        \"link\",\n                        \"poll\"\n                    ],\n                    \"enableDirectMessages\": true,\n                    \"showInDiscovery\": true,\n                    \"enableComments\": true,\n                    \"defaultCommentSort\": \"top\",\n                    \"defaultPostSort\": \"hot\",\n                    \"enablePolls\": true,\n                    \"enableEvents\": true,\n                    \"allowCrossposting\": true,\n                    \"allowUserFlairs\": true,\n                    \"allowPostFlairs\": true,\n                    \"allowNSFWContent\": false,\n                    \"requirePostTag\": false,\n                    \"language\": \"en\",\n                    \"contentFilters\": [],\n                    \"minAccountAgeToPost\": 0,\n                    \"minSynergyToPost\": 0\n                },\n                \"stats\": {\n                    \"dailyActiveUsers\": 1,\n                    \"weeklyActiveUsers\": 1,\n                    \"monthlyActiveUsers\": 1,\n                    \"growthRate\": 0,\n                    \"engagementRate\": 0,\n                    \"topTags\": [],\n                    \"popularityScore\": 0,\n                    \"lastUpdated\": \"2025-05-11T17:25:04.839Z\"\n                },\n                \"status\": \"active\",\n                \"metadata\": {\n                    \"createdAt\": \"2025-05-11T17:25:04.839Z\",\n                    \"updatedAt\": \"2025-05-20T18:40:31.107Z\",\n                    \"createdBy\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                    \"version\": 1\n                }\n            }\n        ],\n        \"total\": 1\n    }\n}"
+						}
+					]
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{access_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"let tokenExpiry = pm.environment.get(\"token_expiry\");\r",
+							"let currentTime = Date.now();\r",
+							"\r",
+							"if (tokenExpiry && parseInt(tokenExpiry) <= currentTime) {\r",
+							"    console.log(\"Token expired. Refreshing...\");\r",
+							"    var expiredToken = pm.environment.get(\"access_token\");\r",
+							"    var refreshToken = pm.environment.get(\"refresh_token\");\r",
+							"    var baseUrl = pm.environment.get(\"local\");\r",
+							"\r",
+							"    pm.sendRequest({\r",
+							"        url: baseUrl + '/api/v1/auth/refresh-token',\r",
+							"        method: 'POST',\r",
+							"        header: {\r",
+							"            'Content-Type': 'application/json'\r",
+							"        },\r",
+							"        body: {\r",
+							"            mode: 'raw',\r",
+							"            raw: JSON.stringify({\"access_token\": expiredToken, \"refresh_token\": refreshToken})\r",
+							"        }\r",
+							"    }, function (err, res) {\r",
+							"        if (err) {\r",
+							"            console.log(\"Error refreshing token: \" + err);\r",
+							"        } else {\r",
+							"            var jsonResponse = res.json();\r",
+							"            console.log(jsonResponse);\r",
+							"            var newAccessToken = jsonResponse.data.access_token;\r",
+							"            var newRefreshToken = jsonResponse.data.refresh_token;\r",
+							"            \r",
+							"            pm.environment.set(\"access_token\", newAccessToken);\r",
+							"            pm.environment.set(\"refresh_token\", newRefreshToken);\r",
+							"\r",
+							"            let parts = newAccessToken.split('.');\r",
+							"            if (parts.length === 3) {\r",
+							"                let payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));\r",
+							"                if (payload.exp) {\r",
+							"                    let expiryTimeMs = payload.exp * 1000;\r",
+							"                    pm.environment.set(\"token_expiry\", expiryTimeMs.toString());\r",
+							"                    console.log(\"New token expiry time set:\", new Date(expiryTimeMs).toISOString());\r",
+							"                }\r",
+							"            }\r",
+							"\r",
+							"            console.log(\"New Access Token: \" + newAccessToken);\r",
+							"        }\r",
+							"    });\r",
+							"} else {\r",
+							"    console.log(\"Token is valid. No refresh needed.\");\r",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Moderator",
+			"item": [
+				{
+					"name": "Add Moderator",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"fucker\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/add",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"moderator",
+								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								"add"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"admin\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/add",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"community",
+										"moderator",
+										"ac861a38-8460-4645-8d94-b93ea2de8adf",
+										"add"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 25 May 2025 12:50:19 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "917"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-25T18:20:19.8474829+05:30\"\n    },\n    \"message\": \"Moderator added successfully\",\n    \"data\": {\n        \"id\": \"ffd6cc10-7608-4cf4-ad0b-c808b2404ed4\",\n        \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n        \"communityId\": \"ac861a38-8460-4645-8d94-b93ea2de8adf\",\n        \"role\": \"admin\",\n        \"permissions\": [\n            \"remove_content\",\n            \"approve_content\",\n            \"pin_content\",\n            \"lock_content\",\n            \"mark_nsfw\",\n            \"warn_user\",\n            \"mute_user\",\n            \"ban_user\",\n            \"unban_user\",\n            \"edit_rules\",\n            \"edit_community\",\n            \"manage_flairs\",\n            \"manage_moderators\",\n            \"view_reports\",\n            \"process_reports\",\n            \"view_mod_log\",\n            \"view_analytics\"\n        ],\n        \"invitedBy\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n        \"invitedAt\": \"2025-05-25T12:50:19.678Z\",\n        \"status\": \"active\",\n        \"stats\": {\n            \"contentRemoved\": 0,\n            \"contentApproved\": 0,\n            \"usersWarned\": 0,\n            \"usersMuted\": 0,\n            \"usersBanned\": 0,\n            \"reportsProcessed\": 0,\n            \"lastActiveAt\": \"2025-05-25T12:50:19.678Z\"\n        },\n        \"createdAt\": \"2025-05-25T12:50:19.678Z\",\n        \"updatedAt\": \"2025-05-25T12:50:19.678Z\"\n    }\n}"
+						},
+						{
+							"name": "Validation Error",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"fucker\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/add",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"community",
+										"moderator",
+										"ac861a38-8460-4645-8d94-b93ea2de8adf",
+										"add"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 25 May 2025 13:50:57 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "486"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": false,\n        \"status_code\": 422,\n        \"timestamp\": \"2025-05-25T19:20:57.8744045+05:30\"\n    },\n    \"message\": \"Validation failed\",\n    \"errors\": [\n        {\n            \"timestamp\": \"2025-05-25T13:50:57Z\",\n            \"code\": \"FIELD_VALIDATION_ERROR\",\n            \"field\": \"body:role\",\n            \"message\": \"role must be one of: admin, moderator, content_mod, user_mod, auto_mod\",\n            \"detail\": \"Validation for 'role' failed on the 'oneof' tag with value 'fucker'\",\n            \"error\": \"Key: 'AddModeratorRequest.role' Error:Field validation for 'role' failed on the 'oneof' tag\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Moderators",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/list",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"moderator",
+								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								"list"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/list",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"community",
+										"moderator",
+										"ac861a38-8460-4645-8d94-b93ea2de8adf",
+										"list"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 25 May 2025 12:50:47 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "969"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-25T18:20:47.4575003+05:30\"\n    },\n    \"message\": \"Moderators retrieved successfully\",\n    \"data\": {\n        \"moderators\": [\n            {\n                \"id\": \"ffd6cc10-7608-4cf4-ad0b-c808b2404ed4\",\n                \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"communityId\": \"ac861a38-8460-4645-8d94-b93ea2de8adf\",\n                \"role\": \"admin\",\n                \"permissions\": [\n                    \"remove_content\",\n                    \"approve_content\",\n                    \"pin_content\",\n                    \"lock_content\",\n                    \"mark_nsfw\",\n                    \"warn_user\",\n                    \"mute_user\",\n                    \"ban_user\",\n                    \"unban_user\",\n                    \"edit_rules\",\n                    \"edit_community\",\n                    \"manage_flairs\",\n                    \"manage_moderators\",\n                    \"view_reports\",\n                    \"process_reports\",\n                    \"view_mod_log\",\n                    \"view_analytics\"\n                ],\n                \"invitedBy\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"invitedAt\": \"2025-05-25T12:50:19.678Z\",\n                \"status\": \"active\",\n                \"stats\": {\n                    \"contentRemoved\": 0,\n                    \"contentApproved\": 0,\n                    \"usersWarned\": 0,\n                    \"usersMuted\": 0,\n                    \"usersBanned\": 0,\n                    \"reportsProcessed\": 0,\n                    \"lastActiveAt\": \"2025-05-25T12:50:19.678Z\"\n                },\n                \"createdAt\": \"2025-05-25T12:50:19.678Z\",\n                \"updatedAt\": \"2025-05-25T12:50:19.678Z\"\n            }\n        ],\n        \"page\": 1,\n        \"limit\": 10,\n        \"total\": 1\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Remove Moderator",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\" : \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"reason\" : \"Offensive language used in the community\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/remove",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"moderator",
+								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								"remove"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\" : \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"reason\" : \"Offensive language used in the community\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/remove",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"community",
+										"moderator",
+										"ac861a38-8460-4645-8d94-b93ea2de8adf",
+										"remove"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 25 May 2025 12:42:13 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "134"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-25T18:12:13.7956859+05:30\"\n    },\n    \"message\": \"Moderator removed successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Moderator",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"content_mod\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/update",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"moderator",
+								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								"update"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"moderator\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/update",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"community",
+										"moderator",
+										"ac861a38-8460-4645-8d94-b93ea2de8adf",
+										"update"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 25 May 2025 13:35:05 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "853"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-25T19:05:05.6547894+05:30\"\n    },\n    \"message\": \"Moderator updated successfully\",\n    \"data\": {\n        \"id\": \"ffd6cc10-7608-4cf4-ad0b-c808b2404ed4\",\n        \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n        \"communityId\": \"ac861a38-8460-4645-8d94-b93ea2de8adf\",\n        \"role\": \"moderator\",\n        \"permissions\": [\n            \"remove_content\",\n            \"approve_content\",\n            \"pin_content\",\n            \"lock_content\",\n            \"mark_nsfw\",\n            \"warn_user\",\n            \"mute_user\",\n            \"ban_user\",\n            \"unban_user\",\n            \"edit_rules\",\n            \"view_reports\",\n            \"process_reports\",\n            \"view_mod_log\"\n        ],\n        \"invitedBy\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n        \"invitedAt\": \"2025-05-25T12:50:19.678Z\",\n        \"status\": \"active\",\n        \"stats\": {\n            \"contentRemoved\": 0,\n            \"contentApproved\": 0,\n            \"usersWarned\": 0,\n            \"usersMuted\": 0,\n            \"usersBanned\": 0,\n            \"reportsProcessed\": 0,\n            \"lastActiveAt\": \"2025-05-25T12:50:19.678Z\"\n        },\n        \"createdAt\": \"2025-05-25T12:50:19.678Z\",\n        \"updatedAt\": \"2025-05-25T13:35:05.548Z\"\n    }\n}"
+						}
+					]
 				}
 			],
 			"auth": {
@@ -2387,328 +3042,6 @@
 					]
 				},
 				{
-					"name": "Join Wavelength",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{local}}/api/v1/user/join/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
-							"host": [
-								"{{local}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"user",
-								"join",
-								"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Already joined",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{local}}/api/v1/user/join/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
-									"host": [
-										"{{local}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"user",
-										"join",
-										"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
-									]
-								}
-							},
-							"status": "Conflict",
-							"code": 409,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 20 May 2025 18:39:40 GMT"
-								},
-								{
-									"key": "Content-Length",
-									"value": "745"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"meta\": {\n        \"success\": false,\n        \"status_code\": 409,\n        \"timestamp\": \"2025-05-21T00:09:40.2632577+05:30\"\n    },\n    \"message\": \"Community interaction already exists\",\n    \"errors\": [\n        {\n            \"timestamp\": \"2025-05-20T18:39:40Z\",\n            \"code\": \"CONFLICT\",\n            \"message\": \"Community interaction already exists\",\n            \"error\": \"write exception: write errors: [E11000 duplicate key error collection: test-db.community_interactions index: idx_community_interaction_community_unique dup key: { communityId: \\\"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\\\", userId: \\\"4b286217-bc74-43e1-9570-7df4beeb4e84\\\", status: \\\"active\\\", interactionType: \\\"join\\\" }]\",\n            \"detail\": \"Details: User 4b286217-bc74-43e1-9570-7df4beeb4e84 is already a member of community e04c757e-56a4-4ce5-9fb8-0f18c89b4f65. Context - [ Duplicate Key ] \"\n        }\n    ]\n}"
-						},
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{local}}/api/v1/user/join/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
-									"host": [
-										"{{local}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"user",
-										"join",
-										"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 20 May 2025 18:40:31 GMT"
-								},
-								{
-									"key": "Content-Length",
-									"value": "133"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:10:31.1495829+05:30\"\n    },\n    \"message\": \"Joined community successfully\"\n}"
-						}
-					]
-				},
-				{
-					"name": "Leave Wavelength",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{local}}/api/v1/user/leave/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
-							"host": [
-								"{{local}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"user",
-								"leave",
-								"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{local}}/api/v1/user/leave/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
-									"host": [
-										"{{local}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"user",
-										"leave",
-										"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 20 May 2025 18:40:04 GMT"
-								},
-								{
-									"key": "Content-Length",
-									"value": "131"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:10:04.6321125+05:30\"\n    },\n    \"message\": \"Left community successfully\"\n}"
-						},
-						{
-							"name": "Not Joined",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{local}}/api/v1/user/leave/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
-									"host": [
-										"{{local}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"user",
-										"leave",
-										"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 20 May 2025 18:40:14 GMT"
-								},
-								{
-									"key": "Content-Length",
-									"value": "459"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"meta\": {\n        \"success\": false,\n        \"status_code\": 404,\n        \"timestamp\": \"2025-05-21T00:10:14.4686327+05:30\"\n    },\n    \"message\": \"Community interaction not found\",\n    \"errors\": [\n        {\n            \"timestamp\": \"2025-05-20T18:40:14Z\",\n            \"code\": \"NOT_FOUND\",\n            \"message\": \"Community interaction not found\",\n            \"error\": \"mongo: no documents in result\",\n            \"detail\": \"Details: Community interaction not found for user 4b286217-bc74-43e1-9570-7df4beeb4e84 in community e04c757e-56a4-4ce5-9fb8-0f18c89b4f65. Context - [ No Data ] \"\n        }\n    ]\n}"
-						}
-					]
-				},
-				{
-					"name": "Get User Communities",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local}}/api/v1/user/communities/owner",
-							"host": [
-								"{{local}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"user",
-								"communities",
-								"owner"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{local}}/api/v1/user/communities/owner",
-									"host": [
-										"{{local}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"user",
-										"communities",
-										"owner"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 20 May 2025 18:40:43 GMT"
-								},
-								{
-									"key": "Transfer-Encoding",
-									"value": "chunked"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:10:43.9867533+05:30\"\n    },\n    \"message\": \"Communities fetched successfully\",\n    \"data\": {\n        \"communities\": [\n            {\n                \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                \"slug\": \"coding-community\",\n                \"name\": \"Coding Community\",\n                \"description\": \"This community where you find like minded people who like shares and Business\",\n                \"shortDesc\": \"This community where you find like minded people who like shares and Business\",\n                \"ownerId\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                \"isPrivate\": false,\n                \"memberCount\": 2,\n                \"postCount\": 0,\n                \"media\": {\n                    \"avatar\": {\n                        \"id\": \"6820dd7016118268b1ee8e4c\",\n                        \"url\": \"https://www.shutterstock.com/image-vector/sound-wave-simple-icon-black-260nw-2126255804.jpg\",\n                        \"width\": 512,\n                        \"height\": 512\n                    },\n                    \"background\": {\n                        \"id\": \"6820dd7016118268b1ee8e4d\",\n                        \"url\": \"https://placehold.co/1200x400.png\",\n                        \"width\": 1920,\n                        \"height\": 1080\n                    },\n                    \"favicon\": \"\",\n                    \"gallery\": [],\n                    \"featuredPost\": \"\"\n                },\n                \"rules\": [\n                    {\n                        \"id\": \"6820dd7016118268b1ee8e4e\",\n                        \"title\": \"Be respectful\",\n                        \"description\": \"Treat others with respect. No personal attacks, harassment, or hate speech.\",\n                        \"priority\": 1,\n                        \"isRequired\": true,\n                        \"reportOption\": true,\n                        \"metadata\": {\n                            \"createdAt\": \"2025-05-11T17:25:04.839Z\",\n                            \"updatedAt\": \"2025-05-11T17:25:04.839Z\",\n                            \"createdBy\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                            \"version\": 1\n                        }\n                    }\n                ],\n                \"tags\": [\n                    {\n                        \"id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",\n                        \"name\": \"Gaming\",\n                        \"description\": \"Video games, board games, game development, and gaming culture discussions\",\n                        \"icon\": \"🎮\"\n                    },\n                    {\n                        \"id\": \"5c2f7e9a-844a-4d3c-94e0-b61a6a81fb34\",\n                        \"name\": \"Entertainment\",\n                        \"description\": \"TV shows, movies, music, celebrities, and pop culture content\",\n                        \"icon\": \"🎭\"\n                    }\n                ],\n                \"moderators\": [\n                    \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\"\n                ],\n                \"settings\": {\n                    \"joinPolicy\": \"open\",\n                    \"postApproval\": false,\n                    \"allowedPostTypes\": [\n                        \"text\",\n                        \"image\",\n                        \"link\",\n                        \"poll\"\n                    ],\n                    \"enableDirectMessages\": true,\n                    \"showInDiscovery\": true,\n                    \"enableComments\": true,\n                    \"defaultCommentSort\": \"top\",\n                    \"defaultPostSort\": \"hot\",\n                    \"enablePolls\": true,\n                    \"enableEvents\": true,\n                    \"allowCrossposting\": true,\n                    \"allowUserFlairs\": true,\n                    \"allowPostFlairs\": true,\n                    \"allowNSFWContent\": false,\n                    \"requirePostTag\": false,\n                    \"language\": \"en\",\n                    \"contentFilters\": [],\n                    \"minAccountAgeToPost\": 0,\n                    \"minSynergyToPost\": 0\n                },\n                \"stats\": {\n                    \"dailyActiveUsers\": 1,\n                    \"weeklyActiveUsers\": 1,\n                    \"monthlyActiveUsers\": 1,\n                    \"growthRate\": 0,\n                    \"engagementRate\": 0,\n                    \"topTags\": [],\n                    \"popularityScore\": 0,\n                    \"lastUpdated\": \"2025-05-11T17:25:04.839Z\"\n                },\n                \"status\": \"active\",\n                \"metadata\": {\n                    \"createdAt\": \"2025-05-11T17:25:04.839Z\",\n                    \"updatedAt\": \"2025-05-20T18:40:31.107Z\",\n                    \"createdBy\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                    \"version\": 1\n                }\n            }\n        ],\n        \"total\": 1\n    }\n}"
-						}
-					]
-				},
-				{
-					"name": "Get Joined Communities",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local}}/api/v1/user/communities/joined",
-							"host": [
-								"{{local}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"user",
-								"communities",
-								"joined"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{local}}/api/v1/user/communities/joined",
-									"host": [
-										"{{local}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"user",
-										"communities",
-										"joined"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 20 May 2025 18:40:56 GMT"
-								},
-								{
-									"key": "Transfer-Encoding",
-									"value": "chunked"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:10:55.9998051+05:30\"\n    },\n    \"message\": \"Communities fetched successfully\",\n    \"data\": {\n        \"communities\": [\n            {\n                \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                \"slug\": \"coding-community\",\n                \"name\": \"Coding Community\",\n                \"description\": \"This community where you find like minded people who like shares and Business\",\n                \"shortDesc\": \"This community where you find like minded people who like shares and Business\",\n                \"ownerId\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                \"isPrivate\": false,\n                \"memberCount\": 2,\n                \"postCount\": 0,\n                \"media\": {\n                    \"avatar\": {\n                        \"id\": \"6820dd7016118268b1ee8e4c\",\n                        \"url\": \"https://www.shutterstock.com/image-vector/sound-wave-simple-icon-black-260nw-2126255804.jpg\",\n                        \"width\": 512,\n                        \"height\": 512\n                    },\n                    \"background\": {\n                        \"id\": \"6820dd7016118268b1ee8e4d\",\n                        \"url\": \"https://placehold.co/1200x400.png\",\n                        \"width\": 1920,\n                        \"height\": 1080\n                    },\n                    \"favicon\": \"\",\n                    \"gallery\": [],\n                    \"featuredPost\": \"\"\n                },\n                \"rules\": [\n                    {\n                        \"id\": \"6820dd7016118268b1ee8e4e\",\n                        \"title\": \"Be respectful\",\n                        \"description\": \"Treat others with respect. No personal attacks, harassment, or hate speech.\",\n                        \"priority\": 1,\n                        \"isRequired\": true,\n                        \"reportOption\": true,\n                        \"metadata\": {\n                            \"createdAt\": \"2025-05-11T17:25:04.839Z\",\n                            \"updatedAt\": \"2025-05-11T17:25:04.839Z\",\n                            \"createdBy\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                            \"version\": 1\n                        }\n                    }\n                ],\n                \"tags\": [\n                    {\n                        \"id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",\n                        \"name\": \"Gaming\",\n                        \"description\": \"Video games, board games, game development, and gaming culture discussions\",\n                        \"icon\": \"🎮\"\n                    },\n                    {\n                        \"id\": \"5c2f7e9a-844a-4d3c-94e0-b61a6a81fb34\",\n                        \"name\": \"Entertainment\",\n                        \"description\": \"TV shows, movies, music, celebrities, and pop culture content\",\n                        \"icon\": \"🎭\"\n                    }\n                ],\n                \"moderators\": [\n                    \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\"\n                ],\n                \"settings\": {\n                    \"joinPolicy\": \"open\",\n                    \"postApproval\": false,\n                    \"allowedPostTypes\": [\n                        \"text\",\n                        \"image\",\n                        \"link\",\n                        \"poll\"\n                    ],\n                    \"enableDirectMessages\": true,\n                    \"showInDiscovery\": true,\n                    \"enableComments\": true,\n                    \"defaultCommentSort\": \"top\",\n                    \"defaultPostSort\": \"hot\",\n                    \"enablePolls\": true,\n                    \"enableEvents\": true,\n                    \"allowCrossposting\": true,\n                    \"allowUserFlairs\": true,\n                    \"allowPostFlairs\": true,\n                    \"allowNSFWContent\": false,\n                    \"requirePostTag\": false,\n                    \"language\": \"en\",\n                    \"contentFilters\": [],\n                    \"minAccountAgeToPost\": 0,\n                    \"minSynergyToPost\": 0\n                },\n                \"stats\": {\n                    \"dailyActiveUsers\": 1,\n                    \"weeklyActiveUsers\": 1,\n                    \"monthlyActiveUsers\": 1,\n                    \"growthRate\": 0,\n                    \"engagementRate\": 0,\n                    \"topTags\": [],\n                    \"popularityScore\": 0,\n                    \"lastUpdated\": \"2025-05-11T17:25:04.839Z\"\n                },\n                \"status\": \"active\",\n                \"metadata\": {\n                    \"createdAt\": \"2025-05-11T17:25:04.839Z\",\n                    \"updatedAt\": \"2025-05-20T18:40:31.107Z\",\n                    \"createdBy\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n                    \"version\": 1\n                }\n            }\n        ],\n        \"total\": 1\n    }\n}"
-						}
-					]
-				},
-				{
 					"name": "Get User Profile",
 					"request": {
 						"method": "GET",
@@ -2833,6 +3166,208 @@
 							],
 							"cookie": [],
 							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:12:21.7206705+05:30\"\n    },\n    \"message\": \"Profile fetched successfully\",\n    \"data\": {\n        \"id\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n        \"username\": \"Nice-Warrior-Handsome\",\n        \"email\": \"pratikpujari@gmail.com\",\n        \"bio\": \"\",\n        \"verifiedEmail\": false,\n        \"status\": \"active\",\n        \"avatar\": {\n            \"profile\": {\n                \"id\": \"default-profile-id\",\n                \"url\": \"https://placehold.co/150x150.png\",\n                \"width\": 150,\n                \"height\": 150\n            },\n            \"background\": {\n                \"id\": \"default-background-id\",\n                \"url\": \"https://placehold.co/1200x400.png\",\n                \"width\": 1200,\n                \"height\": 400\n            }\n        },\n        \"synergy\": {\n            \"posts\": 0,\n            \"comments\": 0,\n            \"total\": 0\n        },\n        \"providers\": [],\n        \"joinedWavelengths\": [\n            \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\"\n        ],\n        \"moderatorOf\": [],\n        \"follows\": [],\n        \"followers\": [],\n        \"preferences\": {\n            \"language\": {\n                \"DisplayName\": \"English\",\n                \"NativeName\": \"English\"\n            },\n            \"theme\": \"light\",\n            \"timezone\": {\n                \"DisplayName\": \"Coordinated Universal Time\",\n                \"Timezone\": \"UTC+0\"\n            },\n            \"location\": \"Unknown Country\",\n            \"notifications\": {\n                \"email\": true,\n                \"push\": false\n            },\n            \"contentSettings\": {\n                \"showSensitiveContent\": false,\n                \"showAdultContent\": false\n            },\n            \"privacySettings\": {\n                \"isProfileVisible\": true,\n                \"isEmailVisible\": true,\n                \"isJoinedWavelengthsVisible\": true,\n                \"followersVisible\": true\n            },\n            \"blockList\": []\n        },\n        \"lastSeen\": \"2025-05-12T17:53:52.45Z\",\n        \"createdAt\": \"2025-05-12T17:53:52.45Z\",\n        \"updatedAt\": \"2025-05-12T17:53:52.45Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Join Wavelength",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/api/v1/community/user/join/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"user",
+								"join",
+								"ac861a38-8460-4645-8d94-b93ea2de8adf"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Already joined",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local}}/api/v1/user/join/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"join",
+										"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
+									]
+								}
+							},
+							"status": "Conflict",
+							"code": 409,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 20 May 2025 18:39:40 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "745"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": false,\n        \"status_code\": 409,\n        \"timestamp\": \"2025-05-21T00:09:40.2632577+05:30\"\n    },\n    \"message\": \"Community interaction already exists\",\n    \"errors\": [\n        {\n            \"timestamp\": \"2025-05-20T18:39:40Z\",\n            \"code\": \"CONFLICT\",\n            \"message\": \"Community interaction already exists\",\n            \"error\": \"write exception: write errors: [E11000 duplicate key error collection: test-db.community_interactions index: idx_community_interaction_community_unique dup key: { communityId: \\\"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\\\", userId: \\\"4b286217-bc74-43e1-9570-7df4beeb4e84\\\", status: \\\"active\\\", interactionType: \\\"join\\\" }]\",\n            \"detail\": \"Details: User 4b286217-bc74-43e1-9570-7df4beeb4e84 is already a member of community e04c757e-56a4-4ce5-9fb8-0f18c89b4f65. Context - [ Duplicate Key ] \"\n        }\n    ]\n}"
+						},
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local}}/api/v1/user/join/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"join",
+										"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 20 May 2025 18:40:31 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "133"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:10:31.1495829+05:30\"\n    },\n    \"message\": \"Joined community successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Leave Wavelength",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/api/v1/community/user/leave/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"community",
+								"user",
+								"leave",
+								"ac861a38-8460-4645-8d94-b93ea2de8adf"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local}}/api/v1/user/leave/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"leave",
+										"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 20 May 2025 18:40:04 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "131"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:10:04.6321125+05:30\"\n    },\n    \"message\": \"Left community successfully\"\n}"
+						},
+						{
+							"name": "Not Joined",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{local}}/api/v1/user/leave/e04c757e-56a4-4ce5-9fb8-0f18c89b4f65",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"leave",
+										"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 20 May 2025 18:40:14 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "459"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": false,\n        \"status_code\": 404,\n        \"timestamp\": \"2025-05-21T00:10:14.4686327+05:30\"\n    },\n    \"message\": \"Community interaction not found\",\n    \"errors\": [\n        {\n            \"timestamp\": \"2025-05-20T18:40:14Z\",\n            \"code\": \"NOT_FOUND\",\n            \"message\": \"Community interaction not found\",\n            \"error\": \"mongo: no documents in result\",\n            \"detail\": \"Details: Community interaction not found for user 4b286217-bc74-43e1-9570-7df4beeb4e84 in community e04c757e-56a4-4ce5-9fb8-0f18c89b4f65. Context - [ No Data ] \"\n        }\n    ]\n}"
 						}
 					]
 				},
@@ -3751,7 +4286,7 @@
 				{
 					"name": "Edit Post",
 					"request": {
-						"method": "POST",
+						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "formdata",
@@ -3774,7 +4309,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/edit/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
 							"host": [
 								"{{local}}"
 							],
@@ -3782,7 +4317,6 @@
 								"api",
 								"v1",
 								"post",
-								"edit",
 								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
 							]
 						}
@@ -3905,6 +4439,65 @@
 							],
 							"cookie": [],
 							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:21:35.2857799+05:30\"\n    },\n    \"message\": \"Post edited successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{local}}/api/v1/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{local}}/api/v1/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Thu, 22 May 2025 15:14:01 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "129"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-22T20:44:01.8680801+05:30\"\n    },\n    \"message\": \"Post deleted successfully\"\n}"
 						}
 					]
 				},
@@ -4929,7 +5522,7 @@
 				{
 					"name": "Edit Comment",
 					"request": {
-						"method": "POST",
+						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
@@ -4941,7 +5534,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/edit/32da13fe-77bd-483f-ab07-967f87e67c21",
+							"raw": "{{local}}/api/v1/comment/post/32da13fe-77bd-483f-ab07-967f87e67c21",
 							"host": [
 								"{{local}}"
 							],
@@ -4950,7 +5543,6 @@
 								"v1",
 								"comment",
 								"post",
-								"edit",
 								"32da13fe-77bd-483f-ab07-967f87e67c21"
 							]
 						}
@@ -5059,7 +5651,7 @@
 				{
 					"name": "Delete Comment",
 					"request": {
-						"method": "POST",
+						"method": "DELETE",
 						"header": [],
 						"body": {
 							"mode": "raw",
@@ -5071,7 +5663,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/delete/32da13fe-77bd-483f-ab07-967f87e67c21",
+							"raw": "{{local}}/api/v1/comment/post/32da13fe-77bd-483f-ab07-967f87e67c21",
 							"host": [
 								"{{local}}"
 							],
@@ -5080,7 +5672,6 @@
 								"v1",
 								"comment",
 								"post",
-								"delete",
 								"32da13fe-77bd-483f-ab07-967f87e67c21"
 							]
 						}
