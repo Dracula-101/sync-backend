@@ -17,11 +17,11 @@ import (
 type SignUpRequest struct {
 	coredto.BaseDeviceRequest
 	coredto.BaseLocationRequest
-	UserName           string                `form:"username" binding:"required" validate:"required,min=3,max=50"`
-	Email              string                `form:"email" binding:"required,email" validate:"email"`
-	Password           string                `form:"password" binding:"required" validate:"required,min=6,max=100"`
-	ProfilePhoto       *multipart.FileHeader `form:"profile_photo" binding:"omitempty"`
-	BackgroundPhoto    *multipart.FileHeader `form:"background_photo" binding:"omitempty"`
+	UserName           string                  `form:"username" binding:"required" validate:"required,min=3,max=50"`
+	Email              string                  `form:"email" binding:"required,email" validate:"email"`
+	Password           string                  `form:"password" binding:"required" validate:"required,min=6,max=100"`
+	ProfilePhoto       *[]multipart.FileHeader `form:"profile_photo" binding:"omitempty" validate:"dive"`
+	BackgroundPhoto    *[]multipart.FileHeader `form:"background_photo" binding:"omitempty" validate:"dive"`
 	ProfileFilePath    string
 	BackgroundFilePath string
 }

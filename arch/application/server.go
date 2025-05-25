@@ -28,7 +28,10 @@ func Server() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, os.Interrupt, syscall.SIGQUIT, syscall.SIGINT)
 	go func() {
-		router.Start(env.Host, uint16(env.Port))
+		if err := router.Start(env.Host, uint16(env.Port)); err != nil {
+			shutdown()
+			os.Exit(1)
+		}
 	}()
 	<-stop
 }
@@ -81,8 +84,9 @@ func create(env *config.Env, config *config.Config) (network.Router, Module, Shu
 	store := redis.NewStore(context, redisLogger, &redisConfig)
 	store.Connect()
 
-	module := NewAppModule(context, env, config, db, ipDb, store)
-	router := network.NewRouter(env.Env, serverLogger)
+	versionInt, _ := strconv.Atoi(config.API.Version)
+	router := network.NewRouter(env.Env, config.API.Prefix, versionInt, serverLogger)
+	module := NewAppModule(context, env, config, db, ipDb, store, router.GetEngine())
 	router.RegisterValidationParsers(network.CustomTagNameFunc())
 	router.LoadRootMiddlewares(module.RootMiddlewares())
 	router.LoadControllers(module.Controllers())

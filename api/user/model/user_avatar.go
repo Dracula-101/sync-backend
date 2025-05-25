@@ -1,7 +1,7 @@
 package model
 
 type UserAvatar struct {
-	ProfilePic Image `bson:"profilePic" json:"profilePic"`
+	Profile    Image `bson:"profile" json:"profile"`
 	Background Image `bson:"background" json:"background"`
 }
 
@@ -14,7 +14,7 @@ type Image struct {
 
 func NewUserAvatar(profileImage Image, backgroundImage Image) UserAvatar {
 	return UserAvatar{
-		ProfilePic: profileImage,
+		Profile:    profileImage,
 		Background: backgroundImage,
 	}
 }

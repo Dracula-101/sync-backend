@@ -231,7 +231,7 @@ func MockTestController(
 	rr := httptest.NewRecorder()
 	ctx, r := gin.CreateTestContext(rr)
 
-	controller.MountRoutes(r.Group(controller.Path()))
+	controller.MountRoutes(r.Group(controller.Path("/api/v1")))
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterTagNameFunc(CustomTagNameFunc())

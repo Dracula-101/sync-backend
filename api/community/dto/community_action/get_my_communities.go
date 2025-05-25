@@ -1,4 +1,4 @@
-package dto
+package communitydto
 
 import (
 	"fmt"

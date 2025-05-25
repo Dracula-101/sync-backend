@@ -1,7 +1,6 @@
 package user
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -9,62 +8,62 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"sync-backend/api/common/media"
-	communityModels "sync-backend/api/community/model"
 	"sync-backend/api/user/model"
 	"sync-backend/arch/common"
 	"sync-backend/arch/mongo"
+	"sync-backend/arch/network"
 	"sync-backend/utils"
 )
 
 type UserService interface {
 	/* CREATING USER */
-	CreateUser(userName string, email string, password string, profilePic string, backgroundPic string, locale string, timezone string, country string) (*model.User, error)
-	CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error)
+	CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, network.ApiError)
+	CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, network.ApiError)
 
 	/* FINDING USER */
-	FindUserById(userId string) (*model.User, error)
-	FindUserByEmail(email string) (*model.User, error)
-	FindUserByUsername(username string) (*model.User, error)
-	FindUserAuthProvider(userId string, username string, providerName string) (*model.User, error)
+	FindUserById(userId string) (*model.User, network.ApiError)
+	FindUserByEmail(email string) (*model.User, network.ApiError)
+	FindUserByUsername(username string) (*model.User, network.ApiError)
+	FindUserAuthProvider(userId string, username string, providerName string) (*model.User, network.ApiError)
 
 	/* USER INFO UPDATE */
-	UpdateLoginHistory(userId string, loginHistory model.LoginHistory) error
+	UpdateLoginHistory(userId string, loginHistory model.LoginHistory) network.ApiError
 
 	/* USER AUTHENTICATION */
-	ValidateUserPassword(user *model.User, password string) error
+	ValidateUserPassword(user *model.User, password string) network.ApiError
 
 	/* USER COMMUNITY */
-	GetMyCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
-	GetJoinedCommunities(userId string, page int, limit int) ([]communityModels.Community, error)
-	JoinCommunity(userId string, communityId string) error
-	LeaveCommunity(userId string, communityId string) error
+	JoinCommunity(userId string, communityId string) network.ApiError
+	LeaveCommunity(userId string, communityId string) network.ApiError
 
 	/* USER FOLLOWING */
-	FollowUser(userId string, followUserId string) error
-	UnfollowUser(userId string, unfollowUserId string) error
-	BlockUser(userId string, blockUserId string) error
-	UnblockUser(userId string, unblockUserId string) error
+	FollowUser(userId string, followUserId string) network.ApiError
+	UnfollowUser(userId string, unfollowUserId string) network.ApiError
+	BlockUser(userId string, blockUserId string) network.ApiError
+	UnblockUser(userId string, unblockUserId string) network.ApiError
+
+	/* MODERATOR */
+	AddModerator(userId string, communityId string) network.ApiError
+	RemoveModerator(userId string, communityId string) network.ApiError
 }
 
 type userService struct {
-	mediaService          media.MediaService
-	log                   utils.AppLogger
-	userQueryBuilder      mongo.QueryBuilder[model.User]
-	communityQueryBuilder mongo.QueryBuilder[communityModels.Community]
-	transactionBuilder    mongo.TransactionBuilder
+	mediaService       media.MediaService
+	log                utils.AppLogger
+	userQueryBuilder   mongo.QueryBuilder[model.User]
+	transactionBuilder mongo.TransactionBuilder
 }
 
 func NewUserService(db mongo.Database, mediaService media.MediaService) UserService {
 	return &userService{
-		mediaService:          mediaService,
-		userQueryBuilder:      mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
-		communityQueryBuilder: mongo.NewQueryBuilder[communityModels.Community](db, communityModels.CommunityCollectionName),
-		transactionBuilder:    mongo.NewTransactionBuilder(db),
-		log:                   utils.NewServiceLogger("UserService"),
+		mediaService:       mediaService,
+		userQueryBuilder:   mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
+		transactionBuilder: mongo.NewTransactionBuilder(db),
+		log:                utils.NewServiceLogger("UserService"),
 	}
 }
 
-func (s *userService) CreateUser(userName string, email string, password string, profilePic string, backgroundPic string, locale string, timezone string, country string) (*model.User, error) {
+func (s *userService) CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, network.ApiError) {
 	s.log.Debug("Creating user with email: %s", email)
 	filter := bson.M{
 		"$or": []bson.M{
@@ -76,38 +75,38 @@ func (s *userService) CreateUser(userName string, email string, password string,
 	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(filter, nil)
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
 		s.log.Error("Error checking for existing user: %v", err)
-		return nil, fmt.Errorf("error checking for existing user: %v", err)
+		return nil, NewDBError("checking for existing user", err.Error())
 	}
 
 	if existingUser != nil {
 		if existingUser.Email == email {
 			s.log.Error("User with this email already exists: %s", email)
-			return nil, errors.New("user with this email already exists")
+			return nil, NewUserExistsByEmailError(email)
 		} else {
 			s.log.Error("User with this username already exists: %s", userName)
-			return nil, errors.New("user with this username already exists")
+			return nil, NewUserExistsByUsernameError(userName)
 		}
 	}
 
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		s.log.Error("Error hashing password: %v", err)
-		return nil, err
+		return nil, NewDBError("hashing password", err.Error())
 	}
 	var profilePicUrl, profileId string
 	var profileHeight, profileWidth int
 	var backgroundUrl, backgroundId string
 	var backgroundHeight, backgroundWidth int
-	if profilePic != "" {
-		profileInfo, _ := s.mediaService.UploadMedia(profilePic, userName+"_profile", "profile")
+	if profile != "" {
+		profileInfo, _ := s.mediaService.UploadMedia(profile, userName+"_profile", "profile")
 		profileId = profileInfo.Id
 		profilePicUrl = profileInfo.Url
 		profileHeight = profileInfo.Height
 		profileWidth = profileInfo.Width
 	} else {
-		profilePic = "https://placehold.co/150x150.png"
+		profile = "https://placehold.co/150x150.png"
 		profileId = "default-profile-id"
-		profilePicUrl = profilePic
+		profilePicUrl = profile
 		profileHeight = 150
 		profileWidth = 150
 	}
@@ -150,30 +149,30 @@ func (s *userService) CreateUser(userName string, email string, password string,
 	})
 	if err != nil {
 		s.log.Error("Error creating user: %v", err)
-		return nil, err
+		return nil, NewDBError("creating user", err.Error())
 	}
 
 	id, err := s.userQueryBuilder.SingleQuery().InsertOne(user.GetValue())
 	if err != nil {
 		s.log.Error("Error inserting user into database: %v", err)
-		return nil, err
+		return nil, NewDBError("inserting user into database", err.Error())
 	}
 	user.Id = *id
 	return user, nil
 }
 
-func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, error) {
+func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken string, locale string, timezone string, country string) (*model.User, network.ApiError) {
 	s.log.Debug("Creating user with Google ID token: %s", googleIdToken[0:10]+"***********")
 	googleUser, err := utils.DecodeGoogleJWTToken(googleIdToken)
 	if err != nil {
 		s.log.Error("Error decoding Google ID token: %v", err)
-		return nil, fmt.Errorf("error decoding Google ID token: %v", err)
+		return nil, NewDBError("decoding Google ID token", err.Error())
 	}
 
 	existingUser, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": googleUser.Email}, nil)
 
 	if err != nil && !mongo.IsNoDocumentFoundError(err) {
-		return nil, fmt.Errorf("error checking for existing user: %v", err)
+		return nil, NewDBError("checking for existing user", err.Error())
 	}
 	width, height, _ := utils.GetImageSize(googleUser.Picture)
 	if existingUser != nil {
@@ -190,9 +189,9 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 			AddedAt:      time.Now(),
 		})
 		existingUser.VerifiedEmail = googleUser.EmailVerified
-		existingUser.Avatar.ProfilePic.Url = googleUser.Picture
-		existingUser.Avatar.ProfilePic.Width = width
-		existingUser.Avatar.ProfilePic.Height = height
+		existingUser.Avatar.Profile.Url = googleUser.Picture
+		existingUser.Avatar.Profile.Width = width
+		existingUser.Avatar.Profile.Height = height
 		existingUser.Email = googleUser.Email
 		existingUser.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
 		_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": existingUser.UserId}, bson.M{
@@ -200,7 +199,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		}, nil)
 		if err != nil {
 			s.log.Error("Error updating existing user: %v", err)
-			return nil, fmt.Errorf("error updating existing user: %v", err)
+			return nil, NewDBError("updating existing user", err.Error())
 		}
 		s.log.Debug("User updated successfully: %s", existingUser.Email)
 		return existingUser, nil
@@ -226,7 +225,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 			DeviceToken: *model.NewDeviceToken("default-token-id-here", "DEVICE_ID", "PUSH"),
 		})
 		if err != nil {
-			return nil, err
+			return nil, NewDBError("creating user from Google ID", err.Error())
 		}
 		userAuthProvider, err := model.NewAuthProvider(
 			googleIdToken,
@@ -235,7 +234,7 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		)
 		if err != nil {
 			s.log.Error("Error creating auth provider: %v", err)
-			return nil, err
+			return nil, NewDBError("creating auth provider", err.Error())
 		}
 
 		user.VerifiedEmail = googleUser.EmailVerified
@@ -243,41 +242,41 @@ func (s *userService) CreateUserWithGoogleId(userName string, googleIdToken stri
 		id, err := s.userQueryBuilder.SingleQuery().InsertOne(user.GetValue())
 		if err != nil {
 			s.log.Error("Error inserting user into database: %v", err)
-			return nil, err
+			return nil, NewDBError("inserting user into database", err.Error())
 		}
 		s.log.Debug("User created successfully: %s - %s", user.Email, id.Hex())
 		return user, nil
 	}
 }
 
-func (s *userService) FindUserById(userId string) (*model.User, error) {
+func (s *userService) FindUserById(userId string) (*model.User, network.ApiError) {
 	s.log.Debug("Getting user by ID: %s", userId)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
-			return nil, errors.New("user not found")
+			return nil, NewUserNotFoundError(userId)
 		}
 		s.log.Error("Error getting user by ID: %v", err)
-		return nil, err
+		return nil, NewDBError("getting user by ID", err.Error())
 	}
 	if user.Status == model.Deleted {
 		s.log.Error("User is deleted: %s", userId)
-		return nil, errors.New("user is deleted")
+		return nil, NewUserDeletedError(userId)
 	}
 	if user.Status == model.Inactive {
 		s.log.Error("User is inactive: %s", userId)
-		return nil, errors.New("user is inactive")
+		return nil, NewUserInactiveError(userId)
 	}
 	if user.Status == model.Banned {
 		s.log.Error("User is banned: %s", userId)
-		return nil, errors.New("user is banned")
+		return nil, NewUserBannedError(userId)
 	}
 
 	s.log.Debug("User found by ID: %s", user.UserId)
 	return user, nil
 }
 
-func (s *userService) FindUserByEmail(email string) (*model.User, error) {
+func (s *userService) FindUserByEmail(email string) (*model.User, network.ApiError) {
 	s.log.Debug("Finding user by email: %s", email)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"email": email}, nil)
 	if err != nil {
@@ -285,25 +284,25 @@ func (s *userService) FindUserByEmail(email string) (*model.User, error) {
 			return nil, nil
 		}
 		s.log.Error("Error finding user by email: %v", err)
-		return nil, err
+		return nil, NewDBError("finding user by email", err.Error())
 	}
 	if user.Status == model.Deleted {
 		s.log.Error("User is deleted: %s", email)
-		return nil, errors.New("user is deleted")
+		return nil, NewUserDeletedError(email)
 	}
 	if user.Status == model.Inactive {
 		s.log.Error("User is inactive: %s", email)
-		return nil, errors.New("user is inactive")
+		return nil, NewUserInactiveError(email)
 	}
 	if user.Status == model.Banned {
 		s.log.Error("User is banned: %s", email)
-		return nil, errors.New("user is banned")
+		return nil, NewUserBannedError(email)
 	}
 	s.log.Debug("User found: %s", user.Email)
 	return user, nil
 }
 
-func (s *userService) FindUserByUsername(username string) (*model.User, error) {
+func (s *userService) FindUserByUsername(username string) (*model.User, network.ApiError) {
 	s.log.Debug("Finding user by username: %s", username)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"username": username}, nil)
 	if err != nil {
@@ -311,25 +310,25 @@ func (s *userService) FindUserByUsername(username string) (*model.User, error) {
 			return nil, nil
 		}
 		s.log.Error("Error finding user by username: %v", err)
-		return nil, err
+		return nil, NewDBError("finding user by username", err.Error())
 	}
 	if user.Status == model.Deleted {
 		s.log.Error("User is deleted: %s", username)
-		return nil, errors.New("user is deleted")
+		return nil, NewUserDeletedError(username)
 	}
 	if user.Status == model.Inactive {
 		s.log.Error("User is inactive: %s", username)
-		return nil, errors.New("user is inactive")
+		return nil, NewUserInactiveError(username)
 	}
 	if user.Status == model.Banned {
 		s.log.Error("User is banned: %s", username)
-		return nil, errors.New("user is banned")
+		return nil, NewUserBannedError(username)
 	}
 	s.log.Debug("User found: %s", user.Username)
 	return user, nil
 }
 
-func (s *userService) FindUserAuthProvider(userId string, username string, providerName string) (*model.User, error) {
+func (s *userService) FindUserAuthProvider(userId string, username string, providerName string) (*model.User, network.ApiError) {
 	s.log.Debug("Finding auth provider by user ID: %s and provider name: %s", userId, providerName)
 	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId, "username": username, "providers.providerName": providerName}, nil)
 	if err != nil {
@@ -337,7 +336,7 @@ func (s *userService) FindUserAuthProvider(userId string, username string, provi
 			return nil, nil
 		}
 		s.log.Error("Error finding auth provider by user ID: %v", err)
-		return nil, err
+		return nil, NewDBError("finding auth provider by user ID", err.Error())
 	}
 	if user == nil {
 		s.log.Debug("No auth provider found for user ID: %s and provider name: %s", userId, providerName)
@@ -354,7 +353,7 @@ func (s *userService) FindUserAuthProvider(userId string, username string, provi
 	return nil, nil
 }
 
-func (s *userService) UpdateLoginHistory(userId string, loginHistory model.LoginHistory) error {
+func (s *userService) UpdateLoginHistory(userId string, loginHistory model.LoginHistory) network.ApiError {
 	s.log.Debug("Updating login history for user ID: %s", userId)
 
 	result, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
@@ -371,29 +370,29 @@ func (s *userService) UpdateLoginHistory(userId string, loginHistory model.Login
 	}, nil)
 	if err != nil {
 		s.log.Error("Error updating login history: %v", err)
-		return fmt.Errorf("error updating login history: %v", err)
+		return NewDBError("updating login history", err.Error())
 	}
 
 	s.log.Debug("Login history updated successfully for user ID: %s - Modified count: %d", userId, result.ModifiedCount)
 	return nil
 }
 
-func (s *userService) ValidateUserPassword(user *model.User, password string) error {
+func (s *userService) ValidateUserPassword(user *model.User, password string) network.ApiError {
 	s.log.Debug("Validating password for user: %s", user.Email)
 
 	isValid, err := utils.CheckPasswordHash(password, user.PasswordHash)
 	if err != nil {
 		s.log.Error("Error comparing password: %v", err)
-		return fmt.Errorf("error comparing password: %v", err)
+		return NewDBError("comparing password", err.Error())
 	}
 	if !isValid {
 		s.log.Error("Invalid password for user: %s", user.Email)
-		return errors.New("invalid password")
+		return NewForbiddenUserActionError("validate password for", user.Email, user.Email)
 	}
 	return nil
 }
 
-func (s *userService) JoinCommunity(userId string, communityId string) error {
+func (s *userService) JoinCommunity(userId string, communityId string) network.ApiError {
 	s.log.Debug("Joining community %s for user %s", communityId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
 		"$addToSet": bson.M{
@@ -402,42 +401,14 @@ func (s *userService) JoinCommunity(userId string, communityId string) error {
 	}, nil)
 	if err != nil {
 		s.log.Error("Error joining community: %v", err)
-		return fmt.Errorf("error joining community: %v", err)
-	}
-	// use transaction builder to update community members count
-	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
-		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
-	}
-
-	communityCollection := transaction.GetCollection(communityModels.CommunityCollectionName)
-	_, err = communityCollection.UpdateOne(transaction.GetContext(), bson.M{"communityId": communityId}, bson.M{
-		"$addToSet": bson.M{
-			"members": userId,
-		},
-		"$inc": bson.M{
-			"membersCount": 1,
-		},
-	})
-
-	if err != nil {
-		s.log.Error("Error updating community members count: %v", err)
-		return fmt.Errorf("error updating community members count: %v", err)
-	}
-
-	// commit the transaction
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
+		return NewDBError("joining community", err.Error())
 	}
 
 	s.log.Debug("User %s joined community %s successfully", userId, communityId)
 	return nil
 }
 
-func (s *userService) LeaveCommunity(userId string, communityId string) error {
+func (s *userService) LeaveCommunity(userId string, communityId string) network.ApiError {
 	s.log.Debug("Leaving community %s for user %s", communityId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, bson.M{
 		"$pull": bson.M{
@@ -446,275 +417,304 @@ func (s *userService) LeaveCommunity(userId string, communityId string) error {
 	}, nil)
 	if err != nil {
 		s.log.Error("Error leaving community: %v", err)
-		return fmt.Errorf("error leaving community: %v", err)
-	}
-	// use transaction builder to update community members count
-	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
-		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
-	}
-
-	communityCollection := transaction.GetCollection(communityModels.CommunityCollectionName)
-	_, err = communityCollection.UpdateOne(transaction.GetContext(), bson.M{"communityId": communityId}, bson.M{
-		"$pull": bson.M{
-			"members": userId,
-		},
-		"$inc": bson.M{
-			"membersCount": -1,
-		},
-	})
-
-	if err != nil {
-		s.log.Error("Error updating community members count: %v", err)
-		return fmt.Errorf("error updating community members count: %v", err)
-	}
-
-	// commit the transaction
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
+		return NewDBError("leaving community", err.Error())
 	}
 
 	s.log.Debug("User %s left community %s successfully", userId, communityId)
 	return nil
 }
 
-func (s *userService) GetMyCommunities(userId string, page int, limit int) ([]communityModels.Community, error) {
-	s.log.Debug("Getting communities for user %s", userId)
-
-	// get community from ownerId
-	communities, err := s.communityQueryBuilder.SingleQuery().FilterMany(
-		bson.M{"ownerId": userId},
-		nil,
-	)
-
-	if err != nil {
-		if mongo.IsNoDocumentFoundError(err) {
-			return nil, nil
-		}
-		s.log.Error("Error getting community by ownerId: %v", err)
-		return nil, err
-	}
-
-	if len(communities) == 0 {
-		s.log.Debug("No communities found for user %s", userId)
-		return nil, nil
-	}
-
-	var communites []communityModels.Community
-	for _, community := range communities {
-		if community != nil {
-			communites = append(communites, *community)
-		}
-	}
-
-	s.log.Debug("Found %d communities for user %s", len(communites), userId)
-	return communites, nil
-}
-
-func (s *userService) GetJoinedCommunities(userId string, page int, limit int) ([]communityModels.Community, error) {
-	s.log.Debug("Getting joined communities for user %s", userId)
-
-	// get community from ownerId
-	communities, err := s.communityQueryBuilder.SingleQuery().FilterMany(
-		bson.M{"members": userId},
-		nil,
-	)
-	if err != nil {
-		if mongo.IsNoDocumentFoundError(err) {
-			return nil, nil
-		}
-		s.log.Error("Error getting community by ownerId: %v", err)
-		return nil, err
-	}
-
-	if len(communities) == 0 {
-		s.log.Debug("No communities found for user %s", userId)
-		return nil, nil
-	}
-
-	var communites []communityModels.Community
-	for _, community := range communities {
-		if community != nil {
-			communites = append(communites, *community)
-		}
-	}
-
-	s.log.Debug("Found %d communities for user %s", len(communites), userId)
-	return communites, nil
-}
-
-func (s *userService) FollowUser(userId string, followUserId string) error {
+func (s *userService) FollowUser(userId string, followUserId string) network.ApiError {
 	s.log.Debug("Following user %s for user %s", followUserId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": followUserId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.log.Error("User to follow does not exist: %s", followUserId)
-			return fmt.Errorf("user to follow does not exist")
+			return NewUserNotFoundError(followUserId)
 		}
 		s.log.Error("Error checking if user to follow exists: %v", err)
-		return fmt.Errorf("error checking if user to follow exists: %v", err)
+		return NewDBError("checking if user to follow exists", err.Error())
 	}
 	if userId == followUserId {
 		s.log.Error("Cannot follow self")
-		return errors.New("cannot follow self")
+		return NewSelfActionError("follow")
 	}
 
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
+	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
 	}
-	userCollection := transaction.GetCollection(model.UserCollectionName)
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
-		"$addToSet": bson.M{
-			"follows": followUserId,
-		}})
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$addToSet": bson.M{
+					"follows": followUserId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error following user: %v", err)
+			return NewDBError("following user", err.Error())
+		}
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": followUserId},
+			bson.M{
+				"$addToSet": bson.M{
+					"followers": userId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error following user: %v", err)
+			return NewDBError("following user", err.Error())
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.log.Error("error following user: %v", err)
-		return fmt.Errorf("error following user: %v", err)
+		s.log.Error("Error following user: %v", err)
+		return NewDBError("following user", err.Error())
 	}
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": followUserId}, bson.M{
-		"$addToSet": bson.M{
-			"followers": userId,
-		}})
-	if err != nil {
-		s.log.Error("error following user: %v", err)
-		return fmt.Errorf("error following user: %v", err)
-	}
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
+
 	s.log.Debug("User %s followed user %s successfully", userId, followUserId)
 	return nil
 }
 
-func (s *userService) UnfollowUser(userId string, unfollowUserId string) error {
+func (s *userService) UnfollowUser(userId string, unfollowUserId string) network.ApiError {
 	s.log.Debug("Unfollowing user %s for user %s", unfollowUserId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": unfollowUserId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.log.Error("User to follow does not exist: %s", unfollowUserId)
-			return fmt.Errorf("user to follow does not exist")
+			return NewUserNotFoundError(unfollowUserId)
 		}
 		s.log.Error("Error checking if user to follow exists: %v", err)
-		return fmt.Errorf("error checking if user to follow exists: %v", err)
+		return NewDBError("checking if user to follow exists", err.Error())
 	}
 	if userId == unfollowUserId {
 		s.log.Error("Cannot follow self")
-		return errors.New("cannot follow self")
+		return NewSelfActionError("unfollow")
 	}
 
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
+	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
 	}
 
-	userCollection := transaction.GetCollection(model.UserCollectionName)
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
-		"$pull": bson.M{
-			"follows": unfollowUserId,
-		}})
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$pull": bson.M{
+					"follows": unfollowUserId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error unfollowing user: %v", err)
+			return NewDBError("unfollowing user", err.Error())
+		}
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": unfollowUserId},
+			bson.M{
+				"$pull": bson.M{
+					"followers": userId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error unfollowing user: %v", err)
+			return NewDBError("unfollowing user", err.Error())
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.log.Error("error unfollowing user: %v", err)
-		return fmt.Errorf("error unfollowing user: %v", err)
+		s.log.Error("Error unfollowing user: %v", err)
+		return NewDBError("unfollowing user", err.Error())
 	}
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": unfollowUserId}, bson.M{
-		"$pull": bson.M{
-			"followers": userId,
-		}})
-	if err != nil {
-		s.log.Error("error unfollowing user: %v", err)
-		return fmt.Errorf("error unfollowing user: %v", err)
-	}
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
+
 	s.log.Debug("User %s unfollowed user %s successfully", userId, unfollowUserId)
 	return nil
 }
 
-func (s *userService) BlockUser(userId string, blockUserId string) error {
+func (s *userService) BlockUser(userId string, blockUserId string) network.ApiError {
 	s.log.Debug("Blocking user %s for user %s", blockUserId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": blockUserId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.log.Error("User to block does not exist: %s", blockUserId)
-			return fmt.Errorf("user to block does not exist")
+			return NewUserNotFoundError(blockUserId)
 		}
 		s.log.Error("Error checking if user to block exists: %v", err)
-		return fmt.Errorf("error checking if user to block exists: %v", err)
+		return NewDBError("checking if user to block exists", err.Error())
 	}
 	if userId == blockUserId {
 		s.log.Error("Cannot block self")
-		return errors.New("cannot block self")
+		return NewSelfActionError("block")
 	}
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
+	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
 	}
 
-	userCollection := transaction.GetCollection(model.UserCollectionName)
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
-		"$addToSet": bson.M{
-			"preferences.blockList": blockUserId,
-		}})
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{"$addToSet": bson.M{
+				"preferences.blockList": blockUserId,
+			},
+			},
+		)
+		if err != nil {
+			s.log.Error("error blocking user: %v", err)
+			return NewDBError("blocking user", err.Error())
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.log.Error("error blocking user: %v", err)
-		return fmt.Errorf("error blocking user: %v", err)
+		return NewDBError("blocking user", err.Error())
 	}
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
+
 	s.log.Debug("User %s blocked user %s successfully", userId, blockUserId)
 	return nil
 }
 
-func (s *userService) UnblockUser(userId string, unblockUserId string) error {
+func (s *userService) UnblockUser(userId string, unblockUserId string) network.ApiError {
 	s.log.Debug("Unblocking user %s for user %s", unblockUserId, userId)
 	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": unblockUserId}, nil)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.log.Error("User to unblock does not exist: %s", unblockUserId)
-			return fmt.Errorf("user to unblock does not exist")
+			return NewUserNotFoundError(unblockUserId)
 		}
 		s.log.Error("Error checking if user to unblock exists: %v", err)
-		return fmt.Errorf("error checking if user to unblock exists: %v", err)
+		return NewDBError("checking if user to unblock exists", err.Error())
 	}
 	if userId == unblockUserId {
 		s.log.Error("Cannot block self")
-		return errors.New("cannot block self")
+		return NewSelfActionError("unblock")
 	}
 	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
-	err = transaction.Start()
-	if err != nil {
+	if err := transaction.Start(); err != nil {
 		s.log.Error("Error starting transaction: %v", err)
-		return fmt.Errorf("error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
 	}
 
-	userCollection := transaction.GetCollection(model.UserCollectionName)
-	_, err = userCollection.UpdateOne(transaction.GetContext(), bson.M{"userId": userId}, bson.M{
-		"$pull": bson.M{
-			"preferences.blockList": unblockUserId,
-		}})
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$pull": bson.M{
+					"preferences.blockList": unblockUserId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error unblocking user: %v", err)
+			return NewDBError("unblocking user", err.Error())
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.log.Error("error unblocking user: %v", err)
-		return fmt.Errorf("error unblocking user: %v", err)
+		s.log.Error("Error unblocking user: %v", err)
+		return NewDBError("unblocking user", err.Error())
 	}
-	if err := transaction.Commit(); err != nil {
-		s.log.Error("Error committing transaction: %v", err)
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
+
 	s.log.Debug("User %s unblocked user %s successfully", userId, unblockUserId)
+	return nil
+}
+
+func (s *userService) AddModerator(userId string, communityId string) network.ApiError {
+	s.log.Debug("Adding moderator %s to community %s", userId, communityId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to add as moderator does not exist: %s", userId)
+			return NewUserNotFoundError(userId)
+		}
+		s.log.Error("Error checking if user exists: %v", err)
+		return NewDBError("checking if user exists", err.Error())
+	}
+
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	if err := transaction.Start(); err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
+	}
+
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$addToSet": bson.M{
+					"moderatedCommunities": communityId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error adding moderator: %v", err)
+			return NewDBError("adding moderator", err.Error())
+		}
+		return nil
+	})
+
+	if err != nil {
+		s.log.Error("Error adding moderator: %v", err)
+		return NewDBError("adding moderator", err.Error())
+	}
+
+	s.log.Debug("Moderator %s added to community %s successfully", userId, communityId)
+	return nil
+}
+
+func (s *userService) RemoveModerator(userId string, communityId string) network.ApiError {
+	s.log.Debug("Removing moderator %s from community %s", userId, communityId)
+	_, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User to remove as moderator does not exist: %s", userId)
+			return NewUserNotFoundError(userId)
+		}
+		s.log.Error("Error checking if user exists: %v", err)
+		return NewDBError("checking if user exists", err.Error())
+	}
+	transaction := s.transactionBuilder.GetTransaction(time.Minute * 5)
+	if err := transaction.Start(); err != nil {
+		s.log.Error("Error starting transaction: %v", err)
+		return NewDBError("starting transaction", err.Error())
+	}
+	err = transaction.PerformSingleTransaction(func(session mongo.TransactionSession) error {
+		userCollection := session.Collection(model.UserCollectionName)
+		_, err = userCollection.UpdateOne(
+			bson.M{"userId": userId},
+			bson.M{
+				"$pull": bson.M{
+					"moderatedCommunities": communityId,
+				},
+			},
+		)
+		if err != nil {
+			s.log.Error("error removing moderator: %v", err)
+			return NewDBError("removing moderator", err.Error())
+		}
+		return nil
+	})
+	if err != nil {
+		s.log.Error("Error removing moderator: %v", err)
+		return NewDBError("removing moderator", err.Error())
+	}
+	s.log.Debug("Moderator %s removed from community %s successfully", userId, communityId)
 	return nil
 }

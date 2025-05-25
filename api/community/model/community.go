@@ -28,13 +28,12 @@ type Community struct {
 	ShortDesc   string             `bson:"shortDesc" json:"shortDesc"`
 	OwnerId     string             `bson:"ownerId" json:"ownerId"`
 	IsPrivate   bool               `bson:"isPrivate" json:"isPrivate"`
-	Members     []string           `bson:"members" json:"members"`
 	MemberCount int64              `bson:"memberCount" json:"memberCount"`
 	PostCount   int64              `bson:"postCount" json:"postCount"`
 	Media       CommunityMedia     `bson:"media" json:"media"`
 	Rules       []CommunityRule    `bson:"rules" json:"rules"`
 	Tags        []CommunityTagInfo `bson:"tags" json:"tags"`
-	Moderators  []string           `bson:"moderators" json:"moderators"`
+	Moderators  []ModeratorInfo    `bson:"moderators" json:"moderators"`
 	Settings    CommunitySettings  `bson:"settings" json:"settings"`
 	Stats       CommunityStats     `bson:"stats" json:"stats"`
 	Status      string             `bson:"status" json:"status"`
@@ -49,6 +48,13 @@ const (
 	CommunityStatusDeleted  CommunityStatus = "deleted"
 	CommunityStatusBanned   CommunityStatus = "banned"
 )
+
+type ModeratorInfo struct {
+	ID      primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	UserId  string             `bson:"userId" json:"userId"`
+	AddedBy string             `bson:"addedBy" json:"addedBy"`
+	AddedAt primitive.DateTime `bson:"addedAt" json:"addedAt"`
+}
 
 type CommunityMedia struct {
 	Avatar       Image   `bson:"avatar" json:"avatar"`
@@ -252,10 +258,9 @@ func NewCommunity(args NewCommunityArgs) *Community {
 		ShortDesc:   truncateString(args.Description, 160),
 		OwnerId:     args.OwnerId,
 		IsPrivate:   false,
-		Members:     []string{args.OwnerId},
 		MemberCount: 1,
 		PostCount:   0,
-		Moderators:  []string{args.OwnerId},
+		Moderators:  []ModeratorInfo{},
 		Media: CommunityMedia{
 			Avatar:       args.Avatar,
 			Background:   args.Background,

@@ -27,15 +27,15 @@ type Response interface {
 type SendResponse interface {
 	SuccessMsgResponse(message string)
 	SuccessDataResponse(message string, data any)
-	BadRequestError(message string, err error)
-	ConflictError(message string, err error)
-	UnprocessableEntityError(message string, err error)
-	TooManyRequestsError(message string, err error)
-	ForbiddenError(message string, err error)
-	UnauthorizedError(message string, err error)
-	NotFoundError(message string, err error)
-	MethodNotAllowedError(message string, err error)
-	InternalServerError(message string, errCode string, err error)
+	BadRequestError(message string, detail string, err error)
+	ConflictError(message string, detail string, err error)
+	UnprocessableEntityError(message string, detail string, err error)
+	TooManyRequestsError(message string, detail string, err error)
+	ForbiddenError(message string, detail string, err error)
+	UnauthorizedError(message string, detail string, err error)
+	NotFoundError(message string, detail string, err error)
+	MethodNotAllowedError(message string, detail string, err error)
+	InternalServerError(message string, detail string, errCode string, err error)
 	MixedError(err error)
 }
 
@@ -46,7 +46,7 @@ type ResponseSender interface {
 
 type BaseController interface {
 	ResponseSender
-	Path() string
+	Path(apiPath string) string
 }
 
 type Controller interface {
@@ -111,7 +111,7 @@ type BaseRouter interface {
 	GetEngine() *gin.Engine
 	RegisterValidationParsers(tagNameFunc validator.TagNameFunc)
 	LoadRootMiddlewares(middlewares []RootMiddleware)
-	Start(ip string, port uint16)
+	Start(ip string, port uint16) error
 }
 
 type Router interface {

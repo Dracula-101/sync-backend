@@ -2,8 +2,6 @@ package auth
 
 import (
 	"sync-backend/api/auth/dto"
-	"sync-backend/api/common/location"
-	"sync-backend/api/user"
 	"sync-backend/arch/common"
 	coreMW "sync-backend/arch/middleware"
 	"sync-backend/arch/network"
@@ -20,8 +18,6 @@ type authController struct {
 	uploadProvider   coreMW.UploadProvider
 	locationProvider network.LocationProvider
 	authService      AuthService
-	userService      user.UserService
-	locationService  location.LocationService
 }
 
 func NewAuthController(
@@ -29,29 +25,33 @@ func NewAuthController(
 	locationProvider network.LocationProvider,
 	uploadProvider coreMW.UploadProvider,
 	authService AuthService,
-	userService user.UserService,
-	locationService location.LocationService,
 ) network.Controller {
 	return &authController{
 		logger:           utils.NewServiceLogger("AuthController"),
-		BaseController:   network.NewBaseController("/api/v1/auth", authProvider),
+		BaseController:   network.NewBaseController("/auth", authProvider),
 		ContextPayload:   common.NewContextPayload(),
 		authProvider:     authProvider,
 		uploadProvider:   uploadProvider,
 		locationProvider: locationProvider,
 		authService:      authService,
-		userService:      userService,
-		locationService:  locationService,
 	}
 }
 
 func (c *authController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting auth routes")
-	group.POST("/signup", c.locationProvider.Middleware(), c.uploadProvider.Middleware("profile_photo"), c.uploadProvider.Middleware("background_photo"), c.SignUp)
+
+	/* ACCOUNT CREATION */
+	group.POST("/signup", c.locationProvider.Middleware(), c.uploadProvider.Middleware("profile_photo", "background_photo"), c.SignUp)
 	group.POST("/login", c.locationProvider.Middleware(), c.Login)
 	group.POST("/google", c.locationProvider.Middleware(), c.GoogleLogin)
+
+	/* AUTHENTICATION */
 	group.POST("/logout", c.authProvider.Middleware(), c.Logout)
+
+	/* PASSWORD MANAGEMENT */
 	group.POST("/forgot-password", c.ForgotPassword)
+
+	/* TOKEN MANAGEMENT */
 	group.POST("/refresh-token", c.locationProvider.Middleware(), c.RefreshToken)
 }
 
@@ -60,30 +60,11 @@ func (c *authController) SignUp(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	exists, err := c.userService.FindUserByEmail(body.Email)
-	if err != nil {
-		c.Send(ctx).MixedError(err)
-		return
-	}
-	if exists != nil {
-		c.Send(ctx).ConflictError("User with this email already exists", nil)
-		return
-	}
 
-	exists, err = c.userService.FindUserByUsername(body.UserName)
-	if err != nil {
-		c.Send(ctx).MixedError(err)
-		return
-	}
-	if exists != nil {
-		c.Send(ctx).ConflictError("User with this username already exists", nil)
-		return
-	}
-
-	profilePic := c.uploadProvider.GetUploadedFiles(ctx, "profile_photo")
+	profile := c.uploadProvider.GetUploadedFiles(ctx, "profile_photo")
 	backgroundPic := c.uploadProvider.GetUploadedFiles(ctx, "background_photo")
-	if len(profilePic.Files) != 0 {
-		body.ProfileFilePath = profilePic.Files[0].Path
+	if len(profile.Files) != 0 {
+		body.ProfileFilePath = profile.Files[0].Path
 	}
 	if len(backgroundPic.Files) != 0 {
 		body.BackgroundFilePath = backgroundPic.Files[0].Path

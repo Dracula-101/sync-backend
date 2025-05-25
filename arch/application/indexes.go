@@ -4,6 +4,7 @@ import (
 	comment "sync-backend/api/comment/model"
 	session "sync-backend/api/common/session/model"
 	community "sync-backend/api/community/model"
+	moderator "sync-backend/api/moderator/model"
 	post "sync-backend/api/post/model"
 	user "sync-backend/api/user/model"
 	"sync-backend/arch/mongo"
@@ -14,8 +15,15 @@ func EnsureDbIndexes(db mongo.Database) {
 	go mongo.Document[user.User](&user.User{}).EnsureIndexes(db)
 	go mongo.Document[session.Session](&session.Session{}).EnsureIndexes(db)
 	go mongo.Document[community.Community](&community.Community{}).EnsureIndexes(db)
+	go mongo.Document[community.CommunityInteraction](&community.CommunityInteraction{}).EnsureIndexes(db)
 	go mongo.Document[post.Post](&post.Post{}).EnsureIndexes(db)
 	go mongo.Document[post.PostInteraction](&post.PostInteraction{}).EnsureIndexes(db)
 	go mongo.Document[comment.Comment](&comment.Comment{}).EnsureIndexes(db)
 	go mongo.Document[comment.CommentInteraction](&comment.CommentInteraction{}).EnsureIndexes(db)
+
+	go mongo.Document[moderator.Moderator](&moderator.Moderator{}).EnsureIndexes(db)
+	go mongo.Document[moderator.ModLog](&moderator.ModLog{}).EnsureIndexes(db)
+	go mongo.Document[moderator.Report](&moderator.Report{}).EnsureIndexes(db)
+	go mongo.Document[moderator.CommunityBan](&moderator.CommunityBan{}).EnsureIndexes(db)
+
 }

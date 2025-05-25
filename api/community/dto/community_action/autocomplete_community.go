@@ -1,8 +1,8 @@
-package dto
+package communitydto
 
 import (
 	"fmt"
-	"sync-backend/api/community/model"
+	community "sync-backend/api/community/model"
 	coredto "sync-backend/arch/dto"
 
 	"github.com/go-playground/validator/v10"
@@ -50,18 +50,18 @@ func (s *AutocompleteCommunityRequest) ValidateErrors(errs validator.ValidationE
 // ==================================================
 
 type AutocompleteCommunityResponse struct {
-	Communities []model.CommunityAutocomplete `json:"communities"`
-	Total       int                           `json:"total"`
-	NextPage    int                           `json:"next_page"`
-	PrevPage    int                           `json:"prev_page"`
-	HasNext     bool                          `json:"has_next"`
-	HasPrev     bool                          `json:"has_prev"`
-	CurrentPage int                           `json:"current_page"`
-	Limit       int                           `json:"limit"`
-	TotalCount  int                           `json:"total_count"`
+	Communities []community.CommunityAutocomplete `json:"communities"`
+	Total       int                               `json:"total"`
+	NextPage    int                               `json:"next_page"`
+	PrevPage    int                               `json:"prev_page"`
+	HasNext     bool                              `json:"has_next"`
+	HasPrev     bool                              `json:"has_prev"`
+	CurrentPage int                               `json:"current_page"`
+	Limit       int                               `json:"limit"`
+	TotalCount  int                               `json:"total_count"`
 }
 
-func NewAutocompleteCommunityResponse(communities []model.CommunityAutocomplete, total int, nextPage int, prevPage int, hasNext bool, hasPrev bool, currentPage int, limit int, totalCount int) *AutocompleteCommunityResponse {
+func NewAutocompleteCommunityResponse(communities []community.CommunityAutocomplete, total int, nextPage int, prevPage int, hasNext bool, hasPrev bool, currentPage int, limit int, totalCount int) *AutocompleteCommunityResponse {
 	return &AutocompleteCommunityResponse{
 		Communities: communities,
 		Total:       total,

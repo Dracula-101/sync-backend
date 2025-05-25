@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type PublicComment struct {
+type PublicGetComment struct {
 	Id               string                    `json:"id"`
 	PostId           string                    `json:"postId"`
 	ParentId         string                    `json:"parentId,omitempty"`
@@ -29,5 +29,7 @@ type PublicComment struct {
 	HasMedia         bool                      `json:"hasMedia"`
 	Mentions         []string                  `json:"mentions,omitempty"`
 	Path             string                    `json:"path"`
+	IsLiked          bool                      `json:"isLiked"`
+	IsDisliked       bool                      `json:"isDisliked"`
 	CreatedAt        primitive.DateTime        `json:"createdAt"`
 }

@@ -10,10 +10,12 @@ import (
 )
 
 type router struct {
-	engine *gin.Engine
+	engine  *gin.Engine
+	prefix  string
+	version int
 }
 
-func NewRouter(env string, appLogger utils.AppLogger) Router {
+func NewRouter(env string, prefix string, version int, appLogger utils.AppLogger) Router {
 	var mode string
 	switch env {
 	case "debug":
@@ -42,8 +44,11 @@ func NewRouter(env string, appLogger utils.AppLogger) Router {
 	eng.HandleMethodNotAllowed = true
 	eng.NoMethod(NotAllowed())
 	eng.NoRoute(NotFound())
+
 	r := router{
-		engine: eng,
+		engine:  eng,
+		prefix:  prefix,
+		version: version,
 	}
 	return &r
 }
@@ -60,14 +65,17 @@ func (r *router) LoadRootMiddlewares(middlewares []RootMiddleware) {
 
 func (r *router) LoadControllers(controllers []Controller) {
 	for _, c := range controllers {
-		g := r.engine.Group(c.Path())
+		g := r.engine.Group(c.Path(fmt.Sprintf("%s/v%d", r.prefix, r.version)))
 		c.MountRoutes(g)
 	}
 }
 
-func (r *router) Start(ip string, port uint16) {
+func (r *router) Start(ip string, port uint16) error {
 	address := fmt.Sprintf("%s:%d", ip, port)
-	r.engine.Run(address)
+	if err := r.engine.Run(address); err != nil {
+		return fmt.Errorf("failed to start server: %w", err)
+	}
+	return nil
 }
 
 func (r *router) RegisterValidationParsers(tagNameFunc validator.TagNameFunc) {

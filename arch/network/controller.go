@@ -1,6 +1,8 @@
 package network
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,8 +20,8 @@ func NewBaseController(basePath string, authProvider AuthenticationProvider) Bas
 	}
 }
 
-func (c *baseController) Path() string {
-	return c.basePath
+func (c *baseController) Path(apiBasePath string) string {
+	return fmt.Sprintf("%s%s", apiBasePath, c.basePath)
 }
 
 func (c *baseController) Authentication() gin.HandlerFunc {

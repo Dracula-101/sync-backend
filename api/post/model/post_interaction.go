@@ -34,6 +34,7 @@ const (
 	InteractionTypeLike    InteractionType = "like"
 	InteractionTypeDislike InteractionType = "dislike"
 	InteractionTypeSave    InteractionType = "save"
+	InteractionTypeShare   InteractionType = "share"
 )
 
 func NewPostInteraction(userId string, postId string, interactionType InteractionType) *PostInteraction {

@@ -21,7 +21,7 @@ type commentController struct {
 
 func NewCommentController(authenticatorProvider network.AuthenticationProvider, locationProvider network.LocationProvider, commentService CommentService) *commentController {
 	return &commentController{
-		BaseController:        network.NewBaseController("/api/v1/comment", authenticatorProvider),
+		BaseController:        network.NewBaseController("/comment", authenticatorProvider),
 		ContextPayload:        common.NewContextPayload(),
 		logger:                utils.NewServiceLogger("CommentController"),
 		authenticatorProvider: authenticatorProvider,
@@ -32,19 +32,28 @@ func NewCommentController(authenticatorProvider network.AuthenticationProvider, 
 
 func (c *commentController) MountRoutes(group *gin.RouterGroup) {
 	c.logger.Info("Mounting comment routes")
+
 	group.Use(c.authenticatorProvider.Middleware())
+
+	/* POST COMMENT ROUTES */
 	group.POST("/post/create", c.locationProvider.Middleware(), c.CreatePostComment)
-	group.POST("/post/edit/:commentId", c.EditPostComment)
-	group.POST("/post/delete/:commentId", c.DeletePostComment)
+	group.PUT("/post/:commentId", c.EditPostComment)
+	group.DELETE("/post/:commentId", c.DeletePostComment)
 	group.GET("/post/:postId", c.GetPostComments)
 	group.GET("/post/:postId/reply/:commentId", c.GetPostCommentReplies)
 
+	/* POST COMMENT REPLY ROUTES */
 	group.POST("/post/reply/create", c.locationProvider.Middleware(), c.CreatePostCommentReply)
 	group.POST("/post/reply/edit/:commentId", c.EditPostCommentReply)
 	group.POST("/post/reply/delete/:commentId", c.DeletePostCommentReply)
 
+	/* POST COMMENT LIKE/DISLIKE ROUTES */
 	group.POST("/like/:commentId", c.LikePostComment)
 	group.POST("/dislike/:commentId", c.DislikePostComment)
+
+	/* USER COMMENT ROUTES */
+	group.GET("/user/:userId", c.GetUserComments)
+	group.GET("/user", c.GetMyUserComments)
 }
 
 func (c *commentController) CreatePostComment(ctx *gin.Context) {
@@ -70,7 +79,11 @@ func (c *commentController) EditPostComment(ctx *gin.Context) {
 	commentId := ctx.Param("commentId")
 	if commentId == "" {
 		c.logger.Error("Comment ID is required")
-		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Comment ID is required",
+			"Please provide a valid comment ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -108,7 +121,11 @@ func (c *commentController) GetPostComments(ctx *gin.Context) {
 	postId := ctx.Param("postId")
 	if postId == "" {
 		c.logger.Error("Post ID is required")
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 	params, err := network.ReqQuery(ctx, dto.NewGetPostComentRequest())
@@ -131,13 +148,21 @@ func (c *commentController) GetPostCommentReplies(ctx *gin.Context) {
 	commentId := ctx.Param("commentId")
 	if commentId == "" {
 		c.logger.Error("Comment ID is required")
-		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Comment ID is required",
+			"Please provide a valid comment ID in the request params.",
+			nil,
+		)
 		return
 	}
 	postId := ctx.Param("postId")
 	if postId == "" {
 		c.logger.Error("Post ID is required")
-		c.Send(ctx).BadRequestError("Post ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Post ID is required",
+			"Please provide a valid post ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -182,7 +207,11 @@ func (c *commentController) EditPostCommentReply(ctx *gin.Context) {
 	commentId := ctx.Param("commentId")
 	if commentId == "" {
 		c.logger.Error("Comment ID is required")
-		c.Send(ctx).BadRequestError("Comment ID is required", nil)
+		c.Send(ctx).BadRequestError(
+			"Comment ID is required",
+			"Please provide a valid comment ID in the request params.",
+			nil,
+		)
 		return
 	}
 
@@ -242,4 +271,51 @@ func (c *commentController) DislikePostComment(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessDataResponse("Comment disliked successfully", dto.NewDislikePostCommentResponse(*isDisliked, *synergy))
+}
+
+func (c *commentController) GetUserComments(ctx *gin.Context) {
+	userId := ctx.Param("userId")
+	if userId == "" {
+		c.logger.Error("User ID is required")
+		c.Send(ctx).BadRequestError(
+			"User ID is required",
+			"Please provide a valid user ID in the request params.",
+			nil,
+		)
+		return
+	}
+
+	params, err := network.ReqQuery(ctx, dto.NewGetUserCommentRequest())
+	if err != nil {
+		c.logger.Error("Failed to parse query parameters: %v", err)
+		return
+	}
+
+	comments, err := c.commentService.GetUserComments(userId, params.Pagination.Page, params.Pagination.Limit)
+	if err != nil {
+		c.logger.Error("Failed to get user comments: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Comments retrieved successfully", comments)
+}
+
+func (c *commentController) GetMyUserComments(ctx *gin.Context) {
+	userId := c.MustGetUserId(ctx)
+
+	params, err := network.ReqQuery(ctx, dto.NewGetMyCommentsRequest())
+	if err != nil {
+		c.logger.Error("Failed to parse query parameters: %v", err)
+		return
+	}
+
+	comments, err := c.commentService.GetUserComments(*userId, params.Pagination.Page, params.Pagination.Limit)
+	if err != nil {
+		c.logger.Error("Failed to get my comments: %v", err)
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessDataResponse("Comments retrieved successfully", comments)
 }

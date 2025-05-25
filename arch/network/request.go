@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,7 @@ func ReqBody[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "body")
 	}
@@ -46,6 +48,7 @@ func ReqForm[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "form")
 	}
@@ -61,6 +64,7 @@ func ReqQuery[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "query")
 	}
@@ -76,6 +80,7 @@ func ReqParams[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "params")
 	}
@@ -91,6 +96,7 @@ func ReqHeaders[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 
 	v := validator.New()
 	v.RegisterTagNameFunc(CustomTagNameFunc())
+
 	if err := v.Struct(dto); err != nil {
 		return nil, handleValidationError(ctx, dto, err, http.StatusUnprocessableEntity, "header")
 	}
@@ -98,152 +104,246 @@ func ReqHeaders[T any](ctx *gin.Context, dto Dto[T]) (*T, error) {
 	return dto.GetValue(), nil
 }
 
+// Error code and message constants
+const (
+	ErrCodeBindingBody     = "BODY_BINDING_ERROR"
+	ErrCodeBindingForm     = "FORM_BINDING_ERROR"
+	ErrCodeBindingQuery    = "QUERY_BINDING_ERROR"
+	ErrCodeBindingParams   = "PARAMS_BINDING_ERROR"
+	ErrCodeBindingHeader   = "HEADER_BINDING_ERROR"
+	ErrCodeValidation      = "VALIDATION_ERROR"
+	ErrCodeFieldValidation = "FIELD_VALIDATION_ERROR"
+	ErrCodeInternal        = "INTERNAL_SERVER_ERROR"
+	ErrMsgBindingFailed    = "Failed to bind %s parameters"
+	ErrMsgValidationFailed = "Validation failed"
+	ErrMsgInternal         = "Internal server error"
+)
+
+// Helper: Convert validator.ValidationErrors to []ErrorDetail
+func validationErrorsToDetails(validationErrors validator.ValidationErrors, bindType string, msgs []string) []ErrorDetail {
+	details := make([]ErrorDetail, 0, len(validationErrors))
+
+	// Create error details for each validation error
+	for index, fieldError := range validationErrors {
+		fieldName := fieldError.Field()
+		field := fmt.Sprintf("%s:%s", bindType, fieldName)
+
+		detail := NewErrorDetail(
+			ErrCodeFieldValidation,
+			field,
+			msgs[index],
+			fmt.Sprintf("Validation for '%s' failed on the '%s' tag with value '%v'",
+				fieldName, fieldError.Tag(), fieldError.Value()),
+			fieldError,
+		)
+		details = append(details, detail)
+	}
+
+	// Add any custom messages that weren't handled
+	alreadyProcessedFields := make(map[string]bool)
+	for _, err := range validationErrors {
+		alreadyProcessedFields[err.Field()] = true
+	}
+
+	for _, msg := range msgs {
+		// Check if this message is for a field we've already processed
+		isProcessed := false
+		for fieldName := range alreadyProcessedFields {
+			if strings.Contains(strings.ToLower(msg), strings.ToLower(fieldName)) {
+				isProcessed = true
+				break
+			}
+		}
+
+		if !isProcessed {
+			detail := NewErrorDetail(
+				ErrCodeFieldValidation,
+				fmt.Sprintf("%s:unknown", bindType),
+				msg,
+				"Additional validation error",
+				errors.New(msg),
+			)
+			details = append(details, detail)
+		}
+	}
+
+	return details
+}
+
+// Helper: Extract required fields from a DTO using reflection
+func getRequiredFields(dto any) []string {
+	requiredFields := []string{}
+	dt := reflect.TypeOf(dto)
+	if dt.Kind() == reflect.Ptr {
+		dt = dt.Elem()
+	}
+	for i := 0; i < dt.NumField(); i++ {
+		field := dt.Field(i)
+		// Check if field is required
+		isRequired := false
+		if tag, ok := field.Tag.Lookup("binding"); ok && (tag == "required" || strings.HasPrefix(tag, "required,")) {
+			isRequired = true
+		} else if tag, ok := field.Tag.Lookup("validate"); ok && (tag == "required" || strings.HasPrefix(tag, "required,")) {
+			isRequired = true
+		}
+
+		// If required, get the proper field name from JSON tag
+		if isRequired {
+			fieldName := field.Name // Default to struct field name
+			if jsonTag, ok := field.Tag.Lookup("json"); ok {
+				parts := strings.Split(jsonTag, ",")
+				if parts[0] != "" && parts[0] != "-" {
+					fieldName = parts[0]
+				}
+			}
+			if jsonTag, ok := field.Tag.Lookup("form"); ok {
+				parts := strings.Split(jsonTag, ",")
+				if parts[0] != "" && parts[0] != "-" {
+					fieldName = parts[0]
+				}
+			}
+			if jsonTag, ok := field.Tag.Lookup("query"); ok {
+				parts := strings.Split(jsonTag, ",")
+				if parts[0] != "" && parts[0] != "-" {
+					fieldName = parts[0]
+				}
+			}
+			if jsonTag, ok := field.Tag.Lookup("uri"); ok {
+				parts := strings.Split(jsonTag, ",")
+				if parts[0] != "" && parts[0] != "-" {
+					fieldName = parts[0]
+				}
+			}
+			requiredFields = append(requiredFields, fieldName)
+		}
+	}
+	return requiredFields
+}
+
 // handleBindingError handles binding errors (typically 400 Bad Request)
 func handleBindingError[T any](ctx *gin.Context, dto Dto[T], err error, statusCode int, bindType string) error {
+	if err == nil {
+		return nil
+	}
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		return handleValidationError(ctx, dto, validationErrors, statusCode, bindType)
 	}
 
-	if err == nil {
-		return nil
-	}
-
 	errorDetails := make([]ErrorDetail, 0)
-	errorCode := "BINDING_ERROR"
-	errorMessage := fmt.Sprintf("Failed to bind %s parameters", bindType)
-
-	switch bindType {
-	case "body":
-		errorCode = "BODY_BINDING_ERROR"
-	case "form":
-		errorCode = "FORM_BINDING_ERROR"
-	case "query":
-		errorCode = "QUERY_BINDING_ERROR"
-	case "params":
-		errorCode = "PARAMS_BINDING_ERROR"
-	case "header":
-		errorCode = "HEADER_BINDING_ERROR"
+	errorCode := map[string]string{
+		"body":   ErrCodeBindingBody,
+		"form":   ErrCodeBindingForm,
+		"query":  ErrCodeBindingQuery,
+		"params": ErrCodeBindingParams,
+		"header": ErrCodeBindingHeader,
+	}[bindType]
+	if errorCode == "" {
+		errorCode = "BINDING_ERROR"
 	}
+	errorMessage := fmt.Sprintf(ErrMsgBindingFailed, bindType)
 
-	// Handle specific error types
-	if syntaxErr, ok := err.(*json.SyntaxError); ok {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "JSON_SYNTAX_ERROR",
-			Message: "Invalid JSON syntax",
-			Detail:  syntaxErr.Error(),
-		})
-	} else if typeErr, ok := err.(*json.UnmarshalTypeError); ok {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "JSON_UNMARSHAL_TYPE_ERROR",
-			Message: "Invalid JSON type",
-			Detail:  typeErr.Error(),
-		})
-	} else if err.Error() == "EOF" {
-		switch bindType {
-		case "body":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_BODY",
-				Message: "Empty request body",
-				Detail:  "The request body is empty",
-			})
-		case "form":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_FORM",
-				Message: "Empty form data",
-				Detail:  "The form data is empty",
-			})
-		case "query":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_QUERY",
-				Message: "Empty query parameters",
-				Detail:  "The query parameters are empty",
-			})
-		case "params":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_PARAMS",
-				Message: "Empty URI parameters",
-				Detail:  "The URI parameters are empty",
-			})
-		case "header":
-			errorDetails = append(errorDetails, ErrorDetail{
-				Code:    "EMPTY_HEADER",
-				Message: "Empty header parameters",
-				Detail:  "The header parameters are empty",
-			})
+	switch e := err.(type) {
+	case *json.SyntaxError:
+		errorDetails = append(errorDetails, NewErrorDetail(
+			"JSON_SYNTAX_ERROR",
+			"",
+			"Invalid JSON syntax",
+			fmt.Sprintf("Invalid JSON syntax at byte offset %d", e.Offset),
+			e,
+		))
+	case *json.UnmarshalTypeError:
+		errorDetails = append(errorDetails, NewErrorDetail(
+			"JSON_UNMARSHAL_TYPE_ERROR",
+			"",
+			"Invalid JSON type",
+			fmt.Sprintf("Invalid JSON type for field '%s': expected %s, got %s", e.Field, e.Type, e.Value),
+			e,
+		))
+	default:
+		switch err.Error() {
+		case "EOF":
+			// Empty request: enumerate all required fields
+			requiredFields := getRequiredFields(dto)
+			if len(requiredFields) > 0 {
+				for _, field := range requiredFields {
+					errorDetails = append(errorDetails, NewErrorDetail(
+						ErrCodeFieldValidation,
+						fmt.Sprintf("%s:%s", bindType, field),
+						fmt.Sprintf("field '%s' is required", field),
+						fmt.Sprintf("The field '%s' is required but was not provided", field),
+						err,
+					))
+				}
+			} else {
+				errorDetails = append(errorDetails, NewErrorDetail(
+					"EMPTY_"+strings.ToUpper(bindType),
+					"",
+					fmt.Sprintf("Empty %s", bindType),
+					fmt.Sprintf("The %s is empty", bindType),
+					err,
+				))
+			}
+		case "http: no such file":
+			errorDetails = append(errorDetails, NewErrorDetail(
+				"FILE_NOT_FOUND", "", "File not found", "The specified file was not found", err,
+			))
+		case "http: request URI too large":
+			errorDetails = append(errorDetails, NewErrorDetail(
+				"REQUEST_URI_TOO_LARGE", "", "Request URI too large", "The request URI exceeds the maximum size limit", err,
+			))
+		case "http: request body too large":
+			errorDetails = append(errorDetails, NewErrorDetail(
+				"REQUEST_BODY_TOO_LARGE", "", "Request body too large", "The request body exceeds the maximum size limit", err,
+			))
+		case "http: request header too large":
+			errorDetails = append(errorDetails, NewErrorDetail(
+				"REQUEST_HEADER_TOO_LARGE", "", "Request header too large", "The request header exceeds the maximum size limit", err,
+			))
+		default:
+			errorDetails = append(errorDetails, NewErrorDetail(
+				errorCode, "", errorMessage, fmt.Sprintf("Failed to bind %s: %s", bindType, err.Error()), err,
+			))
 		}
-	} else if err.Error() == "http: no such file" {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "FILE_NOT_FOUND",
-			Message: "File not found",
-			Detail:  "The specified file was not found",
-		})
-	} else if err.Error() == "http: request URI too large" {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "REQUEST_URI_TOO_LARGE",
-			Message: "Request URI too large",
-			Detail:  "The request URI exceeds the maximum size limit",
-		})
-	} else if err.Error() == "http: request body too large" {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "REQUEST_BODY_TOO_LARGE",
-			Message: "Request body too large",
-			Detail:  "The request body exceeds the maximum size limit",
-		})
-	} else if err.Error() == "http: request header too large" {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    "REQUEST_HEADER_TOO_LARGE",
-			Message: "Request header too large",
-			Detail:  "The request header exceeds the maximum size limit",
-		})
-	} else {
-		errorDetails = append(errorDetails, ErrorDetail{
-			Code:    errorCode,
-			Message: errorMessage,
-			Detail:  err.Error(),
-		})
 	}
-	errResponse := NewEnvelopeWithErrors(false, statusCode, "Binding failed", errorDetails)
 
+	// Fallback for truly unknown errors
+	if len(errorDetails) == 0 {
+		errorDetails = append(errorDetails, NewErrorDetail(
+			ErrCodeInternal, "", ErrMsgInternal, fmt.Sprintf("Failed to bind %s: %s", bindType, err.Error()), err,
+		))
+	}
+
+	errResponse := NewEnvelopeWithErrors(false, statusCode, "Binding failed", errorDetails)
 	ctx.JSON(statusCode, errResponse)
 	return err
 }
 
 // handleValidationError handles validation errors (typically 422 Unprocessable Entity)
 func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statusCode int, bindType string) error {
+	if err == nil {
+		return nil
+	}
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		msgs, e := dto.ValidateErrors(validationErrors)
 		if e != nil {
-			// If something went wrong during error processing
 			ctx.JSON(http.StatusInternalServerError, NewEnvelopeWithErrors(
 				false,
 				http.StatusInternalServerError,
-				"Internal server error",
+				ErrMsgInternal,
 				[]ErrorDetail{
-					{
-						Code:    InternalServerErrorCode,
-						Message: "Validation error",
-						Detail:  "Failed to process validation errors",
-					},
+					NewErrorDetail(
+						ErrCodeInternal,
+						"",
+						"Validation error",
+						fmt.Sprintf("Failed to validate request: %s", e.Error()),
+						e,
+					),
 				},
 			))
 			return e
 		}
-
-		errResponse := NewEnvelopeWithErrors(
-			false,
-			statusCode,
-			"Validation failed",
-			[]ErrorDetail{},
-		)
-		errResponse.Errors = make([]ErrorDetail, len(msgs))
-		for i, msg := range msgs {
-			errResponse.Errors[i] = ErrorDetail{
-				Code:    ErrorFieldValidationCode,
-				Message: msg,
-				Field:   fmt.Sprintf("%s:%s", bindType, validationErrors[i].Field()),
-				Detail:  fmt.Sprintf("Error: Field validation for %s failed on the %s tag", validationErrors[i].Field(), validationErrors[i].Tag()),
-			}
-		}
+		details := validationErrorsToDetails(validationErrors, bindType, msgs)
+		errResponse := NewEnvelopeWithErrors(false, statusCode, ErrMsgValidationFailed, details)
 		ctx.JSON(statusCode, errResponse)
 
 		// For compatibility with your original error return approach
@@ -264,14 +364,16 @@ func handleValidationError[T any](ctx *gin.Context, dto Dto[T], err error, statu
 	ctx.JSON(statusCode, NewEnvelopeWithErrors(
 		false,
 		statusCode,
-		"Validation failed",
+		ErrMsgValidationFailed,
 		[]ErrorDetail{
-			{
-				Code:    ErrorValidationCode,
-				Message: "Failed to validate request",
-				Detail:  err.Error(),
-			},
-		}),
-	)
+			NewErrorDetail(
+				ErrCodeValidation,
+				"",
+				"Failed to validate request",
+				fmt.Sprintf("Failed to validate %s: %s", bindType, err.Error()),
+				err,
+			),
+		},
+	))
 	return err
 }

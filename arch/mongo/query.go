@@ -19,6 +19,9 @@ type Query[T any] interface {
 	FindOne(filter bson.M, opts *options.FindOneOptions) (*T, error)
 	FindAll(filter bson.M, opts *options.FindOptions) ([]*T, error)
 	FindPaginated(filter bson.M, page int64, limit int64, opts *options.FindOptions) ([]*T, error)
+	FindOneAndUpdate(filter bson.M, update bson.M, opts *options.FindOneAndUpdateOptions) (*T, error)
+	FindOneAndReplace(filter bson.M, replacement *T, opts *options.FindOneAndReplaceOptions) (*T, error)
+	FindOneAndDelete(filter bson.M, opts *options.FindOneAndDeleteOptions) (*T, error)
 	InsertOne(doc *T) (*primitive.ObjectID, error)
 	InsertAndRetrieveOne(doc *T) (*T, error)
 	InsertMany(doc []*T) ([]primitive.ObjectID, error)
@@ -247,6 +250,45 @@ func (q *query[T]) FindPaginated(filter bson.M, page int64, limit int64, opts *o
 	}
 	q.logger.Info("[ MONGO ] - FindPaginated query executed successfully, retrieved %d documents", len(docs))
 	return docs, nil
+}
+
+func (q *query[T]) FindOneAndUpdate(filter bson.M, update bson.M, opts *options.FindOneAndUpdateOptions) (*T, error) {
+	defer q.Close()
+	q.logger.Info("[ MONGO ] - Executing FindOneAndUpdate query with filter: %v, update: %v", filter, update)
+	var doc T
+	err := q.collection.FindOneAndUpdate(q.context, filter, update, opts).Decode(&doc)
+	if err != nil && err != mongo.ErrNoDocuments {
+		q.logger.Error("[ MONGO ] - Error executing FindOneAndUpdate query: %v", err)
+		return nil, err
+	}
+	q.logger.Info("[ MONGO ] - FindOneAndUpdate query executed successfully")
+	return &doc, nil
+}
+
+func (q *query[T]) FindOneAndReplace(filter bson.M, replacement *T, opts *options.FindOneAndReplaceOptions) (*T, error) {
+	defer q.Close()
+	q.logger.Info("[ MONGO ] - Executing FindOneAndReplace query with filter: %v, replacement: %v", filter, replacement)
+	var doc T
+	err := q.collection.FindOneAndReplace(q.context, filter, replacement, opts).Decode(&doc)
+	if err != nil && err != mongo.ErrNoDocuments {
+		q.logger.Error("[ MONGO ] - Error executing FindOneAndReplace query: %v", err)
+		return nil, err
+	}
+	q.logger.Info("[ MONGO ] - FindOneAndReplace query executed successfully")
+	return &doc, nil
+}
+
+func (q *query[T]) FindOneAndDelete(filter bson.M, opts *options.FindOneAndDeleteOptions) (*T, error) {
+	defer q.Close()
+	q.logger.Info("[ MONGO ] - Executing FindOneAndDelete query with filter: %v", filter)
+	var doc T
+	err := q.collection.FindOneAndDelete(q.context, filter, opts).Decode(&doc)
+	if err != nil && err != mongo.ErrNoDocuments {
+		q.logger.Error("[ MONGO ] - Error executing FindOneAndDelete query: %v", err)
+		return nil, err
+	}
+	q.logger.Info("[ MONGO ] - FindOneAndDelete query executed successfully")
+	return &doc, nil
 }
 
 func (q *query[T]) InsertOne(doc *T) (*primitive.ObjectID, error) {

@@ -1,197 +1,339 @@
 # Sync Backend
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Go Version](https://img.shields.io/badge/go-1.24.2-blue.svg)
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
-![Last Updated](https://img.shields.io/badge/updated-May%202025-brightgreen.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/badge/go-1.24.2-00ADD8.svg)](https://go.dev/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/Dracula-101/sync-backend)
+[![Last Updated](https://img.shields.io/badge/updated-May%2021%2C%202025-informational.svg)](https://github.com/Dracula-101/sync-backend)
 
-A robust backend service for the "Sync" social media platform, providing secure authentication, scalable API endpoints, and performance-optimized services.
+A Go-powered backend service for the Sync social media platform - built for performance, scalability, and developer friendliness. Handles authentication, content management, social interactions, and user data with robust security measures.
 
-## Features
+## 🚀 Quick Start
 
-- **Modern Authentication System**
-  - Email/password login with secure password hashing
-  - JWT-based authentication
-  - OAuth integration (Google support)
-  - Session management with revocation capabilities
-  
-- **API Architecture**
-  - RESTful API design with versioning
-  - Rate limiting for API protection
-  - CORS configuration for frontend compatibility
-  
-- **Robust Infrastructure**
-  - MongoDB for primary data storage
-  - PostgreSQL for IP geolocation data
-  - Redis for caching and rate limiting
-  - Structured logging system
-  - Environment-based configuration management
-
-## Getting Started
-
-### Prerequisites
-
-- Go 1.24.2 or later
-- MongoDB
-- PostgreSQL
-- Redis
-
-### Installation
-
-1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/sync-backend.git
+# Clone repository
+git clone https://github.com/Dracula-101/sync-backend.git
 cd sync-backend
-```
 
-2. Copy the example environment file
-```bash
+# Set up configuration (update database credentials in .env)
 cp .env.example .env
-```
 
-3. Install dependencies
-```bash
+# Install dependencies
 go mod download
+
+# Run the server
+go run main.go
 ```
 
-### Running the Application
+## ✨ Features
 
-#### Development Mode
+- **Authentication System**
+  - Email/password login with secure password hashing
+  - JWT-based token authentication
+  - Google OAuth integration
+  - Session management with device tracking and revocation
+  - Password reset functionality
 
-For development with hot-reload using Air:
+- **Social Networking Core**
+  - User profiles and relationships
+  - Posts with rich media support
+  - Communities with moderation
+  - Nested comments and reactions
+  - Content tagging system
 
+- **Performance Infrastructure**
+  - MongoDB for document storage (user data, posts, communities)
+  - Redis for caching and rate limiting
+  - PostgreSQL for geolocation services
+  - Optimized query patterns
+
+- **API Design**
+  - RESTful endpoints with versioning
+  - Consistent error handling
+  - Rate limiting protection
+  - Comprehensive request validation
+  - CORS configuration for frontend compatibility
+
+## 🛠️ Requirements
+
+- **Go 1.24.2+** - Core language runtime
+- **MongoDB 6.0+** - Primary database for social content and user data
+- **Redis 7.0+** - Caching, rate limiting, and session management
+- **PostgreSQL 14+** - Geographic data and advanced analytics
+- **Air** - For hot-reload during development (optional)
+
+## 🏃‍♂️ Development
+
+**With hot-reload:**
 ```bash
+# Install Air first if not installed
+go install github.com/cosmtrek/air@latest
+
+# Run with automatic reloading
 air
 ```
 
-#### Manual Run
-
+**Manual run:**
 ```bash
 go run main.go
 ```
 
-## Project Structure
-
+**Project structure:**
 ```
 sync-backend/
-├── api/                          # API components organized by domain
-│   ├── auth/                     # Authentication API
-│   │   ├── controller.go
-│   │   ├── service.go
-│   │   ├── dto/                  # Data Transfer Objects
-│   │   ├── middleware/           # Auth middlewares
-│   │   └── model/                # Auth domain models
-│   ├── common/                   # Common services (location, sessions, etc)
-│   ├── community/                # Community related functionality
-│   ├── post/                     # Post related functionality
-│   └── user/                     # User related functionality
-├── arch/                         # Core architecture components
-│   ├── application/              # Application bootstrapping
-│   ├── common/                   # Common utilities
-│   ├── config/                   # Configuration management
-│   ├── dto/                      # Common DTOs
-│   ├── middleware/               # Core middlewares
-│   ├── mongo/                    # MongoDB integration
-│   ├── network/                  # HTTP networking components
-│   ├── postgres/                 # PostgreSQL integration
-│   ├── redis/                    # Redis integration
-│   └── utils/                    # Architectural utilities
-├── configs/                      # Configuration files
-├── keys/                         # Cryptographic keys
-├── scripts/                      # Utility scripts
-├── test/                         # Test helpers
-├── utils/                        # General utility functions
-└── .tools/                       # Development tooling
+├── api/                  # API components organized by domain
+│   ├── auth/             # Authentication (login, signup, OAuth)
+│   ├── comment/          # Comment functionality and reactions
+│   ├── common/           # Shared services (location, analytics)
+│   ├── community/        # Community creation and management
+│   ├── post/             # Post creation and interaction
+│   ├── user/             # User profiles and relationships
+│   └── system/           # System-wide operations
+├── arch/                 # Core architecture components
+│   ├── application/      # App bootstrapping and configuration
+│   ├── mongo/            # MongoDB integration layer
+│   ├── postgres/         # PostgreSQL integration
+│   ├── redis/            # Redis caching and storage
+│   ├── network/          # HTTP networking layer
+│   └── middleware/       # Global middleware (errors, rate limiting)
+├── configs/              # Configuration files (YAML)
+├── scripts/              # Deployment and maintenance scripts
+├── seed/                 # Seed data for initial setup
+├── test/                 # Testing utilities
+├── uploads/              # File upload storage location
+└── utils/                # Helper utilities and tools
 ```
 
-## Configuration
-
-The application uses a combination of YAML configuration files and environment variables:
-
-- `configs/app.yaml`: General application settings
-- `configs/auth.yaml`: Authentication settings
-- `configs/db.yaml`: Database configuration
-- `.env`: Environment-specific variables
-
-## Development
-
-
-This creates the boilerplate for a new feature with:
-1. Models (MongoDB schemas)
-2. DTOs (Data Transfer Objects)
-3. Service layer
-4. Controller with basic CRUD endpoints
-
-### Manual Creation
-
-1. Create feature folder in `api/{feature_name}`
-2. Implement model, service, and controller
-3. Register the controller in `arch/application/module.go`
-
-## Testing
+## 🧪 Testing
 
 ```bash
 # Run all tests
 go test ./...
 
-# Run specific test package
+# Run auth tests only
 go test ./api/auth/...
+
+# Run with coverage report
+go test -cover ./...
 ```
 
-## Key Components
+## 🔧 Configuration
 
-### Modular Architecture
-- Feature-based organization in the `api/` directory
-- Core components in the `arch/` directory
-- Clear separation of concerns between layers
+The application uses a combination of YAML files and environment variables:
 
-### Database Integration
-- MongoDB for main application data via `arch/mongo` package
-- PostgreSQL for IP geolocation via `arch/postgres` package
-- Redis for caching and rate-limiting via `arch/redis` package
+- **configs/app.yaml** - Core application settings, logging, server ports
+- **configs/auth.yaml** - Authentication settings, JWT secrets, OAuth credentials
+- **configs/db.yaml** - Database connection strings and settings
+- **.env** - Environment-specific variables and secrets
 
-### Configuration Management
-- YAML-based configuration with [Viper](https://github.com/spf13/viper)
-- Environment variable interpolation in config files
-- Strongly-typed configuration objects
+Example `.env` file structure:
+```
+# Server
+HOST=localhost
+PORT=8080
+ENV=development
+LOG_LEVEL=info
 
-### Networking Layer
-- [Gin Web Framework](https://github.com/gin-gonic/gin) for HTTP routing and middleware
-- Consistent error handling and response formatting
-- Content validation with go-playground/validator
+JWT_SECRET=<your_jwt_secret>
 
-### Authentication
-- JWT-based authentication via golang-jwt/jwt
-- Session management with device tracking
-- Role-based access control
+# Database connections
+DB_HOST=
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
 
-### Development Tools
-- Live reloading with [Air](https://github.com/cosmtrek/air)
-- Environment variable support with `.env` files
-- Code generation for new API features
+# IP Geolocation DB
+IP_DB_HOST=
+IP_DB_PORT=
+IP_DB_USER=
+IP_DB_PASSWORD=
+IP_DB_NAME=
 
-## Contributing
+# Redis connections
+REDIS_HOST=
+REDIS_PORT=
+REDIS_PASSWORD=
+REDIS_DB=
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+# Cloudinary for uploading media
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
 
-## License
+## 🏗️ Architecture
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+- **Domain-Driven Design** - Business logic organized by domain in the `api/` directory
+- **Clean Architecture** - Clear separation between controllers, services, and data models
+- **Modular Components**:
+  - **Controllers** - Handle HTTP requests and responses
+  - **Services** - Contain business logic and orchestrate operations
+  - **Models** - Define data structures and MongoDB schemas
+  - **DTOs** - Handle data transfer between layers
 
-## Acknowledgments
+- **Data Storage**:
+  - **MongoDB** - Document storage for users, posts, communities, comments
+  - **Redis** - Session storage, caching, rate limiting
+  - **PostgreSQL** - Geolocation services and relational data
 
-- [Gin Web Framework](https://github.com/gin-gonic/gin)
-- [MongoDB Go Driver](https://github.com/mongodb/mongo-go-driver)
-- [Redis Go Client](https://github.com/redis/go-redis)
-- [Viper](https://github.com/spf13/viper) for configuration
-- [Validator](https://github.com/go-playground/validator) for data validation
+- **Networking**:
+  - **[Gin Web Framework](https://github.com/gin-gonic/gin)** - Fast HTTP routing and middleware
+  - **Custom Middleware** - Error handling, logging, authentication
+  - **Validation** - Request validation with [go-playground/validator](https://github.com/go-playground/validator)
 
-## Contact
+- **Authentication**:
+  - **JWT** - Stateless authentication with [golang-jwt/jwt](https://github.com/golang-jwt/jwt)
+  - **Session Management** - Multi-device login with revocation
 
-Project Link: [https://github.com/yourusername/sync-backend](https://github.com/yourusername/sync-backend)
+## 🛠️ Adding New Features
 
-*Last updated: May 3, 2025*
+The codebase follows a consistent pattern to make adding new features straightforward:
+
+1. **Create feature directory** in `api/{feature_name}/`
+2. **Implement these files**:
+   - `controller.go` - HTTP handlers and routes
+   - `service.go` - Business logic
+   - `error.go` - Feature-specific error definitions
+   - `dto/` - Request/response data structures
+   - `model/` - Data models for MongoDB (if needed)
+   - `middleware/` - Feature-specific middleware (if needed)
+3. **Register controller** in `arch/application/module.go`
+
+**Example of adding a new "notification" feature:**
+
+```go
+// api/notification/service.go
+
+type NotificationService interface {
+  CreateNotification(userID string, notification Notification) error
+  GetNotifications(userID string) ([]Notification, error)
+  DeleteNotification(notificationID string) error
+}
+
+type notificationService struct {
+  logger utils.AppLogger
+  // other dependencies...
+}
+
+func NewNotificationService() *notificationService {
+  return &notificationService{
+    logger: utils.NewServiceLogger("notification"),
+    // other initializations...
+  }
+}
+
+// Implement methods for creating, retrieving, and deleting notifications
+```
+
+
+```go
+// api/notification/controller.go
+
+package notification
+
+import (
+  "sync-backend/arch/network"
+  "sync-backend/arch/common"
+	"sync-backend/utils"
+
+	"github.com/gin-gonic/gin"
+)
+
+type notificationController struct {
+  	logger utils.AppLogger
+    network.BaseController
+    common.ContextPayload
+  	authProvider     network.AuthenticationProvider
+    service          *NotificationService
+    
+}
+
+func NewNotificationController(
+  authProvider network.AuthenticationProvider,
+  service *NotificationService,
+) *network.Controller {
+    return &notificationController{
+      logger:           utils.NewServiceLogger("notification"),
+      BaseController:   network.NewBaseController("/api/v1/notification", authProvider),
+      ContextPayload:   common.NewContextPayload(),
+      authProvider:     authProvider,
+      service:          service,
+    }
+}
+
+func (c *controller) MountRoutes(group *gin.RouterGroup) {
+    group.GET("/notifications", c.GetNotifications)
+    group.POST("/notifications", c.CreateNotification)
+    group.DELETE("/notifications/:id", c.DeleteNotification)
+}
+
+// Add handler implementations...
+```
+
+Then register in `arch/application/module.go`:
+
+```go
+// Add to Controllers function
+func (m *appModule) Controllers() []network.Controller {
+  // Other controllers...
+  notificationController := notification.NewNotificationController(
+    m.authProvider,
+    m.notificationService,
+  )
+}
+
+func NewAppModule(
+  // Other dependencies...
+) Module {
+  // Other initializations...
+  notificationService := notification.NewNotificationService()
+  return &appModule{
+    // Other dependencies...
+    notificationService: notificationService,
+  }
+}
+
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how to contribute to Sync Backend:
+
+1. **Fork** the repository
+2. **Clone** your fork (`git clone https://github.com/Dracula-101/sync-backend.git`)
+3. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+4. **Make** your changes
+   - Follow the existing code style
+   - Add tests for new functionality
+   - Ensure all tests pass (`go test ./...`)
+5. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+6. **Push** to the branch (`git push origin feature/amazing-feature`)
+7. **Open** a Pull Request
+
+### Code Style
+
+- Follow standard Go conventions
+- Use meaningful variable and function names
+- Document exported functions
+- Write tests for new functionality
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Gin Web Framework](https://github.com/gin-gonic/gin) - Web framework
+- [MongoDB Go Driver](https://github.com/mongodb/mongo-go-driver) - MongoDB driver
+- [Redis Go Client](https://github.com/redis/go-redis) - Redis client
+- [Viper](https://github.com/spf13/viper) - Configuration management
+- [Validator](https://github.com/go-playground/validator) - Request validation
+- [JWT-Go](https://github.com/golang-jwt/jwt) - JWT implementation
+- [Air](https://github.com/cosmtrek/air) - Live reload for development
+
+## 📬 Contact
+
+Project Link: [https://github.com/Dracula-101/sync-backend](https://github.com/Dracula-101/sync-backend)
+
+---
+
+*Last updated: May 21, 2025*

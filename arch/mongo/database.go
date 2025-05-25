@@ -34,6 +34,7 @@ type Database interface {
 	GetInstance() *database
 	GetClient() *mongo.Client
 	GetDatabaseName() string
+	Ping(ctx context.Context) error
 	Connect()
 	Disconnect()
 }
@@ -108,6 +109,7 @@ func (db *database) Connect() {
 }
 
 func (db *database) Disconnect() {
+	// end the session
 	db.logger.Debug("Disconnecting from mongo...")
 	err := db.Client().Disconnect(db.context)
 	if err != nil {
@@ -122,4 +124,8 @@ func NewObjectID(id string) (primitive.ObjectID, error) {
 		err = errors.New(id + " is not a valid mongo id")
 	}
 	return i, err
+}
+
+func (db *database) Ping(ctx context.Context) error {
+	return db.Client().Ping(ctx, nil)
 }
