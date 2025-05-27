@@ -1821,7 +1821,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/fb454b41-3aa9-428a-b62a-36e6c85144d6",
+							"raw": "{{local}}/api/v1/community/:communityId",
 							"host": [
 								"{{local}}"
 							],
@@ -1829,7 +1829,13 @@
 								"api",
 								"v1",
 								"community",
-								"fb454b41-3aa9-428a-b62a-36e6c85144d6"
+								":communityId"
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "fb454b41-3aa9-428a-b62a-36e6c85144d6"
+								}
 							]
 						}
 					},
@@ -1897,7 +1903,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/community/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"raw": "{{local}}/api/v1/community/:communityId",
 							"host": [
 								"{{local}}"
 							],
@@ -1905,7 +1911,13 @@
 								"api",
 								"v1",
 								"community",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf"
+								":communityId"
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -2513,7 +2525,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"fucker\"\r\n}",
+							"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2521,7 +2533,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/add",
+							"raw": "{{local}}/api/v1/community/moderator/:userId/add",
 							"host": [
 								"{{local}}"
 							],
@@ -2530,8 +2542,14 @@
 								"v1",
 								"community",
 								"moderator",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								":userId",
 								"add"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -2642,7 +2660,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/list",
+							"raw": "{{local}}/api/v1/community/moderator/:userId/list",
 							"host": [
 								"{{local}}"
 							],
@@ -2651,8 +2669,14 @@
 								"v1",
 								"community",
 								"moderator",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								":userId",
 								"list"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -2714,7 +2738,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/remove",
+							"raw": "{{local}}/api/v1/community/moderator/:userId/remove",
 							"host": [
 								"{{local}}"
 							],
@@ -2723,8 +2747,14 @@
 								"v1",
 								"community",
 								"moderator",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								":userId",
 								"remove"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -2795,7 +2825,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/update",
+							"raw": "{{local}}/api/v1/community/moderator/:userId/update",
 							"host": [
 								"{{local}}"
 							],
@@ -2804,8 +2834,14 @@
 								"v1",
 								"community",
 								"moderator",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								":userId",
 								"update"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -3047,7 +3083,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/user/4b286217-bc74-43e1-9570-7df4beeb4e84",
+							"raw": "{{local}}/api/v1/user/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3055,7 +3091,13 @@
 								"api",
 								"v1",
 								"user",
-								"4b286217-bc74-43e1-9570-7df4beeb4e84"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "4b286217-bc74-43e1-9570-7df4beeb4e84"
+								}
 							]
 						}
 					},
@@ -3175,7 +3217,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/community/user/join/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"raw": "{{local}}/api/v1/community/user/join/:communityId",
 							"host": [
 								"{{local}}"
 							],
@@ -3185,7 +3227,13 @@
 								"community",
 								"user",
 								"join",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf"
+								":communityId"
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -3276,7 +3324,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/community/user/leave/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"raw": "{{local}}/api/v1/community/user/leave/:communityId",
 							"host": [
 								"{{local}}"
 							],
@@ -3286,7 +3334,13 @@
 								"community",
 								"user",
 								"leave",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf"
+								":communityId"
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -3377,7 +3431,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/user/follow/73b9cd7a-fea1-4fe4-9b7a-ec449036eedd",
+							"raw": "{{local}}/api/v1/user/follow/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3386,7 +3440,13 @@
 								"v1",
 								"user",
 								"follow",
-								"73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								}
 							]
 						}
 					},
@@ -3523,7 +3583,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{local}}/api/v1/user/unfollow/73b9cd7a-fea1-4fe4-9b7a-ec449036eedd",
+							"raw": "{{local}}/api/v1/user/unfollow/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3532,7 +3592,13 @@
 								"v1",
 								"user",
 								"unfollow",
-								"73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								}
 							]
 						}
 					},
@@ -3644,7 +3710,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{local}}/api/v1/user/block/73b9cd7a-fea1-4fe4-9b7a-ec449036eedd",
+							"raw": "{{local}}/api/v1/user/block/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3653,7 +3719,13 @@
 								"v1",
 								"user",
 								"block",
-								"73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								}
 							]
 						}
 					},
@@ -3719,7 +3791,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{local}}/api/v1/user/unblock/73b9cd7a-fea1-4fe4-9b7a-ec449036eedd",
+							"raw": "{{local}}/api/v1/user/unblock/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3728,7 +3800,13 @@
 								"v1",
 								"user",
 								"unblock",
-								"73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								}
 							]
 						}
 					},
@@ -3787,7 +3865,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/like/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/like/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -3796,7 +3874,13 @@
 								"v1",
 								"post",
 								"like",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -3887,7 +3971,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/dislike/0f9a4a16-33df-4fab-a375-3cff7b40d0d",
+							"raw": "{{local}}/api/v1/post/dislike/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -3896,7 +3980,13 @@
 								"v1",
 								"post",
 								"dislike",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d"
+								}
 							]
 						}
 					},
@@ -4189,7 +4279,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/get/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/get/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4198,7 +4288,13 @@
 								"v1",
 								"post",
 								"get",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4309,7 +4405,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4317,7 +4413,13 @@
 								"api",
 								"v1",
 								"post",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4443,12 +4545,12 @@
 					]
 				},
 				{
-					"name": "New Request",
+					"name": "Delete Post",
 					"request": {
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4456,7 +4558,13 @@
 								"api",
 								"v1",
 								"post",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4527,7 +4635,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/like/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/like/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4536,7 +4644,13 @@
 								"v1",
 								"post",
 								"like",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4687,7 +4801,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/dislike/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/dislike/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4696,7 +4810,13 @@
 								"v1",
 								"post",
 								"dislike",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4847,7 +4967,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/save/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/save/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4856,7 +4976,13 @@
 								"v1",
 								"post",
 								"save",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -5007,7 +5133,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/share/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/share/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -5016,7 +5142,13 @@
 								"v1",
 								"post",
 								"share",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -5228,7 +5360,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/get/community/f13603b2-8f3a-4f98-a092-63f55c4aee64?page=1&limit=5",
+							"raw": "{{local}}/api/v1/post/get/community/:communityId?page=1&limit=5",
 							"host": [
 								"{{local}}"
 							],
@@ -5238,7 +5370,7 @@
 								"post",
 								"get",
 								"community",
-								"f13603b2-8f3a-4f98-a092-63f55c4aee64"
+								":communityId"
 							],
 							"query": [
 								{
@@ -5248,6 +5380,12 @@
 								{
 									"key": "limit",
 									"value": "5"
+								}
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "f13603b2-8f3a-4f98-a092-63f55c4aee64"
 								}
 							]
 						}
@@ -5534,7 +5672,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/32da13fe-77bd-483f-ab07-967f87e67c21",
+							"raw": "{{local}}/api/v1/comment/post/:commentId",
 							"host": [
 								"{{local}}"
 							],
@@ -5543,7 +5681,13 @@
 								"v1",
 								"comment",
 								"post",
-								"32da13fe-77bd-483f-ab07-967f87e67c21"
+								":commentId"
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "32da13fe-77bd-483f-ab07-967f87e67c21"
+								}
 							]
 						}
 					},
@@ -5663,7 +5807,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/32da13fe-77bd-483f-ab07-967f87e67c21",
+							"raw": "{{local}}/api/v1/comment/post/:commentId",
 							"host": [
 								"{{local}}"
 							],
@@ -5672,7 +5816,13 @@
 								"v1",
 								"comment",
 								"post",
-								"32da13fe-77bd-483f-ab07-967f87e67c21"
+								":commentId"
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": ""
+								}
 							]
 						}
 					},
@@ -5783,7 +5933,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8?page=1&limit=10",
+							"raw": "{{local}}/api/v1/comment/post/:commentId?page=1&limit=10",
 							"host": [
 								"{{local}}"
 							],
@@ -5792,7 +5942,7 @@
 								"v1",
 								"comment",
 								"post",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":commentId"
 							],
 							"query": [
 								{
@@ -5802,6 +5952,12 @@
 								{
 									"key": "limit",
 									"value": "10"
+								}
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
 								}
 							]
 						}
@@ -5864,7 +6020,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8/reply/6d3e7daa-874c-45e4-8579-8a4940bd6023?page=1&limit=10",
+							"raw": "{{local}}/api/v1/comment/post/:commentId/reply/:replyId?page=1&limit=10",
 							"host": [
 								"{{local}}"
 							],
@@ -5873,9 +6029,9 @@
 								"v1",
 								"comment",
 								"post",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+								":commentId",
 								"reply",
-								"6d3e7daa-874c-45e4-8579-8a4940bd6023"
+								":replyId"
 							],
 							"query": [
 								{
@@ -5885,6 +6041,16 @@
 								{
 									"key": "limit",
 									"value": "10"
+								}
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								},
+								{
+									"key": "replyId",
+									"value": "6d3e7daa-874c-45e4-8579-8a4940bd6023"
 								}
 							]
 						}
@@ -6083,7 +6249,7 @@
 							"raw": "{\r\n    \"comment_id\": \"ada\",\r\n    \"comment\": \"Bruh this is good huh!\"\r\n}"
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/comment/like/b86d2e78-fbad-4c51-b9be-4cf5bced0e63",
+							"raw": "{{local}}/api/v1/comment/like/:commentId",
 							"host": [
 								"{{local}}"
 							],
@@ -6092,7 +6258,13 @@
 								"v1",
 								"comment",
 								"like",
-								"b86d2e78-fbad-4c51-b9be-4cf5bced0e63"
+								":commentId"
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "b86d2e78-fbad-4c51-b9be-4cf5bced0e63"
+								}
 							]
 						}
 					},
@@ -6148,7 +6320,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/comment/dislike/b86d2e78-fbad-4c51-b9be-4cf5bced0e63",
+							"raw": "{{local}}/api/v1/comment/dislike/:commentId",
 							"host": [
 								"{{local}}"
 							],
@@ -6157,7 +6329,13 @@
 								"v1",
 								"comment",
 								"dislike",
-								"b86d2e78-fbad-4c51-b9be-4cf5bced0e63"
+								":commentId"
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "b86d2e78-fbad-4c51-b9be-4cf5bced0e63"
+								}
 							]
 						}
 					},
@@ -6328,7 +6506,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{local}}/api/v1/comment/user/4b286217-bc74-43e1-9570-7df4beeb4e84",
+							"raw": "{{local}}/api/v1/comment/user/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -6337,7 +6515,13 @@
 								"v1",
 								"comment",
 								"user",
-								"4b286217-bc74-43e1-9570-7df4beeb4e84"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "4b286217-bc74-43e1-9570-7df4beeb4e84"
+								}
 							]
 						}
 					},

@@ -26,15 +26,10 @@ All authenticated routes require a valid JWT token in the Authorization header:
 - [X] `POST /user/unfollow/:userId` - Unfollow a user
 - [X] `POST /user/block/:userId` - Block a user
 - [X] `POST /user/unblock/:userId` - Unblock a user
-- [ ] `PUT /user/me` - Update current user profile (Not implemented)
-- [ ] `DELETE /user/me` - Delete current user account (Not implemented)
+- [X] `PUT /user/me` - Update current user profile
+- [X] `DELETE /user/me` - Delete current user account
+- [X] `PUT /user/password` - Change password
 - [ ] `GET /user/search` - Search users (Not implemented)
-- [ ] `PUT /user/password` - Change password (Not implemented)
-- [ ] `PUT /user/settings` - Update user settings (Not implemented)
-- [ ] `POST /user/avatar` - Upload profile avatar (Not implemented)
-- [ ] `DELETE /user/avatar` - Remove profile avatar (Not implemented)
-- [ ] `GET /user/notifications` - Get user notifications (Not implemented)
-- [ ] `PUT /user/notification-settings` - Update notification preferences (Not implemented)
 
 ### Posts
 - [X] `POST /post/create` - Create a new post

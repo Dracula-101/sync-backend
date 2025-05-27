@@ -374,8 +374,8 @@ func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunit
 		"moderatorIds": bson.M{
 			"$map": bson.M{
 				"input": "$moderators",
-				"as": "moderator",
-				"in": "$$moderator.userId",
+				"as":    "moderator",
+				"in":    "$$moderator.userId",
 			},
 		},
 	})
@@ -1140,12 +1140,10 @@ func (s *communityService) AddModerator(userId string, communityId string, moder
 		"$addToSet": bson.M{"moderators": bson.M{"userId": moderatorId, "addedBy": userId, "addedAt": primitive.NewDateTimeFromTime(time.Now())}},
 		"$set":      bson.M{"metadata.updatedAt": primitive.NewDateTimeFromTime(time.Now()), "metadata.updatedBy": userId},
 	}
-	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update,
-		options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(false),
-	)
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
-			
+
 		}
 		if mongo.IsDuplicateKeyError(err) {
 			s.logger.Error("Moderator already exists in the community: %v", err)
@@ -1172,7 +1170,7 @@ func (s *communityService) RemoveModerator(userId string, communityId string, mo
 		"$pull": bson.M{"moderators": bson.M{"userId": moderatorId}},
 		"$set":  bson.M{"metadata.updatedAt": primitive.NewDateTimeFromTime(time.Now()), "metadata.updatedBy": userId},
 	}
-	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update, options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(false))
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.logger.Error("Community with id %s not found: %v", communityId, err)

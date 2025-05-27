@@ -17,28 +17,28 @@ import (
 const UserCollectionName = "users"
 
 type User struct {
-	Id                primitive.ObjectID  `bson:"_id,omitempty" json:"-"`
-	UserId            string              `bson:"userId" json:"id"`
-	Username          string              `bson:"username" json:"username"`
-	Email             string              `bson:"email" json:"email"`
-	PasswordHash      string              `bson:"passwordHash" json:"-"`
-	Bio               string              `bson:"bio" json:"bio"`
-	VerifiedEmail     bool                `bson:"verifiedEmail" json:"verifiedEmail"`
-	Status            UserStatus          `bson:"status" json:"status"`
-	Avatar            UserAvatar          `bson:"avatar" json:"avatar"`
-	Synergy           UserSynergy         `bson:"synergy" json:"synergy"`
-	Providers         []Provider          `bson:"providers" json:"providers"`
-	JoinedWavelengths []string            `bson:"joinedWavelengths" json:"joinedWavelengths"`
-	ModeratorOf       []string            `bson:"moderatorOf" json:"moderatorOf"`
-	Follows           []string            `bson:"follows" json:"follows"`
-	Followers         []string            `bson:"followers" json:"followers"`
-	Preferences       UserPreferences     `bson:"preferences" json:"preferences"`
-	DeviceTokens      []DeviceToken       `bson:"deviceTokens" json:"-"`
-	LoginHistory      []LoginHistory      `bson:"loginHistory" json:"-"`
-	LastSeen          primitive.DateTime  `bson:"lastSeen" json:"lastSeen"`
-	CreatedAt         primitive.DateTime  `bson:"createdAt" json:"createdAt"`
-	UpdatedAt         primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
-	DeletedAt         *primitive.DateTime `bson:"deletedAt,omitempty" json:"-"`
+	Id                   primitive.ObjectID  `bson:"_id,omitempty" json:"-"`
+	UserId               string              `bson:"userId" json:"id"`
+	Username             string              `bson:"username" json:"username"`
+	Email                string              `bson:"email" json:"email"`
+	PasswordHash         string              `bson:"passwordHash" json:"-"`
+	Bio                  string              `bson:"bio" json:"bio"`
+	VerifiedEmail        bool                `bson:"verifiedEmail" json:"verifiedEmail"`
+	Status               UserStatus          `bson:"status" json:"status"`
+	Avatar               UserAvatar          `bson:"avatar" json:"avatar"`
+	Synergy              UserSynergy         `bson:"synergy" json:"synergy"`
+	Providers            []Provider          `bson:"providers" json:"providers"`
+	JoinedWavelengths    []string            `bson:"joinedWavelengths" json:"joinedWavelengths"`
+	ModeratedWavelengths []string            `bson:"moderatedWavelengths" json:"moderatedWavelengths"`
+	Follows              []string            `bson:"follows" json:"follows"`
+	Followers            []string            `bson:"followers" json:"followers"`
+	Preferences          UserPreferences     `bson:"preferences" json:"preferences"`
+	DeviceTokens         []DeviceToken       `bson:"deviceTokens" json:"-"`
+	LoginHistory         []LoginHistory      `bson:"loginHistory" json:"-"`
+	LastSeen             primitive.DateTime  `bson:"lastSeen" json:"lastSeen"`
+	CreatedAt            primitive.DateTime  `bson:"createdAt" json:"createdAt"`
+	UpdatedAt            primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
+	DeletedAt            *primitive.DateTime `bson:"deletedAt,omitempty" json:"-"`
 }
 
 type UserStatus string
@@ -73,20 +73,20 @@ func NewUser(
 	}
 	now := time.Now()
 	u := User{
-		UserId:            uuid.New().String(),
-		Username:          newUserArgs.UserName,
-		Email:             newUserArgs.Email,
-		PasswordHash:      newUserArgs.PasswordHash,
-		VerifiedEmail:     false,
-		Bio:               "",
-		Status:            Active,
-		Avatar:            NewUserAvatar(newUserArgs.AvatarUrl, newUserArgs.BackgroundUrl),
-		Synergy:           NewUserSynergy(),
-		Providers:         []Provider{},
-		JoinedWavelengths: []string{},
-		ModeratorOf:       []string{},
-		Follows:           []string{},
-		Followers:         []string{},
+		UserId:               uuid.New().String(),
+		Username:             newUserArgs.UserName,
+		Email:                newUserArgs.Email,
+		PasswordHash:         newUserArgs.PasswordHash,
+		VerifiedEmail:        false,
+		Bio:                  "",
+		Status:               Active,
+		Avatar:               NewUserAvatar(newUserArgs.AvatarUrl, newUserArgs.BackgroundUrl),
+		Synergy:              NewUserSynergy(),
+		Providers:            []Provider{},
+		JoinedWavelengths:    []string{},
+		ModeratedWavelengths: []string{},
+		Follows:              []string{},
+		Followers:            []string{},
 		Preferences: NewUserPreferences(
 			UserPreferencesArgs{
 				timezone: newUserArgs.TimeZone.ToDetail(),
@@ -155,7 +155,7 @@ func (user *User) GetUserInfo() *UserInfo {
 		Avatar:            user.Avatar,
 		Synergy:           user.Synergy,
 		JoinedWavelengths: user.JoinedWavelengths,
-		ModeratorOf:       user.ModeratorOf,
+		ModeratorOf:       user.ModeratedWavelengths,
 		Follows:           len(user.Follows),
 		Followers:         len(user.Followers),
 	}
