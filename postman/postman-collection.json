@@ -67,28 +67,28 @@
 							"formdata": [
 								{
 									"key": "email",
-									"value": "testsample1@gmail.com",
+									"value": "test.user@gmail.com",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "TestHello",
+									"value": "123456",
 									"type": "text"
 								},
 								{
 									"key": "username",
-									"value": "Test-User-New",
+									"value": "Nice-Warrior",
 									"type": "text"
 								},
 								{
 									"key": "profile_photo",
 									"type": "file",
-									"src": "/C:/Users/HP/Downloads/Sync backend structure.png"
+									"src": "postman-cloud:///1f03af0f-7a5b-46c0-9dc7-5a7227b0fc3d"
 								},
 								{
 									"key": "background_photo",
 									"type": "file",
-									"src": "/C:/Users/HP/Downloads/Sync backend structure.png"
+									"src": "postman-cloud:///1f03af0f-7a5b-46c0-9dc7-5a7227b0fc3d"
 								}
 							]
 						},
@@ -640,12 +640,12 @@
 							"formdata": [
 								{
 									"key": "email",
-									"value": "pratikpujari@gmail.com",
+									"value": "pratikpujari1000@gmail.com",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "Pratik",
+									"value": "123456",
 									"type": "text"
 								}
 							]
@@ -3212,6 +3212,587 @@
 					]
 				},
 				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "bio",
+									"value": "Hi, i am the best person in the world.",
+									"type": "text"
+								},
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+									"disabled": true
+								},
+								{
+									"key": "background",
+									"type": "file",
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/user/me",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "bio",
+											"value": "Hi, i am the best person in the world.",
+											"type": "text"
+										},
+										{
+											"key": "avatar",
+											"type": "file",
+											"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+											"disabled": true
+										},
+										{
+											"key": "background",
+											"type": "file",
+											"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/user/me",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"me"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 May 2025 10:36:59 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1571"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-27T16:06:59.3835217+05:30\"\n    },\n    \"message\": \"Profile updated successfully\",\n    \"data\": {\n        \"id\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n        \"username\": \"Nice-Warrior-Handsome\",\n        \"email\": \"pratikpujari@gmail.com\",\n        \"bio\": \"Hi, i am the best person in the world.\",\n        \"verifiedEmail\": false,\n        \"status\": \"active\",\n        \"avatar\": {\n            \"profile\": {\n                \"id\": \"sync-backend/profile/Nice-Warrior-Handsome_profile\",\n                \"url\": \"https://res.cloudinary.com/diliver9j/image/upload/v1748342210/sync-backend/profile/Nice-Warrior-Handsome_profile.png\",\n                \"width\": 3608,\n                \"height\": 3977\n            },\n            \"background\": {\n                \"id\": \"sync-backend/background/Nice-Warrior-Handsome_background\",\n                \"url\": \"https://res.cloudinary.com/diliver9j/image/upload/v1748342211/sync-backend/background/Nice-Warrior-Handsome_background.png\",\n                \"width\": 3608,\n                \"height\": 3977\n            }\n        },\n        \"synergy\": {\n            \"posts\": 0,\n            \"comments\": 0,\n            \"total\": 0\n        },\n        \"providers\": [],\n        \"joinedWavelengths\": [\n            \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\"\n        ],\n        \"moderatedWavelengths\": null,\n        \"moderatorOf\": [],\n        \"follows\": [],\n        \"followers\": [],\n        \"preferences\": {\n            \"language\": {\n                \"DisplayName\": \"English\",\n                \"NativeName\": \"English\"\n            },\n            \"theme\": \"light\",\n            \"timezone\": {\n                \"DisplayName\": \"Coordinated Universal Time\",\n                \"Timezone\": \"UTC+0\"\n            },\n            \"location\": \"Unknown Country\",\n            \"notifications\": {\n                \"email\": true,\n                \"push\": false\n            },\n            \"contentSettings\": {\n                \"showSensitiveContent\": false,\n                \"showAdultContent\": false\n            },\n            \"privacySettings\": {\n                \"isProfileVisible\": true,\n                \"isEmailVisible\": true,\n                \"isJoinedWavelengthsVisible\": true,\n                \"followersVisible\": true\n            },\n            \"blockList\": []\n        },\n        \"lastSeen\": \"2025-05-12T17:53:52.45Z\",\n        \"createdAt\": \"2025-05-12T17:53:52.45Z\",\n        \"updatedAt\": \"2025-05-27T10:36:59.185Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update User Preferences",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "language",
+									"value": "en",
+									"type": "text"
+								},
+								{
+									"key": "theme",
+									"value": "dark",
+									"type": "text"
+								},
+								{
+									"key": "timezone",
+									"value": "GMT+5:30",
+									"type": "text"
+								},
+								{
+									"key": "email_notifications",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "mobile_notifications",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "show_sensitive_content",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "show_adult_content",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "is_profile_visible",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "is_email_visible",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "is_joined_wavelengths_visible",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "followers_visible",
+									"value": "false",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/user/me/preferences",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"me",
+								"preferences"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "language",
+											"value": "en",
+											"type": "text"
+										},
+										{
+											"key": "theme",
+											"value": "dark",
+											"type": "text"
+										},
+										{
+											"key": "timezone",
+											"value": "GMT+5:30",
+											"type": "text"
+										},
+										{
+											"key": "email_notifications",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "mobile_notifications",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "show_sensitive_content",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "show_adult_content",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "is_profile_visible",
+											"value": "true",
+											"type": "text"
+										},
+										{
+											"key": "is_email_visible",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "is_joined_wavelengths_visible",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "followers_visible",
+											"value": "false",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/user/me/preferences",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"me",
+										"preferences"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 May 2025 12:05:44 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "136"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-27T17:35:44.5657221+05:30\"\n    },\n    \"message\": \"Preferences updated successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Profile",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "bio",
+									"value": "Hi, i am the best person in the world.",
+									"type": "text"
+								},
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+									"disabled": true
+								},
+								{
+									"key": "background",
+									"type": "file",
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/user/me",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "bio",
+											"value": "Hi, i am the best person in the world.",
+											"type": "text"
+										},
+										{
+											"key": "avatar",
+											"type": "file",
+											"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+											"disabled": true
+										},
+										{
+											"key": "background",
+											"type": "file",
+											"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/user/me",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"me"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 May 2025 11:54:33 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "141"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-27T17:24:33.3595931+05:30\"\n    },\n    \"message\": \"User marked for deletion successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Search Users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "language",
+									"value": "en",
+									"type": "text"
+								},
+								{
+									"key": "theme",
+									"value": "dark",
+									"type": "text"
+								},
+								{
+									"key": "timezone",
+									"value": "GMT+5:30",
+									"type": "text"
+								},
+								{
+									"key": "email_notifications",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "mobile_notifications",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "show_sensitive_content",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "show_adult_content",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "is_profile_visible",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "is_email_visible",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "is_joined_wavelengths_visible",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "followers_visible",
+									"value": "false",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/user/search?query=War",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "War"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "language",
+											"value": "en",
+											"type": "text"
+										},
+										{
+											"key": "theme",
+											"value": "dark",
+											"type": "text"
+										},
+										{
+											"key": "timezone",
+											"value": "GMT+5:30",
+											"type": "text"
+										},
+										{
+											"key": "email_notifications",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "mobile_notifications",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "show_sensitive_content",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "show_adult_content",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "is_profile_visible",
+											"value": "true",
+											"type": "text"
+										},
+										{
+											"key": "is_email_visible",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "is_joined_wavelengths_visible",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "followers_visible",
+											"value": "false",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/user/search?query=War",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"search"
+									],
+									"query": [
+										{
+											"key": "query",
+											"value": "War"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 May 2025 14:01:47 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "585"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-27T19:31:47.413905+05:30\"\n    },\n    \"message\": \"Users fetched successfully\",\n    \"data\": [\n        {\n            \"userId\": \"70eadf71-a46b-4352-837c-2c8cbe0a7bc6\",\n            \"username\": \"Handsome-Warrior\",\n            \"email\": \"pratikpujari1000@gmail.com\",\n            \"avatar\": \"https://res.cloudinary.com/diliver9j/image/upload/v1748346726/sync-backend/profile/Handsome-Warrior_profile.png\",\n            \"background\": \"https://res.cloudinary.com/diliver9j/image/upload/v1748346727/sync-backend/background/Handsome-Warrior_background.png\",\n            \"status\": \"active\",\n            \"isFollowed\": false,\n            \"isFollowing\": true,\n            \"isBlocked\": false\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
 					"name": "Join Wavelength",
 					"request": {
 						"method": "POST",
@@ -3445,7 +4026,7 @@
 							"variable": [
 								{
 									"key": "userId",
-									"value": "73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+									"value": "70eadf71-a46b-4352-837c-2c8cbe0a7bc6"
 								}
 							]
 						}
