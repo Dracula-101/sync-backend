@@ -38,22 +38,10 @@ type Post struct {
 	IsStickied     bool                `bson:"isStickied" json:"isStickied"`
 	IsLocked       bool                `bson:"isLocked" json:"isLocked"`
 	IsArchived     bool                `bson:"isArchived" json:"isArchived"`
-	Metadata       Metadata            `bson:"metadata" json:"-"`
 	CreatedAt      primitive.DateTime  `bson:"createdAt" json:"createdAt"`
 	UpdatedAt      primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
 	DeletedAt      *primitive.DateTime `bson:"deletedAt,omitempty" json:"-"`
 	LastActivityAt primitive.DateTime  `bson:"lastActivityAt" json:"lastActivityAt"`
-}
-
-// Metadata represents common metadata fields used across models
-type Metadata struct {
-	CreatedBy  string         `bson:"createdBy" json:"createdBy"`
-	UpdatedBy  string         `bson:"updatedBy,omitempty" json:"updatedBy,omitempty"`
-	DeletedBy  string         `bson:"deletedBy,omitempty" json:"-"`
-	IPAddress  string         `bson:"ipAddress,omitempty" json:"-"`
-	UserAgent  string         `bson:"userAgent,omitempty" json:"-"`
-	Version    int            `bson:"version" json:"version"`
-	CustomData map[string]any `bson:"customData,omitempty" json:"customData,omitempty"`
 }
 
 // PostType defines the type of post
@@ -113,31 +101,27 @@ func NewPost(authorId string, communityId string, title string, content string, 
 	now := primitive.NewDateTimeFromTime(time.Now())
 
 	return &Post{
-		Id:           primitive.NewObjectID(),
-		PostId:       uuid.New().String(),
-		Title:        title,
-		Content:      content,
-		AuthorId:     authorId,
-		CommunityId:  communityId,
-		Type:         postType,
-		Status:       PostStatusActive,
-		Tags:         tags,
-		Media:        media,
-		Synergy:      0,
-		CommentCount: 0,
-		ViewCount:    0,
-		ShareCount:   0,
-		SaveCount:    0,
-		Voters:       make(map[string]VoteType),
-		IsNSFW:       false,
-		IsSpoiler:    false,
-		IsStickied:   false,
-		IsLocked:     false,
-		IsArchived:   false,
-		Metadata: Metadata{
-			CreatedBy: authorId,
-			Version:   1,
-		},
+		Id:             primitive.NewObjectID(),
+		PostId:         uuid.New().String(),
+		Title:          title,
+		Content:        content,
+		AuthorId:       authorId,
+		CommunityId:    communityId,
+		Type:           postType,
+		Status:         PostStatusActive,
+		Tags:           tags,
+		Media:          media,
+		Synergy:        0,
+		CommentCount:   0,
+		ViewCount:      0,
+		ShareCount:     0,
+		SaveCount:      0,
+		Voters:         make(map[string]VoteType),
+		IsNSFW:         false,
+		IsSpoiler:      false,
+		IsStickied:     false,
+		IsLocked:       false,
+		IsArchived:     false,
 		CreatedAt:      now,
 		UpdatedAt:      now,
 		LastActivityAt: now,

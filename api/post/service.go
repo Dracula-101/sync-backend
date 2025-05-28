@@ -143,7 +143,7 @@ func (s *postService) GetPost(postId string, userId string) (*model.PublicPost, 
 			"description": "$community.description",
 			"avatar":      "$community.media.avatar.url",
 			"background":  "$community.media.background.url",
-			"createdAt":   "$community.metadata.createdAt",
+			"createdAt":   "$community.createdAt",
 			"status":      "$community.status",
 		},
 		"isLiked": bson.M{
@@ -238,10 +238,6 @@ func (s *postService) EditPost(userId string, postId string, title *string, cont
 		update["isSpoiler"] = *isSpoiler
 	}
 	update["updatedAt"] = primitive.NewDateTimeFromTime(time.Now())
-	update["metadata"] = bson.M{
-		"updatedAt": primitive.NewDateTimeFromTime(time.Now()),
-		"updatedBy": userId,
-	}
 	options := options.Update().SetUpsert(true)
 	updatePost, queryErr := s.postQueryBuilder.SingleQuery().UpdateOne(filter, bson.M{"$set": update}, options)
 	if queryErr != nil && !mongo.IsNoDocumentFoundError(queryErr) {
@@ -290,12 +286,9 @@ func (s *postService) DeletePost(userId string, postId string) network.ApiError 
 
 	filter := bson.M{"postId": postId, "authorId": userId}
 	update := bson.M{
-		"status":    model.PostStatusDeleted,
-		"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
-		"metadata": bson.M{
-			"updatedAt": primitive.NewDateTimeFromTime(time.Now()),
-			"deletedBy": userId,
-		},
+		"status":         model.PostStatusDeleted,
+		"deletedAt":      primitive.NewDateTimeFromTime(time.Now()),
+		"updatedAt":      primitive.NewDateTimeFromTime(time.Now()),
 		"lastActivityAt": primitive.NewDateTimeFromTime(time.Now()),
 	}
 	updatePost, updateErr := s.postQueryBuilder.SingleQuery().UpdateOne(filter, bson.M{"$set": update}, nil)

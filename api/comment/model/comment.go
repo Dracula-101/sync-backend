@@ -29,18 +29,6 @@ const (
 	CommentStatusFlagged  CommentStatus = "flagged" // Flagged for review
 )
 
-// Metadata represents common metadata fields for the comment
-type Metadata struct {
-	CreatedBy  string         `bson:"createdBy" json:"createdBy"`
-	UpdatedBy  string         `bson:"updatedBy,omitempty" json:"updatedBy,omitempty"`
-	DeletedBy  string         `bson:"deletedBy,omitempty" json:"-"`
-	IPAddress  string         `bson:"ipAddress,omitempty" json:"-"`
-	UserAgent  string         `bson:"userAgent,omitempty" json:"-"`
-	Version    int            `bson:"version" json:"version"`
-	CustomData map[string]any `bson:"customData,omitempty" json:"customData,omitempty"`
-	ModNote    string         `bson:"modNote,omitempty" json:"-"` // Moderator's note
-}
-
 // ReactionType defines the type of reaction to a comment
 type ReactionType string
 
@@ -115,7 +103,6 @@ type Comment struct {
 	IsRemoved        bool                 `bson:"isRemoved" json:"isRemoved"`   // Removed by moderator
 	HasMedia         bool                 `bson:"hasMedia" json:"hasMedia"`
 	Mentions         []string             `bson:"mentions,omitempty" json:"mentions,omitempty"` // User IDs mentioned in the comment
-	Metadata         Metadata             `bson:"metadata" json:"-"`
 	DeviceInfo       DeviceInfo           `bson:"deviceInfo" json:"-"`
 	LocationInfo     LocationInfo         `bson:"locationInfo" json:"-"`
 	ModerationInfo   ModerationInfo       `bson:"moderationInfo,omitempty" json:"-"`
@@ -177,10 +164,6 @@ func NewComment(postId string, authorId string, communityId string, content stri
 		IsRemoved:      false,
 		ReactionCounts: make(map[ReactionType]int),
 		Path:           path,
-		Metadata: Metadata{
-			CreatedBy: authorId,
-			Version:   1,
-		},
 		ModerationInfo: ModerationInfo{
 			ReportCount: 0,
 		},
