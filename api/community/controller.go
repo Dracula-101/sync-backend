@@ -73,7 +73,6 @@ func (c *communityController) MountRoutes(group *gin.RouterGroup) {
 	/* Search and Trending Routes */
 	group.GET("/search", c.SearchCommunities)
 	group.GET("/autocomplete", c.AutocompeleteCommunities)
-	group.GET("/trending", c.GetTrendingCommunities)
 
 	/* USER COMMUNITY ROUTES */
 	userGroup := group.Group("/user")
@@ -252,21 +251,6 @@ func (c *communityController) AutocompeleteCommunities(ctx *gin.Context) {
 	}
 
 	communities, err := c.communityService.AutocompleteCommunities(query.Query, query.Page, query.Limit, query.ShowPrivate)
-	if err != nil {
-		c.Send(ctx).MixedError(err)
-		return
-	}
-
-	c.Send(ctx).SuccessDataResponse("Communities fetched successfully", communities)
-}
-
-func (c *communityController) GetTrendingCommunities(ctx *gin.Context) {
-	query, err := network.ReqQuery(ctx, communitydto.NewGetTrendingCommunitiesRequest())
-	if err != nil {
-		return
-	}
-
-	communities, err := c.communityService.GetTrendingCommunities(query.Page, query.Limit)
 	if err != nil {
 		c.Send(ctx).MixedError(err)
 		return

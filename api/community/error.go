@@ -37,11 +37,11 @@ func NewForbiddenError(action, userId, communityId string) network.ApiError {
 	)
 }
 
-func NewDuplicateCommunityError(slug string) network.ApiError {
+func NewDuplicateCommunityError(field string, err error) network.ApiError {
 	return network.NewConflictError(
 		"Duplicate Community",
-		fmt.Sprintf("A community with the slug '%s' already exists. Please choose a different name. [Context: slug=%s]", slug, slug),
-		nil,
+		fmt.Sprintf("A community with the same %s already exists. Please choose a different value.", field),
+		err,
 	)
 }
 

@@ -21,7 +21,6 @@ type PublicGetCommunity struct {
 	Rules       []CommunityRule    `bson:"rules" json:"rules"`
 	Tags        []CommunityTagInfo `bson:"tags" json:"tags"`
 	Moderators  []user.PublicUser  `bson:"moderators" json:"moderators"`
-	Stats       CommunityStats     `bson:"stats" json:"stats"`
 	Status      string             `bson:"status" json:"status"`
 }
 
