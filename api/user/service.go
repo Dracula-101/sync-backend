@@ -657,7 +657,6 @@ func (s *userService) SearchUsers(userId string, query string, page int, limit i
 	regexPattern := primitive.Regex{Pattern: query, Options: "i"}
 
 	aggregationPipeline := s.searchUsersAggregator.SingleAggregate()
-	aggregationPipeline.AllowDiskUse(true)
 
 	// Match documents that contain the query in username, fullName, or bio
 	// And exclude the current user and deleted/banned users

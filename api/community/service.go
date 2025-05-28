@@ -354,7 +354,6 @@ func (s *communityService) DeleteCommunity(id string, userId string) network.Api
 func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunity, network.ApiError) {
 	s.logger.Info("Fetching community with id: %s", id)
 	getCommunityByIdPipeline := s.getCommunityByIdPipeline.SingleAggregate()
-	getCommunityByIdPipeline.AllowDiskUse(true)
 	getCommunityByIdPipeline.Match(bson.M{"communityId": id, "status": model.CommunityStatusActive})
 
 	// Lookup community interactions to check if user has joined
@@ -581,7 +580,6 @@ func (s *communityService) GetCommunities(userId string, page int, limit int) ([
 	}
 
 	aggregator := s.communityAggregateBuilder.SingleAggregate()
-	aggregator.AllowDiskUse(true)
 	aggregator.Match(bson.M{"communityId": bson.M{"$in": communityIds}, "status": model.CommunityStatusActive})
 	aggregator.Skip(int64((page - 1) * limit))
 	aggregator.Limit(int64(limit))
@@ -779,9 +777,7 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 func (s *communityService) SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError) {
 	s.logger.Info("Searching communities with query: %s, page: %d, limit: %d", query, page, limit)
 
-	aggregator := s.communitySearchPipeline.
-		Aggregate(s.Context()).
-		AllowDiskUse(true)
+	aggregator := s.communitySearchPipeline.Aggregate(s.Context())
 
 	matchStage := bson.M{
 		"$and": []bson.M{
@@ -936,9 +932,7 @@ func (s *communityService) SearchCommunities(query string, page int, limit int, 
 func (s *communityService) AutocompleteCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunityAutocomplete, network.ApiError) {
 	s.logger.Info("Autocomplete communities with query: %s, page: %d, limit: %d", query, page, limit)
 
-	aggregator := s.communityAutocompletePipeline.
-		Aggregate(s.Context()).
-		AllowDiskUse(true)
+	aggregator := s.communityAutocompletePipeline.Aggregate(s.Context())
 
 	if query != "" {
 		searchQuery := bson.M{
