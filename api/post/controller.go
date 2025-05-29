@@ -1,6 +1,7 @@
 package post
 
 import (
+	"sync-backend/api/common/analytics"
 	"sync-backend/api/post/dto"
 	"sync-backend/api/post/model"
 	"sync-backend/arch/common"
@@ -18,9 +19,11 @@ type postController struct {
 	uploadProvider        middleware.UploadProvider
 	logger                utils.AppLogger
 	postService           PostService
+	postAnalytics         analytics.PostAnalytics
+	communityAnalytics    analytics.CommunityAnalytics
 }
 
-func NewPostController(authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider, postService PostService) network.Controller {
+func NewPostController(authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider, postService PostService, postAnalytics analytics.PostAnalytics, communityAnalytics analytics.CommunityAnalytics) *postController {
 	return &postController{
 		BaseController:        network.NewBaseController("/post", authenticatorProvider),
 		ContextPayload:        common.NewContextPayload(),
@@ -28,6 +31,8 @@ func NewPostController(authenticatorProvider network.AuthenticationProvider, upl
 		authenticatorProvider: authenticatorProvider,
 		uploadProvider:        uploadProvider,
 		postService:           postService,
+		postAnalytics:         postAnalytics,
+		communityAnalytics:    communityAnalytics,
 	}
 }
 
@@ -92,6 +97,8 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 	c.Send(ctx).SuccessDataResponse("Post created successfully", dto.CreatePostResponse{PostId: post.PostId})
 	c.logger.Debug("Post details: %+v", post)
 	c.uploadProvider.DeleteUploadedFiles(ctx, "media")
+
+	go c.communityAnalytics.RecordCommentCreated(post.CommunityId, *userId)
 }
 
 func (c *postController) GetPost(ctx *gin.Context) {
@@ -113,6 +120,8 @@ func (c *postController) GetPost(ctx *gin.Context) {
 	}
 	c.Send(ctx).SuccessDataResponse("Post retrieved successfully", post)
 	c.logger.Debug("Post details: %+v", post)
+
+	go c.postAnalytics.RecordPostClick(postId, *userId)
 }
 
 func (c *postController) EditPost(ctx *gin.Context) {
@@ -193,6 +202,8 @@ func (c *postController) LikePost(ctx *gin.Context) {
 		IsLiked: isLiked,
 		Synergy: synergy,
 	})
+
+	go c.postAnalytics.RecordPostVote(postId, *userId, +1)
 }
 
 func (c *postController) DislikePost(ctx *gin.Context) {
@@ -216,6 +227,8 @@ func (c *postController) DislikePost(ctx *gin.Context) {
 		IsDisliked: isDisliked,
 		Synergy:    synergy,
 	})
+
+	go c.postAnalytics.RecordPostVote(postId, *userId, -1)
 }
 
 func (c *postController) SavePost(ctx *gin.Context) {
@@ -235,6 +248,8 @@ func (c *postController) SavePost(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessMsgResponse("Post saved successfully")
+
+	go c.postAnalytics.RecordPostSave(postId, *userId)
 }
 
 func (c *postController) SharePost(ctx *gin.Context) {
@@ -255,6 +270,8 @@ func (c *postController) SharePost(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessMsgResponse("Post shared successfully")
+
+	go c.postAnalytics.RecordPostShare(postId, *userId)
 }
 
 func (c *postController) UserPosts(ctx *gin.Context) {
@@ -276,6 +293,10 @@ func (c *postController) UserPosts(ctx *gin.Context) {
 		}
 	}
 	c.Send(ctx).SuccessDataResponse("User posts retrieved successfully", dto.NewGetUserPostResponse(postsValue, body.Page, body.Limit, numberPosts))
+
+	for _, post := range posts {
+		go c.postAnalytics.RecordPostView(post.PostId, *userId)
+	}
 }
 
 func (c *postController) GetCommunityPosts(ctx *gin.Context) {
@@ -305,4 +326,8 @@ func (c *postController) GetCommunityPosts(ctx *gin.Context) {
 		}
 	}
 	c.Send(ctx).SuccessDataResponse("Community posts retrieved successfully", dto.NewGetCommunityPostResponse(postsValue, body.Page, body.Limit, numberPosts))
+
+	for _, post := range posts {
+		go c.postAnalytics.RecordPostView(post.PostId, *c.MustGetUserId(ctx))
+	}
 }

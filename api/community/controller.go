@@ -3,6 +3,7 @@ package community
 import (
 	"fmt"
 	"strings"
+	"sync-backend/api/common/analytics"
 	communitydto "sync-backend/api/community/dto/community_action"
 	moderatordto "sync-backend/api/community/dto/moderation_action"
 	reportdto "sync-backend/api/community/dto/report_action"
@@ -36,6 +37,7 @@ type communityController struct {
 	communityService    CommunityService
 	moderatorService    moderator.ModeratorService
 	moderatorMiddleware modMW.ModeratorMiddleware
+	analytics           analytics.CommunityAnalytics
 }
 
 func NewCommunityController(
@@ -45,6 +47,7 @@ func NewCommunityController(
 	communityService CommunityService,
 	moderatorService moderator.ModeratorService,
 	moderatorMiddleware modMW.ModeratorMiddleware,
+	analytics analytics.CommunityAnalytics,
 ) network.Controller {
 	return &communityController{
 		logger:              utils.NewServiceLogger("CommunityController"),
@@ -56,6 +59,7 @@ func NewCommunityController(
 		communityService:    communityService,
 		moderatorService:    moderatorService,
 		moderatorMiddleware: moderatorMiddleware,
+		analytics:           analytics,
 	}
 }
 
@@ -222,6 +226,8 @@ func (c *communityController) GetCommunityById(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessDataResponse("Community fetched successfully", community)
+
+	go c.analytics.RecordCommunityView(params.Id, *c.MustGetUserId(ctx))
 }
 
 func (c *communityController) SearchCommunities(ctx *gin.Context) {
@@ -295,6 +301,7 @@ func (c *communityController) JoinCommunity(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessMsgResponse("Joined community successfully")
+	go c.analytics.RecordMemberJoin(communityId, *userId)
 }
 
 func (c *communityController) LeaveCommunity(ctx *gin.Context) {
@@ -333,6 +340,7 @@ func (c *communityController) LeaveCommunity(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessMsgResponse("Left community successfully")
+	go c.analytics.RecordMemberLeave(communityId, *userId)
 }
 
 func (c *communityController) GetMyCommunities(ctx *gin.Context) {
@@ -373,6 +381,11 @@ func (c *communityController) GetMyCommunities(ctx *gin.Context) {
 		),
 	)
 
+	for _, community := range communities {
+		if community != nil {
+			go c.analytics.RecordCommunityView(community.CommunityId, *userId)
+		}
+	}
 }
 
 func (c *communityController) GetJoinedCommunities(ctx *gin.Context) {
@@ -411,6 +424,12 @@ func (c *communityController) GetJoinedCommunities(ctx *gin.Context) {
 			len(communities),
 		),
 	)
+
+	for _, community := range communities {
+		if community != nil {
+			go c.analytics.RecordCommunityView(community.CommunityId, *userId)
+		}
+	}
 }
 
 // AddModerator handles adding a new moderator to a community
@@ -658,6 +677,8 @@ func (c *communityController) CreateReport(ctx *gin.Context) {
 	}
 
 	c.Send(ctx).SuccessDataResponse("Report created successfully", report)
+
+	go c.analytics.RecordReport(body.CommunityId, *userId)
 }
 
 // ProcessReport handles processing a report

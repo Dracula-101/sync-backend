@@ -106,7 +106,8 @@ type Comment struct {
 	DeviceInfo       DeviceInfo           `bson:"deviceInfo" json:"-"`
 	LocationInfo     LocationInfo         `bson:"locationInfo" json:"-"`
 	ModerationInfo   ModerationInfo       `bson:"moderationInfo,omitempty" json:"-"`
-	Path             string               `bson:"path" json:"path"` // Path for efficient tree traversal (e.g., "root.123.456")
+	Path             string               `bson:"path" json:"path"`                               // Path for efficient tree traversal (e.g., "root.123.456")
+	Analytics        *CommentAnalytics    `bson:"analytics,omitempty" json:"analytics,omitempty"` // Analytics data
 	CreatedAt        primitive.DateTime   `bson:"createdAt" json:"createdAt"`
 	UpdatedAt        primitive.DateTime   `bson:"updatedAt" json:"updatedAt"`
 	DeletedAt        *primitive.DateTime  `bson:"deletedAt,omitempty" json:"-"`

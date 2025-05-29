@@ -6,6 +6,7 @@ import (
 	"sync-backend/api/auth"
 	authMW "sync-backend/api/auth/middleware"
 	"sync-backend/api/comment"
+	"sync-backend/api/common/analytics"
 	"sync-backend/api/common/location"
 	"sync-backend/api/common/media"
 	"sync-backend/api/common/session"
@@ -50,6 +51,11 @@ type appModule struct {
 	CommentService   comment.CommentService
 	ModeratorService moderator.ModeratorService
 	SystemService    system.SystemService
+
+	// Analytics services
+	CommunityAnalyticsService analytics.CommunityAnalytics
+	PostAnalyticsService      analytics.PostAnalytics
+	CommentAnalyticsService   analytics.CommentAnalytics
 }
 
 func (m *appModule) GetInstance() *appModule {
@@ -59,9 +65,9 @@ func (m *appModule) GetInstance() *appModule {
 func (m *appModule) Controllers() []network.Controller {
 	return []network.Controller{
 		auth.NewAuthController(m.AuthenticationProvider(), m.LocationProvider(), m.UploadProvider(), m.AuthService),
-		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.ModeratorService, m.ModeratorMiddleware()),
+		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.ModeratorService, m.ModeratorMiddleware(), m.CommunityAnalyticsService),
 		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.LocationService),
-		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService),
+		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService, m.PostAnalyticsService, m.CommunityAnalyticsService),
 		comment.NewCommentController(m.AuthenticationProvider(), m.LocationProvider(), m.CommentService),
 		system.NewSystemController(m.SystemService),
 	}
@@ -107,6 +113,10 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 	commentService := comment.NewCommentService(db)
 	moderatorService := moderator.NewModeratorService(db)
 
+	communityAnalyticsService := analytics.NewCommunityAnalyticsService(db)
+	postAnalyticsService := analytics.NewPostAnalyticsService(db)
+	commentAnalyticsService := analytics.NewCommentAnalyticsService(db)
+
 	return &appModule{
 		Context: context,
 		Env:     env,
@@ -129,5 +139,10 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 		PostService:      postService,
 		CommentService:   commentService,
 		ModeratorService: moderatorService,
+
+		// Analytics services
+		CommunityAnalyticsService: communityAnalyticsService,
+		PostAnalyticsService:      postAnalyticsService,
+		CommentAnalyticsService:   commentAnalyticsService,
 	}
 }

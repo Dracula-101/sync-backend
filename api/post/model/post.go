@@ -38,6 +38,7 @@ type Post struct {
 	IsStickied     bool                `bson:"isStickied" json:"isStickied"`
 	IsLocked       bool                `bson:"isLocked" json:"isLocked"`
 	IsArchived     bool                `bson:"isArchived" json:"isArchived"`
+	Analytics      *PostAnalytics      `bson:"analytics,omitempty" json:"analytics,omitempty"`
 	CreatedAt      primitive.DateTime  `bson:"createdAt" json:"createdAt"`
 	UpdatedAt      primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
 	DeletedAt      *primitive.DateTime `bson:"deletedAt,omitempty" json:"-"`
@@ -99,10 +100,10 @@ const (
 // NewPost creates a new post with default values
 func NewPost(authorId string, communityId string, title string, content string, tags []string, media []Media, postType PostType, isNSFW bool, isSpoiler bool) *Post {
 	now := primitive.NewDateTimeFromTime(time.Now())
-
+	postId := uuid.New().String()
 	return &Post{
 		Id:             primitive.NewObjectID(),
-		PostId:         uuid.New().String(),
+		PostId:         postId,
 		Title:          title,
 		Content:        content,
 		AuthorId:       authorId,

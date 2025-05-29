@@ -36,6 +36,7 @@ type Community struct {
 	Moderators  []ModeratorInfo    `bson:"moderators" json:"moderators"`
 	Settings    CommunitySettings  `bson:"settings" json:"settings"`
 	Status      CommunityStatus    `bson:"status" json:"status"`
+	Analytics   CommunityAnalytics `bson:"analytics" json:"analytics"`
 	CreatedAt   primitive.DateTime `bson:"createdAt" json:"createdAt"`
 	UpdatedAt   primitive.DateTime `bson:"updatedAt" json:"updatedAt"`
 	Version     int                `bson:"version" json:"version"`
@@ -118,6 +119,19 @@ type NewCommunityArgs struct {
 func NewCommunity(args NewCommunityArgs) *Community {
 	now := primitive.NewDateTimeFromTime(time.Now())
 	slug := generateSlug(args.Name)
+
+	// Initialize activity buckets
+	emptyBucket := ActivityBucket{
+		Timestamp:   now,
+		Posts:       0,
+		Comments:    0,
+		Likes:       0,
+		Views:       0,
+		Shares:      0,
+		NewMembers:  1, // Owner joins
+		ActiveUsers: 1,
+	}
+
 	return &Community{
 		ID:          primitive.NewObjectID(),
 		CommunityId: uuid.New().String(),
@@ -149,6 +163,31 @@ func NewCommunity(args NewCommunityArgs) *Community {
 		},
 		Tags:   args.Tags,
 		Status: CommunityStatusActive,
+		Analytics: CommunityAnalytics{
+			LastActivityAt:     now,
+			LastPostAt:         primitive.DateTime(0),
+			LastCommentAt:      primitive.DateTime(0),
+			TotalViews:         0,
+			TotalLikes:         0,
+			TotalComments:      0,
+			TotalShares:        0,
+			ActiveMembersToday: 1,
+			ActiveMembersWeek:  1,
+			ActiveMembersMonth: 1,
+			MemberJoinsToday:   1,
+			MemberJoinsWeek:    1,
+			MemberJoinsMonth:   1,
+			EngagementScore:    0.0,
+			TrendingScore:      0.0,
+			QualityScore:       0.0,
+			ScoresUpdatedAt:    now,
+			ActivityBuckets: ActivityBuckets{
+				CurrentHour: emptyBucket,
+				Last24Hours: make([]ActivityBucket, 24),
+				Last7Days:   make([]ActivityBucket, 7),
+				Last30Days:  make([]ActivityBucket, 30),
+			},
+		},
 		Settings: CommunitySettings{
 			JoinPolicy:           "open",
 			PostApproval:         false,
@@ -284,8 +323,40 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 			},
 			Options: options.Index().SetName("idx_community_tags"),
 		},
+		// New indexes for analytics
+		{
+			Keys: bson.D{
+				{Key: "analytics.trendingScore", Value: -1},
+			},
+			Options: options.Index().SetName("idx_community_trending_score"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "analytics.engagementScore", Value: -1},
+			},
+			Options: options.Index().SetName("idx_community_engagement_score"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "analytics.qualityScore", Value: -1},
+			},
+			Options: options.Index().SetName("idx_community_quality_score"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "analytics.lastActivityAt", Value: -1},
+			},
+			Options: options.Index().SetName("idx_community_last_activity"),
+		},
+		{
+			Keys: bson.D{
+				{Key: "analytics.activeMembersWeek", Value: -1},
+			},
+			Options: options.Index().SetName("idx_community_active_members"),
+		},
 	}
 	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CheckIndexes(indexes)
+
 	searchIndexes := []mongod.SearchIndexModel{
 		{
 			Definition: bson.D{
@@ -338,6 +409,20 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 						}},
 						{Key: "memberCount", Value: bson.D{
 							{Key: "type", Value: "number"},
+						}},
+						{Key: "analytics", Value: bson.D{
+							{Key: "type", Value: "document"},
+							{Key: "fields", Value: bson.D{
+								{Key: "trendingScore", Value: bson.D{
+									{Key: "type", Value: "number"},
+								}},
+								{Key: "engagementScore", Value: bson.D{
+									{Key: "type", Value: "number"},
+								}},
+								{Key: "qualityScore", Value: bson.D{
+									{Key: "type", Value: "number"},
+								}},
+							}},
 						}},
 					}},
 				}},
