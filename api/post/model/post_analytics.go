@@ -1,6 +1,10 @@
 package model
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // PostAnalytics contains comprehensive analytics data for a post
 type PostAnalytics struct {
@@ -64,12 +68,12 @@ type PostAnalytics struct {
 	FreshnessBoost float64 `bson:"freshnessBoost" json:"freshnessBoost"` // Freshness bonus
 
 	// Performance tracking
-	PeakViewsHour      primitive.DateTime `bson:"peakViewsHour,omitempty" json:"peakViewsHour,omitempty"`
-	PeakEngagementHour primitive.DateTime `bson:"peakEngagementHour,omitempty" json:"peakEngagementHour,omitempty"`
-	FirstViewAt        primitive.DateTime `bson:"firstViewAt,omitempty" json:"firstViewAt,omitempty"`
-	LastViewAt         primitive.DateTime `bson:"lastViewAt,omitempty" json:"lastViewAt,omitempty"`
-	LastEngagementAt   primitive.DateTime `bson:"lastEngagementAt,omitempty" json:"lastEngagementAt,omitempty"`
-	LastScoreUpdateAt  primitive.DateTime `bson:"lastScoreUpdateAt,omitempty" json:"lastScoreUpdateAt,omitempty"`
+	PeakViewsHour      *primitive.DateTime `bson:"peakViewsHour,omitempty" json:"peakViewsHour,omitempty"`
+	PeakEngagementHour *primitive.DateTime `bson:"peakEngagementHour,omitempty" json:"peakEngagementHour,omitempty"`
+	FirstViewAt        *primitive.DateTime `bson:"firstViewAt,omitempty" json:"firstViewAt,omitempty"`
+	LastViewAt         *primitive.DateTime `bson:"lastViewAt,omitempty" json:"lastViewAt,omitempty"`
+	LastEngagementAt   *primitive.DateTime `bson:"lastEngagementAt,omitempty" json:"lastEngagementAt,omitempty"`
+	LastScoreUpdateAt  *primitive.DateTime `bson:"lastScoreUpdateAt,omitempty" json:"lastScoreUpdateAt,omitempty"`
 
 	// Community contribution metrics
 	CommunityEngagementContribution float64 `bson:"communityEngagementContribution" json:"communityEngagementContribution"` // How much this post contributes to community engagement
@@ -269,4 +273,97 @@ type GrowthMetrics struct {
 	EngagementGrowthRate float64 `json:"engagementGrowthRate"`
 	QualityTrend         string  `json:"qualityTrend"`
 	ActivityTrend        string  `json:"activityTrend"`
+}
+
+func NewPostTimeWindowMetrics() PostTimeWindowMetrics {
+	return PostTimeWindowMetrics{
+		Views:       0,
+		UniqueViews: 0,
+		Upvotes:     0,
+		Downvotes:   0,
+		Comments:    0,
+		Shares:      0,
+		Saves:       0,
+		Clicks:      0,
+		Reports:     0,
+		WindowStart: primitive.NewDateTimeFromTime(time.Now()),
+		WindowEnd:   primitive.NewDateTimeFromTime(time.Now().Add(1 * time.Hour)),
+		LastUpdated: primitive.NewDateTimeFromTime(time.Now()),
+	}
+}
+
+func NewPostActivityBuckets() PostActivityBuckets {
+	return PostActivityBuckets{
+		CurrentHour:    PostTimeWindowMetrics{},
+		Current6Hours:  PostTimeWindowMetrics{},
+		Current24Hours: PostTimeWindowMetrics{},
+		Current7Days:   PostTimeWindowMetrics{},
+
+		PreviousHour:    PostTimeWindowMetrics{},
+		Previous6Hours:  PostTimeWindowMetrics{},
+		Previous24Hours: PostTimeWindowMetrics{},
+		Previous7Days:   PostTimeWindowMetrics{},
+	}
+}
+
+func NewPostAnalytics() *PostAnalytics {
+	return &PostAnalytics{
+		TotalViews:     0,
+		UniqueViews:    0,
+		TotalUpvotes:   0,
+		TotalDownvotes: 0,
+		TotalComments:  0,
+		TotalShares:    0,
+		TotalSaves:     0,
+		TotalReports:   0,
+		TotalClicks:    0,
+
+		WeightedViews1h:  0.0,
+		WeightedViews6h:  0.0,
+		WeightedViews24h: 0.0,
+		WeightedViews7d:  0.0,
+
+		WeightedEngagement1h:  0.0,
+		WeightedEngagement6h:  0.0,
+		WeightedEngagement24h: 0.0,
+		WeightedEngagement7d:  0.0,
+
+		ViewVelocity1h:       0.0,
+		ViewVelocity6h:       0.0,
+		EngagementVelocity1h: 0.0,
+		EngagementVelocity6h: 0.0,
+		CommentVelocity1h:    0.0,
+		ShareVelocity1h:      0.0,
+
+		ViewMomentum:       0.0,
+		EngagementMomentum: 0.0,
+		TrendingMomentum:   0.0,
+
+		HotScore:      0.0,
+		TrendingScore: 0.0,
+		RisingScore:   0.0,
+		ViralityScore: 0.0,
+		QualityScore:  0.0,
+
+		EngagementRate:     1.00, // Default to neutral engagement rate
+		CommentToViewRatio: -1,   // Default to no comments
+		ShareToViewRatio:   -1,   // Default to no shares
+		SaveToViewRatio:    -1,   // Default to no saves
+		UpvoteRatio:        -1,   // Default to no votes
+		ControversyScore:   -1,   // Default to no votes
+
+		ActivityBuckets: NewPostActivityBuckets(),
+		AgeInHours:      0.0,
+		AgePenalty:      0.0,
+		PopularityScore: 0.0,
+		FreshnessBoost:  0.0,
+
+		CommunityEngagementContribution: 0.0,
+		CommunityActivityContribution:   0.0,
+		CommunityGrowthContribution:     0.0,
+		UniqueViewers:                   []string{},
+
+		UniqueEngagers:     []string{},
+		ViewerDemographics: make(map[string]int64),
+	}
 }

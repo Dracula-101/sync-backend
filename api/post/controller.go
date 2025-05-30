@@ -51,6 +51,10 @@ func (c *postController) MountRoutes(group *gin.RouterGroup) {
 
 	// User post routes
 	group.GET("/get/user", c.UserPosts)
+	group.GET("/feed", c.UserFeedPosts)
+	group.GET("/trending", c.TrendingPosts)
+	group.GET("/popular", c.PopularPosts)
+	group.GET("/saved", c.UserSavedPosts)
 
 	// Community post routes
 	group.GET("/get/community/:communityId", c.GetCommunityPosts)
@@ -296,6 +300,108 @@ func (c *postController) UserPosts(ctx *gin.Context) {
 
 	for _, post := range posts {
 		go c.postAnalytics.RecordPostView(post.PostId, *userId)
+	}
+}
+
+func (c *postController) UserFeedPosts(ctx *gin.Context) {
+	userId := c.MustGetUserId(ctx)
+	body, err := network.ReqQuery(ctx, dto.NewGetUserFeedPostRequest())
+	if err != nil {
+		return
+	}
+	posts, err := c.postService.GetUserFeedPosts(*userId, body.Page, body.Limit)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	postsValue := make([]model.FeedPost, len(posts))
+	for i, post := range posts {
+		if post != nil {
+			postsValue[i] = *post
+		}
+	}
+	c.Send(ctx).SuccessDataResponse("User feed posts retrieved successfully", dto.NewGetUserFeedPostResponse(postsValue, body.Page, body.Limit))
+
+	for _, post := range posts {
+		go c.postAnalytics.RecordPostView(post.ID, *userId)
+	}
+}
+
+func (c *postController) TrendingPosts(ctx *gin.Context) {
+	body, err := network.ReqQuery(ctx, dto.NewGetTrendingPostRequest())
+	if err != nil {
+		return
+	}
+
+	userId := c.MustGetUserId(ctx)
+	posts, err := c.postService.GetTrendingPosts(*userId, body.Page, body.Limit)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	postsValue := make([]model.FeedPost, len(posts))
+	for i, post := range posts {
+		if post != nil {
+			postsValue[i] = *post
+		}
+	}
+	c.Send(ctx).SuccessDataResponse("Trending posts retrieved successfully", dto.NewGetTrendingPostResponse(postsValue, body.Page, body.Limit))
+
+	for _, post := range posts {
+		go c.postAnalytics.RecordPostView(post.ID, *c.MustGetUserId(ctx))
+	}
+}
+
+func (c *postController) PopularPosts(ctx *gin.Context) {
+	body, err := network.ReqQuery(ctx, dto.NewGetPopularPostRequest())
+	if err != nil {
+		return
+	}
+
+	userId := c.MustGetUserId(ctx)
+	posts, err := c.postService.GetPopularPosts(*userId, body.Page, body.Limit)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	postsValue := make([]model.FeedPost, len(posts))
+	for i, post := range posts {
+		if post != nil {
+			postsValue[i] = *post
+		}
+	}
+	c.Send(ctx).SuccessDataResponse("Popular posts retrieved successfully", dto.NewGetPopularPostResponse(postsValue, body.Page, body.Limit))
+
+	for _, post := range posts {
+		go c.postAnalytics.RecordPostView(post.ID, *c.MustGetUserId(ctx))
+	}
+}
+
+func (c *postController) UserSavedPosts(ctx *gin.Context) {
+	userId := c.MustGetUserId(ctx)
+	body, err := network.ReqQuery(ctx, dto.NewGetUserSavedPostRequest())
+	if err != nil {
+		return
+	}
+	posts, err := c.postService.GetUserSavedPosts(*userId, body.Page, body.Limit)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	postsValue := make([]model.FeedPost, len(posts))
+	for i, post := range posts {
+		if post != nil {
+			postsValue[i] = *post
+		}
+	}
+	c.Send(ctx).SuccessDataResponse("User saved posts retrieved successfully", dto.NewGetUserSavedPostResponse(postsValue, body.Page, body.Limit))
+
+	for _, post := range posts {
+		go c.postAnalytics.RecordPostView(post.ID, *userId)
 	}
 }
 

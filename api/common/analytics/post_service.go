@@ -949,7 +949,8 @@ func (s *postAnalyticsService) CalculateAndUpdatePostScores(postId string) error
 
 	post.Analytics.TrendingMomentum = post.Analytics.ViewMomentum + post.Analytics.EngagementMomentum
 
-	post.Analytics.LastScoreUpdateAt = primitive.NewDateTimeFromTime(now)
+	dt := primitive.NewDateTimeFromTime(now)
+	post.Analytics.LastScoreUpdateAt = &dt
 
 	filter := bson.M{"postId": postId}
 	update := bson.M{

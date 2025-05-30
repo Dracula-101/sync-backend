@@ -22,6 +22,11 @@ type PostService interface {
 	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, network.ApiError)
 	DeletePost(userId string, postId string) network.ApiError
 
+	GetUserFeedPosts(userId string, page int, limit int) ([]*model.FeedPost, network.ApiError)
+	GetTrendingPosts(userId string, page int, limit int) ([]*model.FeedPost, network.ApiError)
+	GetPopularPosts(userId string, page int, limit int) ([]*model.FeedPost, network.ApiError)
+	GetUserSavedPosts(userId string, page int, limit int) ([]*model.FeedPost, network.ApiError)
+
 	LikePost(userId string, postId string) (*bool, *int, network.ApiError)
 	DislikePost(userId string, postId string) (*bool, *int, network.ApiError)
 	SavePost(userId string, postId string) network.ApiError
@@ -36,9 +41,11 @@ type postService struct {
 	mediaService                media.MediaService
 	logger                      utils.AppLogger
 	communityService            community.CommunityService
+	userService                 user.UserService
 	postQueryBuilder            mongo.QueryBuilder[model.Post]
 	postInteractionQueryBuilder mongo.QueryBuilder[model.PostInteraction]
 	getPostAggregateBuilder     mongo.AggregateBuilder[model.Post, model.PublicPost]
+	feedPostAggregateBuilder    mongo.AggregateBuilder[model.Post, model.FeedPost]
 	transaction                 mongo.TransactionBuilder
 }
 
@@ -48,9 +55,11 @@ func NewPostService(db mongo.Database, userService user.UserService, communitySe
 		logger:                      utils.NewServiceLogger("PostService"),
 		mediaService:                mediaService,
 		communityService:            communityService,
+		userService:                 userService,
 		postQueryBuilder:            mongo.NewQueryBuilder[model.Post](db, model.PostCollectionName),
 		postInteractionQueryBuilder: mongo.NewQueryBuilder[model.PostInteraction](db, model.PostInteractionCollectionName),
 		getPostAggregateBuilder:     mongo.NewAggregateBuilder[model.Post, model.PublicPost](db, model.PostCollectionName),
+		feedPostAggregateBuilder:    mongo.NewAggregateBuilder[model.Post, model.FeedPost](db, model.PostCollectionName),
 		transaction:                 mongo.NewTransactionBuilder(db),
 	}
 }
@@ -312,6 +321,525 @@ func (s *postService) DeletePost(userId string, postId string) network.ApiError 
 
 	s.logger.Info("Post deleted successfully with ID: %s", postId)
 	return nil
+}
+
+// GetUserFeedPosts retrieves posts from communities the user has joined
+func (s *postService) GetUserFeedPosts(userId string, page int, limit int) ([]*model.FeedPost, network.ApiError) {
+	s.logger.Info("Getting feed posts for user: %s", userId)
+
+	// Get user's joined communities
+	user, err := s.userService.FindUserById(userId)
+	if err != nil {
+		s.logger.Error("Failed to get user: %v", err)
+		return nil, err
+	}
+
+	// Check if user has joined any communities
+	if len(user.JoinedWavelengths) == 0 {
+		s.logger.Info("User has not joined any communities")
+		return []*model.FeedPost{}, nil
+	}
+
+	// Convert community IDs to primitive.ObjectID array
+	communityIds := user.JoinedWavelengths
+
+	// Build aggregation pipeline
+	aggregate := s.feedPostAggregateBuilder.SingleAggregate()
+
+	// Match active posts in user's joined communities
+	aggregate.Match(bson.M{
+		"communityId": bson.M{"$in": communityIds},
+		"status":      model.PostStatusActive,
+		"authorId":    bson.M{"$ne": userId}, // Exclude posts by the current user
+	})
+
+	// Sort by activity time, trending score, hot score, and creation time
+	aggregate.Sort(bson.D{
+		{Key: "lastActivityAt", Value: -1},
+		{Key: "analytics.trendingScore", Value: -1},
+		{Key: "analytics.hotScore", Value: -1},
+		{Key: "createdAt", Value: -1},
+	})
+
+	// Skip and limit for pagination
+	aggregate.Skip(int64((page - 1) * limit))
+	aggregate.Limit(int64(limit))
+
+	// Lookup user interactions to determine if the user has liked or disliked each post
+	aggregate.Lookup(
+		model.PostInteractionCollectionName,
+		"postId",
+		"postId",
+		"interactions",
+	)
+
+	// Filter interactions for the current user
+	aggregate.AddFields(bson.M{
+		"userInteractions": bson.M{
+			"$filter": bson.M{
+				"input": "$interactions",
+				"as":    "interaction",
+				"cond": bson.M{
+					"$and": bson.A{
+						bson.M{"$eq": bson.A{"$$interaction.userId", userId}},
+						bson.M{"$in": bson.A{
+							"$$interaction.interactionType",
+							bson.A{model.InteractionTypeLike, model.InteractionTypeDislike},
+						}},
+					},
+				},
+			},
+		},
+	})
+
+	// Extract the single user interaction if it exists
+	aggregate.AddFields(bson.M{
+		"userInteraction": bson.M{"$arrayElemAt": bson.A{"$userInteractions", 0}},
+	})
+
+	// Project required fields for the feed post format
+	aggregate.Project(bson.M{
+		"postId":       1,
+		"title":        1,
+		"content":      1,
+		"authorId":     1,
+		"communityId":  1,
+		"type":         1,
+		"status":       1,
+		"tags":         1,
+		"synergy":      1,
+		"commentCount": 1,
+		"viewCount":    1,
+		"shareCount":   1,
+		"saveCount":    1,
+		"isLiked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeLike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isDisliked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeDislike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isNSFW":     1,
+		"isSpoiler":  1,
+		"isStickied": 1,
+		"isLocked":   1,
+		"createdAt":  1,
+		"updatedAt":  1,
+	})
+
+	// Execute the aggregation
+	posts, execErr := aggregate.Exec()
+	if execErr != nil {
+		s.logger.Error("Failed to get feed posts: %v", execErr)
+		return nil, NewDBError("getting feed posts", execErr.Error())
+	}
+
+	return posts, nil
+}
+
+// GetTrendingPosts retrieves trending posts across all communities
+func (s *postService) GetTrendingPosts(userId string, page int, limit int) ([]*model.FeedPost, network.ApiError) {
+	s.logger.Info("Getting trending posts")
+
+	// Build aggregation pipeline
+	aggregate := s.feedPostAggregateBuilder.SingleAggregate()
+
+	// Match only active posts
+	aggregate.Match(bson.M{
+		"status":   model.PostStatusActive,
+		"authorId": bson.M{"$ne": userId}, // Exclude posts by the current user
+	})
+
+	// Sort by trending metrics
+	aggregate.Sort(bson.D{
+		{Key: "analytics.trendingScore", Value: -1},
+		{Key: "analytics.viewVelocity1h", Value: -1},
+		{Key: "analytics.engagementVelocity1h", Value: -1},
+		{Key: "analytics.weightedEngagement6h", Value: -1},
+		{Key: "createdAt", Value: -1},
+	})
+
+	// Skip and limit for pagination
+	aggregate.Skip(int64((page - 1) * limit))
+	aggregate.Limit(int64(limit))
+
+	// Lookup user interactions to determine if the user has liked or disliked each post
+	aggregate.Lookup(
+		model.PostInteractionCollectionName,
+		"postId",
+		"postId",
+		"interactions",
+	)
+
+	//  Lookup community details to enrich post data
+	aggregate.Lookup(
+		"communities",
+		"communityId",
+		"communityId",
+		"community",
+	)
+
+	// Filter interactions for the current user
+	aggregate.AddFields(bson.M{
+		"userInteractions": bson.M{
+			"$filter": bson.M{
+				"input": "$interactions",
+				"as":    "interaction",
+				"cond": bson.M{
+					"$and": bson.A{
+						bson.M{"$eq": bson.A{"$$interaction.userId", userId}},
+						bson.M{"$in": bson.A{
+							"$$interaction.interactionType",
+							bson.A{model.InteractionTypeLike, model.InteractionTypeDislike},
+						}},
+					},
+				},
+			},
+		},
+	})
+
+	// Extract the single user interaction if it exists
+	aggregate.AddFields(bson.M{
+		"userInteraction": bson.M{"$arrayElemAt": bson.A{"$userInteractions", 0}},
+		"community":       bson.M{"$arrayElemAt": bson.A{"$community", 0}},
+	})
+
+	// Project required fields with user-specific like/dislike status
+	aggregate.Project(bson.M{
+		"postId":   1,
+		"title":    1,
+		"content":  1,
+		"authorId": 1,
+		"community": bson.M{
+			"id":          "$community.communityId",
+			"name":        "$community.name",
+			"description": "$community.description",
+			"avatar":      "$community.media.avatar.url",
+			"background":  "$community.media.background.url",
+			"status":      "$community.status",
+		},
+		"type":         1,
+		"status":       1,
+		"tags":         1,
+		"synergy":      1,
+		"commentCount": 1,
+		"viewCount":    1,
+		"shareCount":   1,
+		"saveCount":    1,
+		"isLiked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeLike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isDisliked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeDislike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isNSFW":     1,
+		"isSpoiler":  1,
+		"isStickied": 1,
+		"isLocked":   1,
+		"createdAt":  1,
+		"updatedAt":  1,
+	})
+
+	// Execute the aggregation
+	posts, execErr := aggregate.Exec()
+	if execErr != nil {
+		s.logger.Error("Failed to get trending posts: %v", execErr)
+		return nil, NewDBError("getting trending posts", execErr.Error())
+	}
+
+	return posts, nil
+}
+
+func (s *postService) GetPopularPosts(userId string, page int, limit int) ([]*model.FeedPost, network.ApiError) {
+	s.logger.Info("Getting popular posts, page: %d, limit: %d", page, limit)
+
+	// Create a pipeline to get popular posts
+	aggregate := s.feedPostAggregateBuilder.SingleAggregate()
+
+	// Match only active posts
+	aggregate.Match(bson.M{
+		"status": model.PostStatusActive,
+		"$or": []bson.M{
+			{"deletedAt": bson.M{"$exists": false}},
+			{"deletedAt": nil},
+		},
+		"authorId": bson.M{"$ne": userId}, // Exclude posts by the current user
+	})
+
+	// Sort by popularity metrics
+	// - PopularityScore (primary - long term popularity)
+	// - Synergy (total upvotes - downvotes)
+	// - CommentCount (engagement level)
+	// - ViewCount (visibility)
+	aggregate.Sort(bson.M{
+		"analytics.popularityScore": -1,
+		"synergy":                   -1,
+		"commentCount":              -1,
+		"viewCount":                 -1,
+	})
+
+	// Add pagination
+	aggregate.Skip(int64((page - 1) * limit))
+	aggregate.Limit(int64(limit))
+
+	// Lookup user interactions to determine if the user has liked or disliked each post
+	aggregate.Lookup(
+		model.PostInteractionCollectionName,
+		"postId",
+		"postId",
+		"interactions",
+	)
+	// Lookup community details
+	aggregate.Lookup(
+		"communities",
+		"communityId",
+		"communityId",
+		"community",
+	)
+
+	// Filter interactions for the current user
+	aggregate.AddFields(bson.M{
+		"userInteractions": bson.M{
+			"$filter": bson.M{
+				"input": "$interactions",
+				"as":    "interaction",
+				"cond": bson.M{
+					"$and": bson.A{
+						bson.M{"$eq": bson.A{"$$interaction.userId", userId}},
+						bson.M{"$in": bson.A{
+							"$$interaction.interactionType",
+							bson.A{model.InteractionTypeLike, model.InteractionTypeDislike},
+						}},
+					},
+				},
+			},
+		},
+	})
+
+	// Extract the single user interaction if it exists
+	aggregate.AddFields(bson.M{
+		"userInteraction": bson.M{"$arrayElemAt": bson.A{"$userInteractions", 0}},
+	})
+
+	aggregate.AddFields(bson.M{
+		"community": bson.M{"$arrayElemAt": bson.A{"$community", 0}},
+	})
+
+	// Project to the FeedPost format with user-specific like/dislike status
+	aggregate.Project(bson.M{
+		"postId":   1,
+		"title":    1,
+		"content":  1,
+		"authorId": 1,
+		"community": bson.M{
+			"id":          "$community.communityId",
+			"name":        "$community.name",
+			"description": "$community.description",
+			"avatar":      "$community.media.avatar.url",
+			"background":  "$community.media.background.url",
+			"status":      "$community.status",
+		},
+		"type":         1,
+		"status":       1,
+		"tags":         1,
+		"synergy":      1,
+		"commentCount": 1,
+		"viewCount":    1,
+		"shareCount":   1,
+		"saveCount":    1,
+		"isLiked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeLike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isDisliked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeDislike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isNSFW":     1,
+		"isSpoiler":  1,
+		"isStickied": 1,
+		"isLocked":   1,
+		"createdAt":  1,
+		"updatedAt":  1,
+	})
+
+	// Execute the aggregation
+	popularPosts, err := aggregate.Exec()
+	if err != nil {
+		s.logger.Error("Failed to execute popular posts aggregation: %v", err)
+		return nil, network.NewInternalServerError(
+			"Failed to get popular posts",
+			"Failed to retrieve popular posts. Context - [ Query Failed ]",
+			network.DB_ERROR,
+			err)
+	}
+
+	s.logger.Info("Successfully retrieved %d popular posts", len(popularPosts))
+	return popularPosts, nil
+}
+
+func (s *postService) GetUserSavedPosts(userId string, page int, limit int) ([]*model.FeedPost, network.ApiError) {
+	s.logger.Info("Getting saved posts for user: %s", userId)
+	//get saved posts from post interactions
+	postIds, err := s.postInteractionQueryBuilder.SingleQuery().FindAll(
+		bson.M{"userId": userId, "interactionType": model.InteractionTypeSave},
+		options.Find().SetProjection(bson.M{"postId": 1}),
+	)
+	if err != nil {
+		s.logger.Error("Failed to get saved posts: %v", err)
+		return nil, network.NewInternalServerError(
+			"Failed to get saved posts",
+			fmt.Sprintf("Failed to retrieve saved posts for user %s. Context - [ Query Failed ]", userId),
+			network.DB_ERROR,
+			err)
+	}
+
+	if len(postIds) == 0 {
+		return []*model.FeedPost{}, nil
+	}
+	// postids
+	var postInteractionIds []string
+	for _, pi := range postIds {
+		postInteractionIds = append(postInteractionIds, pi.PostId)
+	}
+
+	// Build aggregation to get saved posts
+	aggregate := s.feedPostAggregateBuilder.SingleAggregate()
+	aggregate.Match(bson.M{
+		"postId": bson.M{"$in": postInteractionIds},
+		"status": model.PostStatusActive,
+	})
+
+	// Skip and limit for pagination
+	aggregate.Skip(int64((page - 1) * limit))
+	aggregate.Limit(int64(limit))
+
+	// Sort by most recently saved
+	aggregate.Sort(bson.D{primitive.E{Key: "createdAt", Value: -1}})
+
+	// Lookup user interactions to determine if the user has liked or disliked each post
+	aggregate.Lookup(
+		model.PostInteractionCollectionName,
+		"postId",
+		"postId",
+		"interactions",
+	)
+
+	// Filter interactions for the current user
+	aggregate.AddFields(bson.M{
+		"userInteractions": bson.M{
+			"$filter": bson.M{
+				"input": "$interactions",
+				"as":    "interaction",
+				"cond": bson.M{
+					"$and": bson.A{
+						bson.M{"$eq": bson.A{"$$interaction.userId", userId}},
+						bson.M{"$in": bson.A{
+							"$$interaction.interactionType",
+							bson.A{model.InteractionTypeLike, model.InteractionTypeDislike},
+						}},
+					},
+				},
+			},
+		},
+	})
+
+	// Extract the single user interaction if it exists
+	aggregate.AddFields(bson.M{
+		"userInteraction": bson.M{"$arrayElemAt": bson.A{"$userInteractions", 0}},
+	})
+
+	// Project required fields for the feed post format
+	aggregate.Project(bson.M{
+		"postId":       1,
+		"title":        1,
+		"content":      1,
+		"authorId":     1,
+		"communityId":  1,
+		"type":         1,
+		"status":       1,
+		"tags":         1,
+		"synergy":      1,
+		"commentCount": 1,
+		"viewCount":    1,
+		"shareCount":   1,
+		"saveCount":    1,
+		"isLiked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeLike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isDisliked": bson.M{
+			"$cond": bson.A{
+				bson.M{"$and": bson.A{
+					bson.M{"$ifNull": bson.A{"$userInteraction", false}},
+					bson.M{"$eq": bson.A{"$userInteraction.interactionType", model.InteractionTypeDislike}},
+				}},
+				true,
+				false,
+			},
+		},
+		"isNSFW":     1,
+		"isSpoiler":  1,
+		"isStickied": 1,
+		"isLocked":   1,
+		"createdAt":  1,
+		"updatedAt":  1,
+	})
+
+	// Execute the aggregation
+	posts, execErr := aggregate.Exec()
+	if execErr != nil {
+		s.logger.Error("Failed to get saved posts: %v", execErr)
+		return nil, NewDBError("getting saved posts", execErr.Error())
+	}
+
+	s.logger.Info("Successfully retrieved %d saved posts for user %s", len(posts), userId)
+	return posts, nil
 }
 
 func (s *postService) LikePost(userId string, postId string) (*bool, *int, network.ApiError) {

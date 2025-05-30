@@ -120,18 +120,6 @@ func NewCommunity(args NewCommunityArgs) *Community {
 	now := primitive.NewDateTimeFromTime(time.Now())
 	slug := generateSlug(args.Name)
 
-	// Initialize activity buckets
-	emptyBucket := ActivityBucket{
-		Timestamp:   now,
-		Posts:       0,
-		Comments:    0,
-		Likes:       0,
-		Views:       0,
-		Shares:      0,
-		NewMembers:  1, // Owner joins
-		ActiveUsers: 1,
-	}
-
 	return &Community{
 		ID:          primitive.NewObjectID(),
 		CommunityId: uuid.New().String(),
@@ -161,33 +149,9 @@ func NewCommunity(args NewCommunityArgs) *Community {
 				CreatedAt:    now,
 			},
 		},
-		Tags:   args.Tags,
-		Status: CommunityStatusActive,
-		Analytics: CommunityAnalytics{
-			LastActivityAt:     now,
-			LastPostAt:         primitive.DateTime(0),
-			LastCommentAt:      primitive.DateTime(0),
-			TotalViews:         0,
-			TotalLikes:         0,
-			TotalComments:      0,
-			TotalShares:        0,
-			ActiveMembersToday: 1,
-			ActiveMembersWeek:  1,
-			ActiveMembersMonth: 1,
-			MemberJoinsToday:   1,
-			MemberJoinsWeek:    1,
-			MemberJoinsMonth:   1,
-			EngagementScore:    0.0,
-			TrendingScore:      0.0,
-			QualityScore:       0.0,
-			ScoresUpdatedAt:    now,
-			ActivityBuckets: ActivityBuckets{
-				CurrentHour: emptyBucket,
-				Last24Hours: make([]ActivityBucket, 24),
-				Last7Days:   make([]ActivityBucket, 7),
-				Last30Days:  make([]ActivityBucket, 30),
-			},
-		},
+		Tags:      args.Tags,
+		Status:    CommunityStatusActive,
+		Analytics: *NewCommunityAnalytics(),
 		Settings: CommunitySettings{
 			JoinPolicy:           "open",
 			PostApproval:         false,

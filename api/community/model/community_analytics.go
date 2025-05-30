@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -42,4 +44,43 @@ type ActivityBucket struct {
 	Shares      int64              `bson:"shares" json:"shares"`
 	NewMembers  int64              `bson:"newMembers" json:"newMembers"`
 	ActiveUsers int64              `bson:"activeUsers" json:"activeUsers"`
+}
+
+func NewActivityBuckets() ActivityBuckets {
+	now := primitive.NewDateTimeFromTime(time.Now())
+	return ActivityBuckets{
+		CurrentHour: ActivityBucket{
+			Timestamp:   now,
+			Posts:       0,
+			Comments:    0,
+			Likes:       0,
+			Views:       0,
+			Shares:      0,
+			NewMembers:  1,
+			ActiveUsers: 1,
+		},
+		Last24Hours: []ActivityBucket{},
+		Last7Days:   []ActivityBucket{},
+		Last30Days:  []ActivityBucket{},
+	}
+}
+
+func NewCommunityAnalytics() *CommunityAnalytics {
+	return &CommunityAnalytics{
+		LastActivityAt:     primitive.NewDateTimeFromTime(time.Now()),
+		ActivityBuckets:    NewActivityBuckets(),
+		TotalViews:         0,
+		TotalLikes:         0,
+		TotalComments:      0,
+		TotalShares:        0,
+		ActiveMembersToday: 0,
+		ActiveMembersWeek:  0,
+		ActiveMembersMonth: 0,
+		MemberJoinsToday:   0,
+		MemberJoinsWeek:    0,
+		MemberJoinsMonth:   0,
+		EngagementScore:    0.0,
+		TrendingScore:      0.0,
+		QualityScore:       0.0,
+	}
 }
