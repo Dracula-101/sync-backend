@@ -2253,65 +2253,6 @@
 					]
 				},
 				{
-					"name": "Get Trending Communities",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local}}/api/v1/community/trending",
-							"host": [
-								"{{local}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"community",
-								"trending"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{local}}/api/v1/community/trending",
-									"host": [
-										"{{local}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"community",
-										"trending"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 20 May 2025 18:38:40 GMT"
-								},
-								{
-									"key": "Content-Length",
-									"value": "1227"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:08:40.2009228+05:30\"\n    },\n    \"message\": \"Communities fetched successfully\",\n    \"data\": [\n        {\n            \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n            \"slug\": \"coding-community\",\n            \"name\": \"Coding Community\",\n            \"description\": \"This community where you find like minded people who like shares and Business\",\n            \"shortDesc\": \"This community where you find like minded people who like shares and Business\",\n            \"ownerId\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n            \"isPrivate\": false,\n            \"members\": null,\n            \"memberCount\": 2,\n            \"postCount\": 0,\n            \"stats\": {\n                \"dailyActiveUsers\": 1,\n                \"weeklyActiveUsers\": 1,\n                \"monthlyActiveUsers\": 1,\n                \"growthRate\": 0,\n                \"engagementRate\": 0,\n                \"topTags\": [],\n                \"popularityScore\": 0,\n                \"lastUpdated\": \"2025-05-11T17:25:04.839Z\"\n            },\n            \"status\": \"active\"\n        },\n        {\n            \"id\": \"5641fbf9-911f-4c1a-a76a-0c7ba544c06e\",\n            \"slug\": \"new-community\",\n            \"name\": \"New Community\",\n            \"description\": \"This is a new community\",\n            \"shortDesc\": \"This is a new community\",\n            \"ownerId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n            \"isPrivate\": false,\n            \"members\": null,\n            \"memberCount\": 1,\n            \"postCount\": 0,\n            \"stats\": {\n                \"dailyActiveUsers\": 1,\n                \"weeklyActiveUsers\": 1,\n                \"monthlyActiveUsers\": 1,\n                \"growthRate\": 0,\n                \"engagementRate\": 0,\n                \"topTags\": [],\n                \"popularityScore\": 0,\n                \"lastUpdated\": \"2025-05-20T07:56:42.875Z\"\n            },\n            \"status\": \"active\"\n        }\n    ]\n}"
-						}
-					]
-				},
-				{
 					"name": "Get User Communities",
 					"request": {
 						"method": "GET",
@@ -4874,7 +4815,7 @@
 							"variable": [
 								{
 									"key": "postId",
-									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+									"value": "f84e3923-050f-43d2-a080-50233b997c49"
 								}
 							]
 						}
@@ -5187,6 +5128,290 @@
 							],
 							"cookie": [],
 							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-22T20:44:01.8680801+05:30\"\n    },\n    \"message\": \"Post deleted successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "User Feed",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/feed",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"feed"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/feed",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"feed"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:18 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "182"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:18.8269202+05:30\"\n    },\n    \"message\": \"User feed posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Trending Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/trending",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"trending"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/trending",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"trending"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:31 GMT"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:31.5387859+05:30\"\n    },\n    \"message\": \"Trending posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [\n            {\n                \"id\": \"9e1568f3-1762-4db6-b337-664b8c8318a0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.618Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.08Z\"\n            },\n            {\n                \"id\": \"a09dc359-96cf-4516-a2a2-00cb99da3d90\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.465Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.106Z\"\n            },\n            {\n                \"id\": \"5e1b734d-79f9-4382-adef-ca64221386d0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.354Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.032Z\"\n            },\n            {\n                \"id\": \"61012f85-5ec7-44d1-bd43-f7a20d638331\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.264Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.031Z\"\n            },\n            {\n                \"id\": \"fb1871f5-8da3-4bae-a57a-bf65a2c7af22\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:37.8Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.055Z\"\n            },\n            {\n                \"id\": \"98d9108e-4bfc-44c9-bbec-2361eae9eabf\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.116Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.095Z\"\n            },\n            {\n                \"id\": \"dd23feb1-1bfd-4027-abd9-4edd228c623b\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.108Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.094Z\"\n            },\n            {\n                \"id\": \"61cb477c-d7e0-40a6-b343-e9b43759a9ae\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:31.254Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.075Z\"\n            },\n            {\n                \"id\": \"732ca6af-62e8-4e69-ace6-b1710b3c1443\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:30.581Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.047Z\"\n            },\n            {\n                \"id\": \"f84e3923-050f-43d2-a080-50233b997c49\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:28.215Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.059Z\"\n            }\n        ],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Popular Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/popular",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"popular"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/popular",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"popular"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:51 GMT"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:51.3234838+05:30\"\n    },\n    \"message\": \"Popular posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [\n            {\n                \"id\": \"a09dc359-96cf-4516-a2a2-00cb99da3d90\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.465Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.957Z\"\n            },\n            {\n                \"id\": \"9e1568f3-1762-4db6-b337-664b8c8318a0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.618Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.855Z\"\n            },\n            {\n                \"id\": \"98d9108e-4bfc-44c9-bbec-2361eae9eabf\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.116Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.942Z\"\n            },\n            {\n                \"id\": \"5e1b734d-79f9-4382-adef-ca64221386d0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.354Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.89Z\"\n            },\n            {\n                \"id\": \"fb1871f5-8da3-4bae-a57a-bf65a2c7af22\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:37.8Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.974Z\"\n            },\n            {\n                \"id\": \"dd23feb1-1bfd-4027-abd9-4edd228c623b\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.108Z\",\n                \"updatedAt\": \"2025-05-30T19:30:32.024Z\"\n            },\n            {\n                \"id\": \"732ca6af-62e8-4e69-ace6-b1710b3c1443\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:30.581Z\",\n                \"updatedAt\": \"2025-05-30T19:30:32.039Z\"\n            },\n            {\n                \"id\": \"f84e3923-050f-43d2-a080-50233b997c49\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:28.215Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.856Z\"\n            },\n            {\n                \"id\": \"61cb477c-d7e0-40a6-b343-e9b43759a9ae\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:31.254Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.988Z\"\n            },\n            {\n                \"id\": \"61012f85-5ec7-44d1-bd43-f7a20d638331\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.264Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.972Z\"\n            }\n        ],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "User Saved Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/saved",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"saved"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/popular",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"popular"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:51 GMT"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:51.3234838+05:30\"\n    },\n    \"message\": \"Popular posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [\n            {\n                \"id\": \"a09dc359-96cf-4516-a2a2-00cb99da3d90\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.465Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.957Z\"\n            },\n            {\n                \"id\": \"9e1568f3-1762-4db6-b337-664b8c8318a0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.618Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.855Z\"\n            },\n            {\n                \"id\": \"98d9108e-4bfc-44c9-bbec-2361eae9eabf\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.116Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.942Z\"\n            },\n            {\n                \"id\": \"5e1b734d-79f9-4382-adef-ca64221386d0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.354Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.89Z\"\n            },\n            {\n                \"id\": \"fb1871f5-8da3-4bae-a57a-bf65a2c7af22\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:37.8Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.974Z\"\n            },\n            {\n                \"id\": \"dd23feb1-1bfd-4027-abd9-4edd228c623b\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.108Z\",\n                \"updatedAt\": \"2025-05-30T19:30:32.024Z\"\n            },\n            {\n                \"id\": \"732ca6af-62e8-4e69-ace6-b1710b3c1443\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:30.581Z\",\n                \"updatedAt\": \"2025-05-30T19:30:32.039Z\"\n            },\n            {\n                \"id\": \"f84e3923-050f-43d2-a080-50233b997c49\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:28.215Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.856Z\"\n            },\n            {\n                \"id\": \"61cb477c-d7e0-40a6-b343-e9b43759a9ae\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:31.254Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.988Z\"\n            },\n            {\n                \"id\": \"61012f85-5ec7-44d1-bd43-f7a20d638331\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.264Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.972Z\"\n            }\n        ],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
 						}
 					]
 				},
@@ -6021,6 +6246,77 @@
 							],
 							"cookie": [],
 							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:25:31.7568251+05:30\"\n    },\n    \"message\": \"Community posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [],\n        \"totalPosts\": 0,\n        \"page\": 1,\n        \"limit\": 5\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get User Saved Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/saved",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"saved"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/saved",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"saved"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:01 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "183"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:01.8896748+05:30\"\n    },\n    \"message\": \"User saved posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
 						}
 					]
 				}
