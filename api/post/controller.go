@@ -102,7 +102,7 @@ func (c *postController) CreatePost(ctx *gin.Context) {
 	c.logger.Debug("Post details: %+v", post)
 	c.uploadProvider.DeleteUploadedFiles(ctx, "media")
 
-	go c.communityAnalytics.RecordCommentCreated(post.CommunityId, *userId)
+	go c.communityAnalytics.RecordPostCreated(post.CommunityId, *userId)
 }
 
 func (c *postController) GetPost(ctx *gin.Context) {
@@ -125,6 +125,7 @@ func (c *postController) GetPost(ctx *gin.Context) {
 	c.Send(ctx).SuccessDataResponse("Post retrieved successfully", post)
 	c.logger.Debug("Post details: %+v", post)
 
+	go c.postService.RecordPostView(postId, *userId)
 	go c.postAnalytics.RecordPostClick(postId, *userId)
 }
 
@@ -324,6 +325,7 @@ func (c *postController) UserFeedPosts(ctx *gin.Context) {
 	c.Send(ctx).SuccessDataResponse("User feed posts retrieved successfully", dto.NewGetUserFeedPostResponse(postsValue, body.Page, body.Limit))
 
 	for _, post := range posts {
+		go c.postService.RecordPostView(post.ID, *userId)
 		go c.postAnalytics.RecordPostView(post.ID, *userId)
 	}
 }
@@ -350,6 +352,7 @@ func (c *postController) TrendingPosts(ctx *gin.Context) {
 	c.Send(ctx).SuccessDataResponse("Trending posts retrieved successfully", dto.NewGetTrendingPostResponse(postsValue, body.Page, body.Limit))
 
 	for _, post := range posts {
+		go c.postService.RecordPostView(post.ID, *userId)
 		go c.postAnalytics.RecordPostView(post.ID, *c.MustGetUserId(ctx))
 	}
 }
@@ -376,7 +379,8 @@ func (c *postController) PopularPosts(ctx *gin.Context) {
 	c.Send(ctx).SuccessDataResponse("Popular posts retrieved successfully", dto.NewGetPopularPostResponse(postsValue, body.Page, body.Limit))
 
 	for _, post := range posts {
-		go c.postAnalytics.RecordPostView(post.ID, *c.MustGetUserId(ctx))
+		go c.postService.RecordPostView(post.ID, *userId)
+		go c.postAnalytics.RecordPostView(post.ID, *userId)
 	}
 }
 
@@ -399,10 +403,6 @@ func (c *postController) UserSavedPosts(ctx *gin.Context) {
 		}
 	}
 	c.Send(ctx).SuccessDataResponse("User saved posts retrieved successfully", dto.NewGetUserSavedPostResponse(postsValue, body.Page, body.Limit))
-
-	for _, post := range posts {
-		go c.postAnalytics.RecordPostView(post.ID, *userId)
-	}
 }
 
 func (c *postController) GetCommunityPosts(ctx *gin.Context) {
@@ -433,7 +433,9 @@ func (c *postController) GetCommunityPosts(ctx *gin.Context) {
 	}
 	c.Send(ctx).SuccessDataResponse("Community posts retrieved successfully", dto.NewGetCommunityPostResponse(postsValue, body.Page, body.Limit, numberPosts))
 
+	userId := c.MustGetUserId(ctx)
 	for _, post := range posts {
-		go c.postAnalytics.RecordPostView(post.PostId, *c.MustGetUserId(ctx))
+		go c.postService.RecordPostView(post.PostId, *userId)
+		go c.postAnalytics.RecordPostView(post.PostId, *userId)
 	}
 }

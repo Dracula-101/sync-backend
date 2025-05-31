@@ -19,6 +19,7 @@ import (
 type PostService interface {
 	CreatePost(title string, content string, tags []string, media []string, userId string, communityId string, postType model.PostType, isNSFW bool, isSpoiler bool) (*model.Post, network.ApiError)
 	GetPost(postId string, userId string) (*model.PublicPost, network.ApiError)
+	RecordPostView(postId string, userId string) network.ApiError
 	EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (*string, network.ApiError)
 	DeletePost(userId string, postId string) network.ApiError
 
@@ -204,6 +205,29 @@ func (s *postService) GetPost(postId string, userId string) (*model.PublicPost, 
 	}
 	s.logger.Info("Post retrieved successfully with ID: %s", postId)
 	return posts[0], nil
+}
+
+func (s *postService) RecordPostView(postId string, userId string) network.ApiError {
+	s.logger.Info("Recording view for post with ID: %s by user: %s", postId, userId)
+	interaction, err := s.postInteractionQueryBuilder.SingleQuery().InsertOne(model.NewPostInteraction(postId, userId, model.InteractionTypeView))
+	if err != nil {
+		s.logger.Error("Failed to record post view: %v", err)
+		return NewDBError("recording post view", err.Error())
+	}
+	if interaction == nil {
+		s.logger.Error("Failed to record post view: interaction is nil")
+		return network.NewInternalServerError(
+			"Failed to record post view",
+			"Interaction is nil after inserting post view",
+			network.DB_ERROR,
+			fmt.Errorf("interaction is nil after inserting post view for post %s by user %s", postId, userId),
+		)
+	}
+	// Update the post's view count
+	filter := bson.M{"postId": postId}
+	update := bson.M{"$inc": bson.M{"viewCount": 1}, "$set": bson.M{"updatedAt": primitive.NewDateTimeFromTime(time.Now())}}
+	s.postQueryBuilder.SingleQuery().UpdateOne(filter, update, nil)
+	return nil
 }
 
 func (s *postService) EditPost(userId string, postId string, title *string, content *string, postType model.PostType, isNSFW *bool, isSpoiler *bool) (newPostId *string, err network.ApiError) {
