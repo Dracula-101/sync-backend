@@ -9,49 +9,69 @@ A Go-powered backend service for the Sync social media platform - built for perf
 
 ## 🚀 Quick Start
 
-```bash
-# Clone repository
-git clone https://github.com/Dracula-101/sync-backend.git
-cd sync-backend
+To get started quickly, follow these steps:
+1. **Clone the repository:**
+  ```bash
+  git clone https://github.com/Dracula-101/sync-backend
+  cd sync-backend
+  ```
 
-# Set up configuration (update database credentials in .env)
-cp .env.example .env
+2. **Install dependencies:**
+  ```bash
+  go mod tidy
+  ```
 
-# Install dependencies
-go mod download
+3. **Set up your environment variables:**
+Create a `.env` file in the project root based on the provided `.env.example`:
+  ```bash
+  cp .env.example .env
+  ```
 
-# Run the server
-go run main.go
-```
+4. **Configure the env secrets:**
+Edit the `.env` file with your specific configuration, including database connections, JWT secrets, and Redis settings. Kindly refer to the [env setup](docs/ENV-SETUP.md) for details on required variables.
+  ```bash
+  # Example .env content
+  HOST=localhost
+  PORT=8080
+  ENV=development
+  LOG_LEVEL=info
+  ```
+
+5. **Run the application:**
+  ```bash
+  go run main.go
+  ```
+
+> [!TIP]
+>  Import the postman collection from `/postman` to test the API endpoints.
 
 ## ✨ Features
 
 - **Authentication System**
-  - Email/password login with secure password hashing
-  - JWT-based token authentication
+  - Secure email/password login with bcrypt hashing
+  - JWT authentication with refresh tokens
   - Google OAuth integration
-  - Session management with device tracking and revocation
-  - Password reset functionality
+  - Multi-device session management
+  - Password reset via email
 
-- **Social Networking Core**
-  - User profiles and relationships
-  - Posts with rich media support
-  - Communities with moderation
-  - Nested comments and reactions
-  - Content tagging system
+- **Social Features**
+  - User profiles with follow relationships
+  - Media-rich posts with text, images, and videos
+  - Community creation and moderation
+  - Threaded comments with reactions
+  - Content tagging and search
 
-- **Performance Infrastructure**
-  - MongoDB for document storage (user data, posts, communities)
+- **Performance Optimizations**
+  - MongoDB for core social content
   - Redis for caching and rate limiting
-  - PostgreSQL for geolocation services
-  - Optimized query patterns
+  - PostgreSQL for location services
+  - Optimized query patterns and indexing
 
 - **API Design**
-  - RESTful endpoints with versioning
-  - Consistent error handling
-  - Rate limiting protection
-  - Comprehensive request validation
-  - CORS configuration for frontend compatibility
+  - RESTful endpoints with v1 namespace
+  - Consistent error responses
+  - Rate limiting by IP and user
+  - Input validation with detailed feedback
 
 ## 🛠️ Requirements
 
@@ -65,10 +85,7 @@ go run main.go
 
 **With hot-reload:**
 ```bash
-# Install Air first if not installed
 go install github.com/cosmtrek/air@latest
-
-# Run with automatic reloading
 air
 ```
 
@@ -103,19 +120,6 @@ sync-backend/
 └── utils/                # Helper utilities and tools
 ```
 
-## 🧪 Testing
-
-```bash
-# Run all tests
-go test ./...
-
-# Run auth tests only
-go test ./api/auth/...
-
-# Run with coverage report
-go test -cover ./...
-```
-
 ## 🔧 Configuration
 
 The application uses a combination of YAML files and environment variables:
@@ -125,174 +129,17 @@ The application uses a combination of YAML files and environment variables:
 - **configs/db.yaml** - Database connection strings and settings
 - **.env** - Environment-specific variables and secrets
 
-Example `.env` file structure:
-```
-# Server
-HOST=localhost
-PORT=8080
-ENV=development
-LOG_LEVEL=info
-
-JWT_SECRET=<your_jwt_secret>
-
-# Database connections
-DB_HOST=
-DB_NAME=
-DB_USER=
-DB_PASSWORD=
-
-# IP Geolocation DB
-IP_DB_HOST=
-IP_DB_PORT=
-IP_DB_USER=
-IP_DB_PASSWORD=
-IP_DB_NAME=
-
-# Redis connections
-REDIS_HOST=
-REDIS_PORT=
-REDIS_PASSWORD=
-REDIS_DB=
-
-# Cloudinary for uploading media
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-```
 
 ## 🏗️ Architecture
 
-- **Domain-Driven Design** - Business logic organized by domain in the `api/` directory
-- **Clean Architecture** - Clear separation between controllers, services, and data models
-- **Modular Components**:
-  - **Controllers** - Handle HTTP requests and responses
-  - **Services** - Contain business logic and orchestrate operations
-  - **Models** - Define data structures and MongoDB schemas
-  - **DTOs** - Handle data transfer between layers
+- **Domain-Driven Design** - Business logic organized by domain
+- **Clean Architecture** - Separation between controllers, services, and models
+- **Modular Components** - Controllers, Services, Models, and DTOs
+- **Data Storage** - MongoDB (documents), Redis (caching), PostgreSQL (geo)
+- **Networking** - Gin framework, custom middleware, request validation
+- **Authentication** - JWT tokens with multi-device session management
 
-- **Data Storage**:
-  - **MongoDB** - Document storage for users, posts, communities, comments
-  - **Redis** - Session storage, caching, rate limiting
-  - **PostgreSQL** - Geolocation services and relational data
-
-- **Networking**:
-  - **[Gin Web Framework](https://github.com/gin-gonic/gin)** - Fast HTTP routing and middleware
-  - **Custom Middleware** - Error handling, logging, authentication
-  - **Validation** - Request validation with [go-playground/validator](https://github.com/go-playground/validator)
-
-- **Authentication**:
-  - **JWT** - Stateless authentication with [golang-jwt/jwt](https://github.com/golang-jwt/jwt)
-  - **Session Management** - Multi-device login with revocation
-
-## 🛠️ Adding New Features
-
-The codebase follows a consistent pattern to make adding new features straightforward:
-
-1. **Create feature directory** in `api/{feature_name}/`
-2. **Implement these files**:
-   - `controller.go` - HTTP handlers and routes
-   - `service.go` - Business logic
-   - `error.go` - Feature-specific error definitions
-   - `dto/` - Request/response data structures
-   - `model/` - Data models for MongoDB (if needed)
-   - `middleware/` - Feature-specific middleware (if needed)
-3. **Register controller** in `arch/application/module.go`
-
-**Example of adding a new "notification" feature:**
-
-```go
-// api/notification/service.go
-
-type NotificationService interface {
-  CreateNotification(userID string, notification Notification) error
-  GetNotifications(userID string) ([]Notification, error)
-  DeleteNotification(notificationID string) error
-}
-
-type notificationService struct {
-  logger utils.AppLogger
-  // other dependencies...
-}
-
-func NewNotificationService() *notificationService {
-  return &notificationService{
-    logger: utils.NewServiceLogger("notification"),
-    // other initializations...
-  }
-}
-
-// Implement methods for creating, retrieving, and deleting notifications
-```
-
-
-```go
-// api/notification/controller.go
-
-package notification
-
-import (
-  "sync-backend/arch/network"
-  "sync-backend/arch/common"
-	"sync-backend/utils"
-
-	"github.com/gin-gonic/gin"
-)
-
-type notificationController struct {
-  	logger utils.AppLogger
-    network.BaseController
-    common.ContextPayload
-  	authProvider     network.AuthenticationProvider
-    service          *NotificationService
-    
-}
-
-func NewNotificationController(
-  authProvider network.AuthenticationProvider,
-  service *NotificationService,
-) *network.Controller {
-    return &notificationController{
-      logger:           utils.NewServiceLogger("notification"),
-      BaseController:   network.NewBaseController("/api/v1/notification", authProvider),
-      ContextPayload:   common.NewContextPayload(),
-      authProvider:     authProvider,
-      service:          service,
-    }
-}
-
-func (c *controller) MountRoutes(group *gin.RouterGroup) {
-    group.GET("/notifications", c.GetNotifications)
-    group.POST("/notifications", c.CreateNotification)
-    group.DELETE("/notifications/:id", c.DeleteNotification)
-}
-
-// Add handler implementations...
-```
-
-Then register in `arch/application/module.go`:
-
-```go
-// Add to Controllers function
-func (m *appModule) Controllers() []network.Controller {
-  // Other controllers...
-  notificationController := notification.NewNotificationController(
-    m.authProvider,
-    m.notificationService,
-  )
-}
-
-func NewAppModule(
-  // Other dependencies...
-) Module {
-  // Other initializations...
-  notificationService := notification.NewNotificationService()
-  return &appModule{
-    // Other dependencies...
-    notificationService: notificationService,
-  }
-}
-
-```
+For details on implementation patterns and code examples, see [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## 🤝 Contributing
 
@@ -332,7 +179,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📬 Contact
 
-Project Link: [https://github.com/Dracula-101/sync-backend](https://github.com/Dracula-101/sync-backend)
+For questions, issues, or feedback, please contact us via - [Email](mailto:pratikpujari1000@gmail.com), [Create an issue](https://github.com/Dracula-101/sync-backend/issues)
 
 ---
 
