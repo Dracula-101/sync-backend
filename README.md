@@ -120,16 +120,6 @@ sync-backend/
 └── utils/                # Helper utilities and tools
 ```
 
-## 🔧 Configuration
-
-The application uses a combination of YAML files and environment variables:
-
-- **configs/app.yaml** - Core application settings, logging, server ports
-- **configs/auth.yaml** - Authentication settings, JWT secrets, OAuth credentials
-- **configs/db.yaml** - Database connection strings and settings
-- **.env** - Environment-specific variables and secrets
-
-
 ## 🏗️ Architecture
 
 - **Domain-Driven Design** - Business logic organized by domain
