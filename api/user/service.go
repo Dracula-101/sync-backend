@@ -15,6 +15,8 @@ import (
 	"sync-backend/utils"
 )
 
+const EMPTY_PASSWORD_HASH = "$2a$10$Cv/Xb2ykZ9FLmWyB6vaPEueAzA51kkU2GDZj8C4hwgAH3gQhwIo.q"
+
 type UserService interface {
 	/* CREATING USER */
 	CreateUser(userName string, email string, password string, profile string, backgroundPic string, locale string, timezone string, country string) (*model.User, network.ApiError)
@@ -27,14 +29,19 @@ type UserService interface {
 	FindUserAuthProvider(userId string, username string, providerName string) (*model.User, network.ApiError)
 
 	/* USER INFO UPDATE */
+	UpdateUserProfile(userId string, bio *string, profilePicPath *string, backgroundPicPath *string) (*model.User, network.ApiError)
+	UpdateUserPreferences(userId string, preferences model.UserPreferences) (*model.User, network.ApiError)
 	UpdateLoginHistory(userId string, loginHistory model.LoginHistory) network.ApiError
 
-	/* USER AUTHENTICATION */
+	/* USER FUNCTIONALITY */
 	ValidateUserPassword(user *model.User, password string) network.ApiError
+	DeleteUser(userId string) network.ApiError
+	ChangePassword(userId string, oldPassword string, newPassword string) network.ApiError
 
 	/* USER COMMUNITY */
 	JoinCommunity(userId string, communityId string) network.ApiError
 	LeaveCommunity(userId string, communityId string) network.ApiError
+	SearchUsers(userId string, query string, page int, limit int) ([]*model.SearchUser, network.ApiError)
 
 	/* USER FOLLOWING */
 	FollowUser(userId string, followUserId string) network.ApiError
@@ -48,18 +55,20 @@ type UserService interface {
 }
 
 type userService struct {
-	mediaService       media.MediaService
-	log                utils.AppLogger
-	userQueryBuilder   mongo.QueryBuilder[model.User]
-	transactionBuilder mongo.TransactionBuilder
+	mediaService          media.MediaService
+	log                   utils.AppLogger
+	userQueryBuilder      mongo.QueryBuilder[model.User]
+	transactionBuilder    mongo.TransactionBuilder
+	searchUsersAggregator mongo.AggregateBuilder[model.User, model.SearchUser]
 }
 
 func NewUserService(db mongo.Database, mediaService media.MediaService) UserService {
 	return &userService{
-		mediaService:       mediaService,
-		userQueryBuilder:   mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
-		transactionBuilder: mongo.NewTransactionBuilder(db),
-		log:                utils.NewServiceLogger("UserService"),
+		mediaService:          mediaService,
+		log:                   utils.NewServiceLogger("UserService"),
+		userQueryBuilder:      mongo.NewQueryBuilder[model.User](db, model.UserCollectionName),
+		transactionBuilder:    mongo.NewTransactionBuilder(db),
+		searchUsersAggregator: mongo.NewAggregateBuilder[model.User, model.SearchUser](db, model.UserCollectionName),
 	}
 }
 
@@ -269,7 +278,7 @@ func (s *userService) FindUserById(userId string) (*model.User, network.ApiError
 	}
 	if user.Status == model.Banned {
 		s.log.Error("User is banned: %s", userId)
-		return nil, NewUserBannedError(userId)
+		return nil, NewUserBannedError(userId, "User violated terms and conditions of the platform")
 	}
 
 	s.log.Debug("User found by ID: %s", user.UserId)
@@ -286,18 +295,24 @@ func (s *userService) FindUserByEmail(email string) (*model.User, network.ApiErr
 		s.log.Error("Error finding user by email: %v", err)
 		return nil, NewDBError("finding user by email", err.Error())
 	}
-	if user.Status == model.Deleted {
+
+	switch user.Status {
+	case model.Deleted:
 		s.log.Error("User is deleted: %s", email)
 		return nil, NewUserDeletedError(email)
-	}
-	if user.Status == model.Inactive {
+	case model.Inactive:
 		s.log.Error("User is inactive: %s", email)
 		return nil, NewUserInactiveError(email)
-	}
-	if user.Status == model.Banned {
+	case model.Banned:
 		s.log.Error("User is banned: %s", email)
-		return nil, NewUserBannedError(email)
+		return nil, NewUserBannedError(email, "User violated terms and conditions of the platform")
 	}
+
+	if user == nil {
+		s.log.Debug("No user found with email: %s", email)
+		return nil, NewUserNotFoundByEmailError(email)
+	}
+
 	s.log.Debug("User found: %s", user.Email)
 	return user, nil
 }
@@ -322,7 +337,7 @@ func (s *userService) FindUserByUsername(username string) (*model.User, network.
 	}
 	if user.Status == model.Banned {
 		s.log.Error("User is banned: %s", username)
-		return nil, NewUserBannedError(username)
+		return nil, NewUserBannedError(username, "User violated terms and conditions of the platform")
 	}
 	s.log.Debug("User found: %s", user.Username)
 	return user, nil
@@ -353,6 +368,119 @@ func (s *userService) FindUserAuthProvider(userId string, username string, provi
 	return nil, nil
 }
 
+func (s *userService) UpdateUserPreferences(userId string, preferences model.UserPreferences) (*model.User, network.ApiError) {
+	s.log.Debug("Updating user preferences for user ID: %s", userId)
+
+	// Assuming the user is already fetched and available as 'user'
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User not found for profile update: %s", userId)
+			return nil, NewUserNotFoundError(userId)
+		}
+		s.log.Error("Error fetching user for profile update: %v", err)
+		return nil, NewDBError("fetching user for profile update", err.Error())
+	}
+
+	switch user.Status {
+	case model.Deleted:
+		s.log.Error("User is deleted: %s", userId)
+		return nil, NewUserDeletedError(userId)
+	case model.Inactive:
+		s.log.Error("User is inactive: %s", userId)
+		return nil, NewUserInactiveError(userId)
+	case model.Banned:
+		s.log.Error("User is banned: %s", userId)
+		return nil, NewUserBannedError(userId, "User violated terms and conditions of the platform")
+	}
+
+	user.Preferences = preferences
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	// update only if not nil
+	_, err = s.userQueryBuilder.SingleQuery().UpdateOne(
+		bson.M{"userId": user.UserId},
+		bson.M{"$set": bson.M{
+			"preferences": user.Preferences,
+			"updatedAt":   user.UpdatedAt,
+		}},
+		nil,
+	)
+	if err != nil {
+		s.log.Error("Error updating user preferences: %v", err)
+		return nil, NewDBError("updating user preferences", err.Error())
+	}
+	s.log.Debug("User preferences updated successfully for user ID: %s", user.UserId)
+	return user, nil
+}
+
+func (s *userService) UpdateUserProfile(userId string, bio *string, profilePicPath *string, backgroundPicPath *string) (*model.User, network.ApiError) {
+	s.log.Debug("Updating user profile for user ID: %s", userId)
+
+	// Assuming the user is already fetched and available as 'user'
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User not found for profile update: %s", userId)
+			return nil, NewUserNotFoundError(userId)
+		}
+		s.log.Error("Error fetching user for profile update: %v", err)
+		return nil, NewDBError("fetching user for profile update", err.Error())
+	}
+
+	switch user.Status {
+	case model.Deleted:
+		s.log.Error("User is deleted: %s", userId)
+		return nil, NewUserDeletedError(userId)
+	case model.Inactive:
+		s.log.Error("User is inactive: %s", userId)
+		return nil, NewUserInactiveError(userId)
+	case model.Banned:
+		s.log.Error("User is banned: %s", userId)
+		return nil, NewUserBannedError(userId, "User violated terms and conditions of the platform")
+	}
+
+	if profilePicPath != nil {
+		s.mediaService.DeleteMedia(user.Avatar.Profile.Id) // Delete old profile pic if exists
+		profileInfo, _ := s.mediaService.UploadMedia(*profilePicPath, user.Username+"_profile", "profile")
+		user.Avatar.Profile = model.Image{
+			Id:     profileInfo.Id,
+			Url:    profileInfo.Url,
+			Width:  profileInfo.Width,
+			Height: profileInfo.Height,
+		}
+	}
+
+	if backgroundPicPath != nil {
+		s.mediaService.DeleteMedia(user.Avatar.Background.Id) // Delete old background if exists
+		backgroundInfo, _ := s.mediaService.UploadMedia(*backgroundPicPath, user.Username+"_background", "background")
+		user.Avatar.Background = model.Image{
+			Id:     backgroundInfo.Id,
+			Url:    backgroundInfo.Url,
+			Width:  backgroundInfo.Width,
+			Height: backgroundInfo.Height,
+		}
+	}
+
+	if bio != nil {
+		user.Bio = *bio
+	}
+	user.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
+
+	_, err = s.userQueryBuilder.SingleQuery().UpdateOne(
+		bson.M{"userId": user.UserId},
+		bson.M{"$set": user.GetValue()},
+		nil,
+	)
+	if err != nil {
+		s.log.Error("Error updating user profile: %v", err)
+		return nil, NewDBError("updating user profile", err.Error())
+	}
+
+	s.log.Debug("User profile updated successfully for user ID: %s", user.UserId)
+	return user, nil
+}
+
 func (s *userService) UpdateLoginHistory(userId string, loginHistory model.LoginHistory) network.ApiError {
 	s.log.Debug("Updating login history for user ID: %s", userId)
 
@@ -380,15 +508,115 @@ func (s *userService) UpdateLoginHistory(userId string, loginHistory model.Login
 func (s *userService) ValidateUserPassword(user *model.User, password string) network.ApiError {
 	s.log.Debug("Validating password for user: %s", user.Email)
 
-	isValid, err := utils.CheckPasswordHash(password, user.PasswordHash)
+	isValid, err := utils.CheckPasswordHash(user.PasswordHash, password)
 	if err != nil {
 		s.log.Error("Error comparing password: %v", err)
 		return NewDBError("comparing password", err.Error())
 	}
 	if !isValid {
 		s.log.Error("Invalid password for user: %s", user.Email)
-		return NewForbiddenUserActionError("validate password for", user.Email, user.Email)
+		return NewWrongPasswordError(user.UserId)
 	}
+	return nil
+}
+
+func (s *userService) DeleteUser(userId string) network.ApiError {
+	s.log.Debug("Deleting user with ID: %s", userId)
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User not found for deletion: %s", userId)
+			return NewUserNotFoundError(userId)
+		}
+		s.log.Error("Error checking if user exists for deletion: %v", err)
+		return NewDBError("checking if user exists for deletion", err.Error())
+	}
+	switch user.Status {
+	case model.Deleted:
+		s.log.Error("User is already deleted: %s", userId)
+		return NewUserMarkedForDeletionError(userId)
+	case model.Inactive:
+		s.log.Error("User is inactive and cannot be deleted: %s", userId)
+		return NewUserInactiveError(userId)
+	case model.Banned:
+		s.log.Error("User is banned and cannot be deleted: %s", userId)
+		return NewUserBannedError(userId, "User violated terms and conditions of the platform")
+	}
+
+	_, err = s.userQueryBuilder.SingleQuery().UpdateOne(
+		bson.M{"userId": userId},
+		bson.M{"$set": bson.M{
+			"status":    model.Deleted,
+			"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+		nil,
+	)
+	if err != nil {
+		s.log.Error("Error deleting user: %v", err)
+		return NewDBError("deleting user", err.Error())
+	}
+
+	s.log.Debug("User marked for deletion successfully: %s", userId)
+	return nil
+}
+
+func (s *userService) ChangePassword(userId string, oldPassword string, newPassword string) network.ApiError {
+	s.log.Debug("Changing password for user ID: %s", userId)
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"userId": userId}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Error("User not found for password change: %s", userId)
+			return NewUserNotFoundError(userId)
+		}
+		s.log.Error("Error checking if user exists for password change: %v", err)
+		return NewDBError("checking if user exists for password change", err.Error())
+	}
+
+	switch user.Status {
+	case model.Deleted:
+		s.log.Error("User is deleted and cannot change password: %s", userId)
+		return NewUserDeletedError(userId)
+	case model.Inactive:
+		s.log.Error("User is inactive and cannot change password: %s", userId)
+		return NewUserInactiveError(userId)
+	case model.Banned:
+		s.log.Error("User is banned and cannot change password: %s", userId)
+		return NewUserBannedError(userId, "User violated terms and conditions of the platform")
+	}
+	hasntSetPassword := user.PasswordHash == EMPTY_PASSWORD_HASH
+	var newPasswordHash string
+	if hasntSetPassword {
+		s.log.Error("User has not set a password yet: %s", userId)
+		newPasswordHash, err = utils.HashPassword(newPassword)
+		if err != nil {
+			s.log.Error("Error hashing new password: %v", err)
+			return NewDBError("hashing new password", err.Error())
+		}
+	} else {
+		s.log.Debug("Validating old password for user ID: %s", userId)
+		err = s.ValidateUserPassword(user, oldPassword)
+		if err != nil {
+			s.log.Error("Invalid old password for user ID: %s", userId)
+			return NewWrongOldPasswordError(userId)
+		}
+		s.log.Debug("Old password validated successfully for user ID: %s", userId)
+		newPasswordHash, err = utils.HashPassword(newPassword)
+		if err != nil {
+			s.log.Error("Error hashing new password: %v", err)
+			return NewDBError("hashing new password", err.Error())
+		}
+	}
+	_, err = s.userQueryBuilder.SingleQuery().UpdateOne(
+		bson.M{"userId": userId},
+		bson.M{"$set": bson.M{"passwordHash": newPasswordHash, "updatedAt": primitive.NewDateTimeFromTime(time.Now())}},
+		nil,
+	)
+	if err != nil {
+		s.log.Error("Error setting new password for user: %v", err)
+		return NewDBError("setting new password for user", err.Error())
+	}
+	s.log.Debug("Password changed successfully for user ID: %s", userId)
 	return nil
 }
 
@@ -422,6 +650,51 @@ func (s *userService) LeaveCommunity(userId string, communityId string) network.
 
 	s.log.Debug("User %s left community %s successfully", userId, communityId)
 	return nil
+}
+
+func (s *userService) SearchUsers(userId string, query string, page int, limit int) ([]*model.SearchUser, network.ApiError) {
+	s.log.Debug("Searching users with query: %s, page: %d, limit: %d", query, page, limit)
+	regexPattern := primitive.Regex{Pattern: query, Options: "i"}
+
+	aggregationPipeline := s.searchUsersAggregator.SingleAggregate()
+
+	// Match documents that contain the query in username, fullName, or bio
+	// And exclude the current user and deleted/banned users
+	aggregationPipeline.Match(bson.M{
+		"userId": bson.M{"$ne": userId},
+		"status": bson.M{"$nin": []model.UserStatus{model.Deleted, model.Banned}},
+		"$or": []bson.M{
+			{"username": bson.M{"$regex": regexPattern}},
+			{"fullName": bson.M{"$regex": regexPattern}},
+			{"bio": bson.M{"$regex": regexPattern}},
+		},
+	})
+
+	// Project only the fields needed for SearchUser model
+	aggregationPipeline.Project(bson.M{
+		"userId":      1,
+		"username":    1,
+		"email":       1,
+		"avatar":      "$avatar.profile.url",
+		"background":  "$avatar.background.url",
+		"followers":   1,
+		"follows":     1,
+		"status":      1,
+		"isFollowing": bson.M{"$in": []any{userId, bson.M{"$ifNull": []any{"$followers", []string{}}}}},
+		"isFollowed":  bson.M{"$in": []any{userId, bson.M{"$ifNull": []any{"$follows", []string{}}}}},
+		"isBlocked":   bson.M{"$in": []any{userId, bson.M{"$ifNull": []any{"$preferences.blockList", []string{}}}}},
+		"_id":         0,
+	})
+
+	// Execute the aggregation
+	results, err := aggregationPipeline.ExecPaginated(int64(page), int64(limit))
+	if err != nil {
+		s.log.Error("Error searching users: %v", err)
+		return nil, NewDBError("searching users", err.Error())
+	}
+
+	s.log.Debug("Found %d users matching query: %s", len(results), query)
+	return results, nil
 }
 
 func (s *userService) FollowUser(userId string, followUserId string) network.ApiError {
@@ -659,7 +932,7 @@ func (s *userService) AddModerator(userId string, communityId string) network.Ap
 			bson.M{"userId": userId},
 			bson.M{
 				"$addToSet": bson.M{
-					"moderatedCommunities": communityId,
+					"moderatedWavelengths": communityId,
 				},
 			},
 		)
@@ -701,7 +974,7 @@ func (s *userService) RemoveModerator(userId string, communityId string) network
 			bson.M{"userId": userId},
 			bson.M{
 				"$pull": bson.M{
-					"moderatedCommunities": communityId,
+					"moderatedWavelengths": communityId,
 				},
 			},
 		)

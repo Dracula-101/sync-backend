@@ -14,24 +14,17 @@ func IsNoDocumentFoundError(err error) bool {
 	return false
 }
 
-func IsDuplicateKeyError(err error) bool {
+func IsDuplicateKeyError(err error, key ...string) bool {
 	if err == nil {
 		return false
 	}
 	if strings.Contains(err.Error(), "duplicate key error") {
-		return true
-	}
-	if strings.Contains(err.Error(), "E11000 duplicate key error") {
-		return true
-	}
-	if strings.Contains(err.Error(), "MongoServerError") {
-		return true
-	}
-	if strings.Contains(err.Error(), "DuplicateKey") {
-		return true
-	}
-	if strings.Contains(err.Error(), "DuplicateKeyError") {
-		return true
+		if len(key) == 0 {
+			return true
+		}
+		if strings.Contains(err.Error(), key[0]) {
+			return true
+		}
 	}
 	return false
 }

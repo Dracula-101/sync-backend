@@ -40,10 +40,18 @@ func NewUserNotFoundByUsernameError(username string) network.ApiError {
 	)
 }
 
-func NewUserBannedError(userId string) network.ApiError {
+func NewUserBannedError(userId string, banReason string) network.ApiError {
 	return network.NewForbiddenError(
-		"User Banned",
+		"User Banned. Reason: "+banReason,
 		fmt.Sprintf("User '%s' is banned and cannot perform this action. [Context: userId=%s]", userId, userId),
+		nil,
+	)
+}
+
+func NewUserMarkedForDeletionError(userId string) network.ApiError {
+	return network.NewForbiddenError(
+		"User Marked for Deletion",
+		fmt.Sprintf("User '%s' is marked for deletion and cannot perform this action. [Context: userId=%s]", userId, userId),
 		nil,
 	)
 }
@@ -76,6 +84,22 @@ func NewUserExistsByUsernameError(username string) network.ApiError {
 	return network.NewConflictError(
 		"A user with this username already exists",
 		fmt.Sprintf("A user with username '%s' already exists. Registration or update cannot proceed. [Context: username=%s]", username, username),
+		nil,
+	)
+}
+
+func NewWrongOldPasswordError(userId string) network.ApiError {
+	return network.NewUnauthorizedError(
+		"Incorrect Old Password",
+		fmt.Sprintf("The old password provided for user '%s' is incorrect. Please try again. [Context: userId=%s]", userId, userId),
+		nil,
+	)
+}
+
+func NewWrongPasswordError(userId string) network.ApiError {
+	return network.NewUnauthorizedError(
+		"Incorrect Password",
+		fmt.Sprintf("The password provided for user '%s' is incorrect. Please try again. [Context: userId=%s]", userId, userId),
 		nil,
 	)
 }

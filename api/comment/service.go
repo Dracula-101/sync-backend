@@ -111,9 +111,6 @@ func (s *commentService) EditPostComment(userId string, commentId string, commen
 			"parentId":  commentModel.ParentId,
 			"updatedAt": commentModel.UpdatedAt,
 		},
-		"$inc": bson.M{
-			"metadata.version": 1,
-		},
 	}
 	_, err = s.commentQueryBuilder.SingleQuery().UpdateOne(filter, update, nil)
 	if err != nil {
@@ -139,12 +136,10 @@ func (s *commentService) DeletePostComment(userId string, commentId string) netw
 		bson.M{"commentId": commentId},
 		bson.M{
 			"$set": bson.M{
-				"status":             model.CommentStatusDeleted,
-				"isDeleted":          true,
-				"deletedAt":          primitive.NewDateTimeFromTime(time.Now()),
-				"updatedAt":          primitive.NewDateTimeFromTime(time.Now()),
-				"metadata.deletedBy": userId,
-				"metadata.version":   commentModel.Metadata.Version + 1,
+				"status":    model.CommentStatusDeleted,
+				"isDeleted": true,
+				"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
+				"updatedAt": primitive.NewDateTimeFromTime(time.Now()),
 			},
 		},
 		nil,
@@ -224,7 +219,7 @@ func (s *commentService) GetPostComments(userId string, postId string, page int,
 			"description": "$community.description",
 			"avatar":      "$community.media.avatar.url",
 			"background":  "$community.media.background.url",
-			"createdAt":   "$community.metadata.createdAt",
+			"createdAt":   "$community.createdAt",
 			"status":      "$community.status",
 		},
 		"content":          1,
@@ -357,7 +352,7 @@ func (s *commentService) GetPostCommentReplies(userId string, postId string, par
 			"description": "$community.description",
 			"avatar":      "$community.media.avatar.url",
 			"background":  "$community.media.background.url",
-			"createdAt":   "$community.metadata.createdAt",
+			"createdAt":   "$community.createdAt",
 			"status":      "$community.status",
 		},
 		"content":          1,
@@ -494,9 +489,8 @@ func (s *commentService) CreatePostCommentReply(userId string, comment *dto.Crea
 	// update the comment with the new reply
 	update := bson.M{
 		"$set": bson.M{
-			"status":           model.CommentStatusActive,
-			"updatedAt":        replyComment.UpdatedAt,
-			"metadata.version": replyComment.Metadata.Version + 1,
+			"status":    model.CommentStatusActive,
+			"updatedAt": replyComment.UpdatedAt,
 		},
 		"$inc": bson.M{
 			"replyCount": 1,
@@ -547,9 +541,6 @@ func (s *commentService) EditPostCommentReply(userId string, commentId string, c
 			"parentId":  commentModel.ParentId,
 			"updatedAt": commentModel.UpdatedAt,
 		},
-		"$inc": bson.M{
-			"metadata.version": 1,
-		},
 	}
 	_, err = s.commentQueryBuilder.SingleQuery().UpdateOne(filter, update, nil)
 	if err != nil {
@@ -588,12 +579,10 @@ func (s *commentService) DeletePostCommentReply(userId string, commentId string)
 		bson.M{"commentId": commentId},
 		bson.M{
 			"$set": bson.M{
-				"status":             model.CommentStatusDeleted,
-				"isDeleted":          true,
-				"deletedAt":          primitive.NewDateTimeFromTime(time.Now()),
-				"updatedAt":          primitive.NewDateTimeFromTime(time.Now()),
-				"metadata.deletedBy": userId,
-				"metadata.version":   commentModel.Metadata.Version + 1,
+				"status":    model.CommentStatusDeleted,
+				"isDeleted": true,
+				"deletedAt": primitive.NewDateTimeFromTime(time.Now()),
+				"updatedAt": primitive.NewDateTimeFromTime(time.Now()),
 			},
 		},
 		nil,
@@ -612,9 +601,8 @@ func (s *commentService) DeletePostCommentReply(userId string, commentId string)
 		bson.M{"commentId": commentModel.ParentId},
 		bson.M{
 			"$set": bson.M{
-				"status":           model.CommentStatusActive,
-				"updatedAt":        primitive.NewDateTimeFromTime(time.Now()),
-				"metadata.version": commentModel.Metadata.Version + 1,
+				"status":    model.CommentStatusActive,
+				"updatedAt": primitive.NewDateTimeFromTime(time.Now()),
 			},
 			"$inc": bson.M{
 				"replyCount": -1,
@@ -1038,7 +1026,7 @@ func (s *commentService) GetUserComments(userId string, page int, limit int) ([]
 			"description": "$community.description",
 			"avatar":      "$community.media.avatar.url",
 			"background":  "$community.media.background.url",
-			"createdAt":   "$community.metadata.createdAt",
+			"createdAt":   "$community.createdAt",
 			"status":      "$community.status",
 		},
 		"isLiked": bson.M{

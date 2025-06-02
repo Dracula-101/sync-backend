@@ -33,6 +33,7 @@ type InteractionType string
 const (
 	InteractionTypeLike    InteractionType = "like"
 	InteractionTypeDislike InteractionType = "dislike"
+	InteractionTypeView    InteractionType = "view"
 	InteractionTypeSave    InteractionType = "save"
 	InteractionTypeShare   InteractionType = "share"
 )

@@ -35,7 +35,6 @@ type CommunityService interface {
 	/* COMMUNITY SEARCH */
 	SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError)
 	AutocompleteCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunityAutocomplete, network.ApiError)
-	GetTrendingCommunities(page int, limit int) ([]*model.CommunitySearchResult, network.ApiError)
 
 	/* MODERATION */
 	AddModerator(communityId string, userId string, moderatorId string) network.ApiError
@@ -142,28 +141,20 @@ func (s *communityService) CreateCommunity(name string, description string, tags
 		Tags:        convertedTags,
 	})
 
-	//check for duplicate community slug
-	duplicateFilter := bson.M{"slug": community.Slug}
-	duplicateCommunity, err := s.communityQueryBuilder.Query(s.Context()).FindOne(duplicateFilter, nil)
-	if err != nil {
-		if !mongo.IsNoDocumentFoundError(err) {
-			s.logger.Error("Error checking for duplicate community: %v", err)
-			return nil, NewDBError("checking for duplicate community", err.Error())
-		}
-	}
-	if duplicateCommunity != nil {
-		if duplicateCommunity.Slug == community.Slug {
-			s.logger.Error("Community with the same slug already exists")
-			community.Slug = utils.GenerateUniqueSlug(community.Name)
-			return nil, NewDuplicateCommunityError(community.Slug)
-		}
-	}
 	_, err = s.communityQueryBuilder.Query(s.Context()).InsertOne(community)
 	if err != nil {
+		if mongo.IsDuplicateKeyError(err, "communityName") {
+			s.logger.Error("Community with name %s already exists: %v", name, err)
+			return nil, NewDuplicateCommunityError("name", err)
+		}
+		if mongo.IsDuplicateKeyError(err, "communitySlug") {
+			s.logger.Error("Community with slug %s already exists: %v", community.Slug, err)
+			return nil, NewDuplicateCommunityError("slug", err)
+		}
 		s.logger.Error("Error inserting community: %v", err)
 		return nil, NewDBError("inserting community", err.Error())
 	}
-
+	s.logger.Info("Community created successfully with ID: %s", community.CommunityId)
 	return community, nil
 }
 
@@ -239,16 +230,16 @@ func (s *communityService) UpdateCommunity(id string, description string, avatar
 	community.Description = description
 	community.Media.Avatar = avatarPhotoInfo
 	community.Media.Background = backgroundPhotoInfo
-	community.Metadata.UpdatedAt = primitive.NewDateTimeFromTime(time.Now())
-	community.Metadata.UpdatedBy = userId
 
 	update := bson.M{
 		"$set": bson.M{
-			"description":        community.Description,
-			"media.avatar":       community.Media.Avatar,
-			"media.background":   community.Media.Background,
-			"metadata.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
-			"metadata.updatedBy": userId,
+			"description":      community.Description,
+			"media.avatar":     community.Media.Avatar,
+			"media.background": community.Media.Background,
+			"updatedAt":        primitive.NewDateTimeFromTime(time.Now()),
+		},
+		"$inc": bson.M{
+			"version": 1,
 		},
 	}
 	_, err = s.communityQueryBuilder.Query(s.Context()).UpdateOne(filter, update, nil)
@@ -276,7 +267,7 @@ func (s *communityService) DeleteCommunity(id string, userId string) network.Api
 		s.logger.Error("User is not the owner of the community")
 		return NewNotAuthorizedError("user is not the owner of the community", userId, id)
 	}
-	if community.Status != string(model.CommunityStatusActive) {
+	if community.Status != model.CommunityStatusActive {
 		s.logger.Error("Community is not active")
 		return NewNotAuthorizedError("community is not active", userId, id)
 	}
@@ -363,7 +354,6 @@ func (s *communityService) DeleteCommunity(id string, userId string) network.Api
 func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunity, network.ApiError) {
 	s.logger.Info("Fetching community with id: %s", id)
 	getCommunityByIdPipeline := s.getCommunityByIdPipeline.SingleAggregate()
-	getCommunityByIdPipeline.AllowDiskUse(true)
 	getCommunityByIdPipeline.Match(bson.M{"communityId": id, "status": model.CommunityStatusActive})
 
 	// Lookup community interactions to check if user has joined
@@ -374,8 +364,8 @@ func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunit
 		"moderatorIds": bson.M{
 			"$map": bson.M{
 				"input": "$moderators",
-				"as": "moderator",
-				"in": "$$moderator.userId",
+				"as":    "moderator",
+				"in":    "$$moderator.userId",
 			},
 		},
 	})
@@ -470,11 +460,9 @@ func (s *communityService) GetCommunityById(id string) (*model.PublicGetCommunit
 		"tags":        1,
 		"rules":       1,
 		"moderators":  "$formattedModerators", // Use the formatted moderators with user details
-		"stats":       1,
+		"status":      1,
 		"settings":    1,
 		"isJoined":    1,
-		"metadata":    1,
-		"status":      1,
 	})
 
 	communityResults, err := getCommunityByIdPipeline.Exec()
@@ -592,7 +580,6 @@ func (s *communityService) GetCommunities(userId string, page int, limit int) ([
 	}
 
 	aggregator := s.communityAggregateBuilder.SingleAggregate()
-	aggregator.AllowDiskUse(true)
 	aggregator.Match(bson.M{"communityId": bson.M{"$in": communityIds}, "status": model.CommunityStatusActive})
 	aggregator.Skip(int64((page - 1) * limit))
 	aggregator.Limit(int64(limit))
@@ -618,14 +605,10 @@ func (s *communityService) JoinCommunity(userId string, communityId string) netw
 
 	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		communityCollection := session.Collection(model.CommunityCollectionName)
-		now := time.Now()
-		ptNow := primitive.NewDateTimeFromTime(now)
-
 		mongoErr := communityCollection.FindOneAndUpdate(
 			bson.M{"communityId": communityId, "status": model.CommunityStatusActive},
 			bson.M{
 				"$inc": bson.M{"memberCount": 1},
-				"$set": bson.M{"metadata.updatedAt": ptNow},
 			},
 		)
 
@@ -697,14 +680,10 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 
 	err := tx.PerformSingleTransaction(func(session mongo.TransactionSession) error {
 		communityCollection := session.Collection(model.CommunityCollectionName)
-		now := time.Now()
-		ptNow := primitive.NewDateTimeFromTime(now)
-
 		updateErr := communityCollection.FindOneAndUpdate(
 			bson.M{"communityId": communityId, "status": model.CommunityStatusActive},
 			bson.M{
 				"$inc": bson.M{"memberCount": -1},
-				"$set": bson.M{"metadata.updatedAt": ptNow},
 			},
 		)
 
@@ -725,7 +704,7 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 				updateErr.Err(),
 			)
 		}
-
+		ptNow := primitive.NewDateTimeFromTime(time.Now())
 		communityInteractionCollection := session.Collection(model.CommunityInteractionsCollectionName)
 		insertErr := communityInteractionCollection.FindOneAndUpdate(
 			bson.M{"userId": userId, "communityId": communityId, "interactionType": model.CommunityInteractionTypeJoin},
@@ -798,9 +777,7 @@ func (s *communityService) LeaveCommunity(userId string, communityId string) net
 func (s *communityService) SearchCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunitySearchResult, network.ApiError) {
 	s.logger.Info("Searching communities with query: %s, page: %d, limit: %d", query, page, limit)
 
-	aggregator := s.communitySearchPipeline.
-		Aggregate(s.Context()).
-		AllowDiskUse(true)
+	aggregator := s.communitySearchPipeline.Aggregate(s.Context())
 
 	matchStage := bson.M{
 		"$and": []bson.M{
@@ -868,8 +845,18 @@ func (s *communityService) SearchCommunities(query string, page int, limit int, 
 	addFields := bson.M{
 		"relevanceScore": bson.M{
 			"$cond": bson.M{
-				"if":   bson.M{"$gt": []any{"$memberCount", 0}},
-				"then": bson.M{"$multiply": []any{bson.M{"$ifNull": []any{"$stats.popularityScore", 1}}, 1.5}},
+				"if": bson.M{"$gt": []any{"$memberCount", 0}},
+				"then": bson.M{
+					"$multiply": []any{
+						1.5,
+						bson.M{
+							"$add": []any{
+								1,
+								bson.M{"$size": bson.M{"$ifNull": []any{"$moderators", []any{}}}},
+							},
+						},
+					},
+				},
 				"else": 1,
 			},
 		},
@@ -897,7 +884,6 @@ func (s *communityService) SearchCommunities(query string, page int, limit int, 
 		"members":        1,
 		"memberCount":    1,
 		"postCount":      1,
-		"stats":          1,
 		"status":         1,
 		"score":          1,
 		"relevanceScore": 1,
@@ -946,9 +932,7 @@ func (s *communityService) SearchCommunities(query string, page int, limit int, 
 func (s *communityService) AutocompleteCommunities(query string, page int, limit int, showPrivate bool) ([]*model.CommunityAutocomplete, network.ApiError) {
 	s.logger.Info("Autocomplete communities with query: %s, page: %d, limit: %d", query, page, limit)
 
-	aggregator := s.communityAutocompletePipeline.
-		Aggregate(s.Context()).
-		AllowDiskUse(true)
+	aggregator := s.communityAutocompletePipeline.Aggregate(s.Context())
 
 	if query != "" {
 		searchQuery := bson.M{
@@ -1013,7 +997,6 @@ func (s *communityService) AutocompleteCommunities(query string, page int, limit
 		"members":     1,
 		"memberCount": 1,
 		"postCount":   1,
-		"stats":       1,
 		"status":      1,
 		"score":       1,
 	}
@@ -1044,93 +1027,6 @@ func (s *communityService) AutocompleteCommunities(query string, page int, limit
 	return communitiesResults, nil
 }
 
-func (s *communityService) GetTrendingCommunities(page int, limit int) ([]*model.CommunitySearchResult, network.ApiError) {
-	s.logger.Info("Fetching trending communities, page: %d, limit: %d", page, limit)
-
-	aggregator := s.communitySearchPipeline.
-		Aggregate(s.Context()).
-		AllowDiskUse(true)
-
-	matchStage := bson.M{
-		"$and": []bson.M{
-			{"status": "active"},
-			{"$or": []bson.M{
-				{"isPrivate": false},
-				{"settings.showInDiscovery": true},
-			}},
-		},
-	}
-	aggregator.Match(matchStage)
-
-	aggregator.AddFields(bson.M{
-		"trendingScore": bson.M{
-			"$add": []interface{}{
-				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.engagementRate", 0}}, 3}},
-				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.growthRate", 0}}, 2}},
-				bson.M{"$multiply": []interface{}{bson.M{"$ifNull": []interface{}{"$stats.popularityScore", 0}}, 1.5}},
-				bson.M{
-					"$divide": []interface{}{
-						1,
-						bson.M{
-							"$add": []interface{}{
-								1,
-								bson.M{
-									"$divide": []interface{}{
-										bson.M{"$subtract": []interface{}{"$$NOW", "$lastActivityAt"}},
-										86400000, // MS in a day
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	})
-
-	projectStage := bson.M{
-		"communityId":   1,
-		"slug":          1,
-		"name":          1,
-		"description":   1,
-		"shortDesc":     1,
-		"ownerId":       1,
-		"isPrivate":     1,
-		"members":       1,
-		"memberCount":   1,
-		"postCount":     1,
-		"stats":         1,
-		"trendingScore": 1,
-		"status":        1,
-	}
-	aggregator.Project(projectStage)
-
-	sortStage := bson.M{
-		"trendingScore": -1,
-		"memberCount":   -1,
-		"postCount":     -1,
-	}
-
-	communitiesResults, err := aggregator.
-		Sort(sortStage).
-		Skip(int64((page - 1) * limit)).
-		Limit(int64(limit)).
-		Exec()
-
-	if err != nil {
-		s.logger.Error("Error executing trending communities query: %v", err)
-		return nil, network.NewInternalServerError(
-			"Error executing trending communities query",
-			"There was an error executing some operations. Context - [ Aggregation Failed ] ",
-			network.DB_ERROR,
-			err,
-		)
-	}
-
-	aggregator.Close()
-	return communitiesResults, nil
-}
-
 func (s *communityService) AddModerator(userId string, communityId string, moderatorId string) network.ApiError {
 	s.logger.Info("Adding moderator %s to community %s by user %s", moderatorId, communityId, userId)
 
@@ -1138,14 +1034,11 @@ func (s *communityService) AddModerator(userId string, communityId string, moder
 	filter := bson.M{"communityId": communityId, "status": model.CommunityStatusActive}
 	update := bson.M{
 		"$addToSet": bson.M{"moderators": bson.M{"userId": moderatorId, "addedBy": userId, "addedAt": primitive.NewDateTimeFromTime(time.Now())}},
-		"$set":      bson.M{"metadata.updatedAt": primitive.NewDateTimeFromTime(time.Now()), "metadata.updatedBy": userId},
 	}
-	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update,
-		options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(false),
-	)
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
-			
+
 		}
 		if mongo.IsDuplicateKeyError(err) {
 			s.logger.Error("Moderator already exists in the community: %v", err)
@@ -1170,9 +1063,8 @@ func (s *communityService) RemoveModerator(userId string, communityId string, mo
 	filter := bson.M{"communityId": communityId, "status": model.CommunityStatusActive}
 	update := bson.M{
 		"$pull": bson.M{"moderators": bson.M{"userId": moderatorId}},
-		"$set":  bson.M{"metadata.updatedAt": primitive.NewDateTimeFromTime(time.Now()), "metadata.updatedBy": userId},
 	}
-	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update, options.FindOneAndUpdate().SetReturnDocument(options.After).SetUpsert(false))
+	community, err := s.communityQueryBuilder.Query(s.Context()).FindOneAndUpdate(filter, update)
 	if err != nil {
 		if mongo.IsNoDocumentFoundError(err) {
 			s.logger.Error("Community with id %s not found: %v", communityId, err)

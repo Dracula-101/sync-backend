@@ -67,28 +67,28 @@
 							"formdata": [
 								{
 									"key": "email",
-									"value": "testsample1@gmail.com",
+									"value": "test.user@gmail.com",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "TestHello",
+									"value": "123456",
 									"type": "text"
 								},
 								{
 									"key": "username",
-									"value": "Test-User-New",
+									"value": "Nice-Warrior",
 									"type": "text"
 								},
 								{
 									"key": "profile_photo",
 									"type": "file",
-									"src": "/C:/Users/HP/Downloads/Sync backend structure.png"
+									"src": "postman-cloud:///1f03af0f-7a5b-46c0-9dc7-5a7227b0fc3d"
 								},
 								{
 									"key": "background_photo",
 									"type": "file",
-									"src": "/C:/Users/HP/Downloads/Sync backend structure.png"
+									"src": "postman-cloud:///1f03af0f-7a5b-46c0-9dc7-5a7227b0fc3d"
 								}
 							]
 						},
@@ -640,12 +640,12 @@
 							"formdata": [
 								{
 									"key": "email",
-									"value": "pratikpujari@gmail.com",
+									"value": "pratikpujari1000@gmail.com",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "Pratik",
+									"value": "123456",
 									"type": "text"
 								}
 							]
@@ -1821,7 +1821,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/fb454b41-3aa9-428a-b62a-36e6c85144d6",
+							"raw": "{{local}}/api/v1/community/:communityId",
 							"host": [
 								"{{local}}"
 							],
@@ -1829,7 +1829,13 @@
 								"api",
 								"v1",
 								"community",
-								"fb454b41-3aa9-428a-b62a-36e6c85144d6"
+								":communityId"
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "fb454b41-3aa9-428a-b62a-36e6c85144d6"
+								}
 							]
 						}
 					},
@@ -1897,7 +1903,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/community/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"raw": "{{local}}/api/v1/community/:communityId",
 							"host": [
 								"{{local}}"
 							],
@@ -1905,7 +1911,13 @@
 								"api",
 								"v1",
 								"community",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf"
+								":communityId"
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -2241,65 +2253,6 @@
 					]
 				},
 				{
-					"name": "Get Trending Communities",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{local}}/api/v1/community/trending",
-							"host": [
-								"{{local}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"community",
-								"trending"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{local}}/api/v1/community/trending",
-									"host": [
-										"{{local}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"community",
-										"trending"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 20 May 2025 18:38:40 GMT"
-								},
-								{
-									"key": "Content-Length",
-									"value": "1227"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:08:40.2009228+05:30\"\n    },\n    \"message\": \"Communities fetched successfully\",\n    \"data\": [\n        {\n            \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n            \"slug\": \"coding-community\",\n            \"name\": \"Coding Community\",\n            \"description\": \"This community where you find like minded people who like shares and Business\",\n            \"shortDesc\": \"This community where you find like minded people who like shares and Business\",\n            \"ownerId\": \"cd5a04b6-578c-43e6-ac6a-2220abef0c33\",\n            \"isPrivate\": false,\n            \"members\": null,\n            \"memberCount\": 2,\n            \"postCount\": 0,\n            \"stats\": {\n                \"dailyActiveUsers\": 1,\n                \"weeklyActiveUsers\": 1,\n                \"monthlyActiveUsers\": 1,\n                \"growthRate\": 0,\n                \"engagementRate\": 0,\n                \"topTags\": [],\n                \"popularityScore\": 0,\n                \"lastUpdated\": \"2025-05-11T17:25:04.839Z\"\n            },\n            \"status\": \"active\"\n        },\n        {\n            \"id\": \"5641fbf9-911f-4c1a-a76a-0c7ba544c06e\",\n            \"slug\": \"new-community\",\n            \"name\": \"New Community\",\n            \"description\": \"This is a new community\",\n            \"shortDesc\": \"This is a new community\",\n            \"ownerId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n            \"isPrivate\": false,\n            \"members\": null,\n            \"memberCount\": 1,\n            \"postCount\": 0,\n            \"stats\": {\n                \"dailyActiveUsers\": 1,\n                \"weeklyActiveUsers\": 1,\n                \"monthlyActiveUsers\": 1,\n                \"growthRate\": 0,\n                \"engagementRate\": 0,\n                \"topTags\": [],\n                \"popularityScore\": 0,\n                \"lastUpdated\": \"2025-05-20T07:56:42.875Z\"\n            },\n            \"status\": \"active\"\n        }\n    ]\n}"
-						}
-					]
-				},
-				{
 					"name": "Get User Communities",
 					"request": {
 						"method": "GET",
@@ -2513,7 +2466,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"fucker\"\r\n}",
+							"raw": "{\r\n    \"userId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\r\n    \"role\": \"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2521,7 +2474,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/add",
+							"raw": "{{local}}/api/v1/community/moderator/:userId/add",
 							"host": [
 								"{{local}}"
 							],
@@ -2530,8 +2483,14 @@
 								"v1",
 								"community",
 								"moderator",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								":userId",
 								"add"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -2642,7 +2601,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/list",
+							"raw": "{{local}}/api/v1/community/moderator/:userId/list",
 							"host": [
 								"{{local}}"
 							],
@@ -2651,8 +2610,14 @@
 								"v1",
 								"community",
 								"moderator",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								":userId",
 								"list"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -2714,7 +2679,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/remove",
+							"raw": "{{local}}/api/v1/community/moderator/:userId/remove",
 							"host": [
 								"{{local}}"
 							],
@@ -2723,8 +2688,14 @@
 								"v1",
 								"community",
 								"moderator",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								":userId",
 								"remove"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -2795,7 +2766,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/community/moderator/ac861a38-8460-4645-8d94-b93ea2de8adf/update",
+							"raw": "{{local}}/api/v1/community/moderator/:userId/update",
 							"host": [
 								"{{local}}"
 							],
@@ -2804,8 +2775,14 @@
 								"v1",
 								"community",
 								"moderator",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf",
+								":userId",
 								"update"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -3047,7 +3024,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/user/4b286217-bc74-43e1-9570-7df4beeb4e84",
+							"raw": "{{local}}/api/v1/user/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3055,7 +3032,13 @@
 								"api",
 								"v1",
 								"user",
-								"4b286217-bc74-43e1-9570-7df4beeb4e84"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "4b286217-bc74-43e1-9570-7df4beeb4e84"
+								}
 							]
 						}
 					},
@@ -3170,12 +3153,593 @@
 					]
 				},
 				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "bio",
+									"value": "Hi, i am the best person in the world.",
+									"type": "text"
+								},
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+									"disabled": true
+								},
+								{
+									"key": "background",
+									"type": "file",
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/user/me",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "bio",
+											"value": "Hi, i am the best person in the world.",
+											"type": "text"
+										},
+										{
+											"key": "avatar",
+											"type": "file",
+											"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+											"disabled": true
+										},
+										{
+											"key": "background",
+											"type": "file",
+											"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/user/me",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"me"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 May 2025 10:36:59 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1571"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-27T16:06:59.3835217+05:30\"\n    },\n    \"message\": \"Profile updated successfully\",\n    \"data\": {\n        \"id\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n        \"username\": \"Nice-Warrior-Handsome\",\n        \"email\": \"pratikpujari@gmail.com\",\n        \"bio\": \"Hi, i am the best person in the world.\",\n        \"verifiedEmail\": false,\n        \"status\": \"active\",\n        \"avatar\": {\n            \"profile\": {\n                \"id\": \"sync-backend/profile/Nice-Warrior-Handsome_profile\",\n                \"url\": \"https://res.cloudinary.com/diliver9j/image/upload/v1748342210/sync-backend/profile/Nice-Warrior-Handsome_profile.png\",\n                \"width\": 3608,\n                \"height\": 3977\n            },\n            \"background\": {\n                \"id\": \"sync-backend/background/Nice-Warrior-Handsome_background\",\n                \"url\": \"https://res.cloudinary.com/diliver9j/image/upload/v1748342211/sync-backend/background/Nice-Warrior-Handsome_background.png\",\n                \"width\": 3608,\n                \"height\": 3977\n            }\n        },\n        \"synergy\": {\n            \"posts\": 0,\n            \"comments\": 0,\n            \"total\": 0\n        },\n        \"providers\": [],\n        \"joinedWavelengths\": [\n            \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\"\n        ],\n        \"moderatedWavelengths\": null,\n        \"moderatorOf\": [],\n        \"follows\": [],\n        \"followers\": [],\n        \"preferences\": {\n            \"language\": {\n                \"DisplayName\": \"English\",\n                \"NativeName\": \"English\"\n            },\n            \"theme\": \"light\",\n            \"timezone\": {\n                \"DisplayName\": \"Coordinated Universal Time\",\n                \"Timezone\": \"UTC+0\"\n            },\n            \"location\": \"Unknown Country\",\n            \"notifications\": {\n                \"email\": true,\n                \"push\": false\n            },\n            \"contentSettings\": {\n                \"showSensitiveContent\": false,\n                \"showAdultContent\": false\n            },\n            \"privacySettings\": {\n                \"isProfileVisible\": true,\n                \"isEmailVisible\": true,\n                \"isJoinedWavelengthsVisible\": true,\n                \"followersVisible\": true\n            },\n            \"blockList\": []\n        },\n        \"lastSeen\": \"2025-05-12T17:53:52.45Z\",\n        \"createdAt\": \"2025-05-12T17:53:52.45Z\",\n        \"updatedAt\": \"2025-05-27T10:36:59.185Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update User Preferences",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "language",
+									"value": "en",
+									"type": "text"
+								},
+								{
+									"key": "theme",
+									"value": "dark",
+									"type": "text"
+								},
+								{
+									"key": "timezone",
+									"value": "GMT+5:30",
+									"type": "text"
+								},
+								{
+									"key": "email_notifications",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "mobile_notifications",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "show_sensitive_content",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "show_adult_content",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "is_profile_visible",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "is_email_visible",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "is_joined_wavelengths_visible",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "followers_visible",
+									"value": "false",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/user/me/preferences",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"me",
+								"preferences"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "language",
+											"value": "en",
+											"type": "text"
+										},
+										{
+											"key": "theme",
+											"value": "dark",
+											"type": "text"
+										},
+										{
+											"key": "timezone",
+											"value": "GMT+5:30",
+											"type": "text"
+										},
+										{
+											"key": "email_notifications",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "mobile_notifications",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "show_sensitive_content",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "show_adult_content",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "is_profile_visible",
+											"value": "true",
+											"type": "text"
+										},
+										{
+											"key": "is_email_visible",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "is_joined_wavelengths_visible",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "followers_visible",
+											"value": "false",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/user/me/preferences",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"me",
+										"preferences"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 May 2025 12:05:44 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "136"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-27T17:35:44.5657221+05:30\"\n    },\n    \"message\": \"Preferences updated successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Profile",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "bio",
+									"value": "Hi, i am the best person in the world.",
+									"type": "text"
+								},
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+									"disabled": true
+								},
+								{
+									"key": "background",
+									"type": "file",
+									"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/user/me",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "bio",
+											"value": "Hi, i am the best person in the world.",
+											"type": "text"
+										},
+										{
+											"key": "avatar",
+											"type": "file",
+											"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+											"disabled": true
+										},
+										{
+											"key": "background",
+											"type": "file",
+											"src": "/C:/Users/HP/Downloads/Sync backend structure.png",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/user/me",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"me"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 May 2025 11:54:33 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "141"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-27T17:24:33.3595931+05:30\"\n    },\n    \"message\": \"User marked for deletion successfully\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Search Users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "language",
+									"value": "en",
+									"type": "text"
+								},
+								{
+									"key": "theme",
+									"value": "dark",
+									"type": "text"
+								},
+								{
+									"key": "timezone",
+									"value": "GMT+5:30",
+									"type": "text"
+								},
+								{
+									"key": "email_notifications",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "mobile_notifications",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "show_sensitive_content",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "show_adult_content",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "is_profile_visible",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "is_email_visible",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "is_joined_wavelengths_visible",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "followers_visible",
+									"value": "false",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}/api/v1/user/search?query=War",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "War"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "language",
+											"value": "en",
+											"type": "text"
+										},
+										{
+											"key": "theme",
+											"value": "dark",
+											"type": "text"
+										},
+										{
+											"key": "timezone",
+											"value": "GMT+5:30",
+											"type": "text"
+										},
+										{
+											"key": "email_notifications",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "mobile_notifications",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "show_sensitive_content",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "show_adult_content",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "is_profile_visible",
+											"value": "true",
+											"type": "text"
+										},
+										{
+											"key": "is_email_visible",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "is_joined_wavelengths_visible",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "followers_visible",
+											"value": "false",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{local}}/api/v1/user/search?query=War",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"user",
+										"search"
+									],
+									"query": [
+										{
+											"key": "query",
+											"value": "War"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 27 May 2025 14:01:47 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "585"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-27T19:31:47.413905+05:30\"\n    },\n    \"message\": \"Users fetched successfully\",\n    \"data\": [\n        {\n            \"userId\": \"70eadf71-a46b-4352-837c-2c8cbe0a7bc6\",\n            \"username\": \"Handsome-Warrior\",\n            \"email\": \"pratikpujari1000@gmail.com\",\n            \"avatar\": \"https://res.cloudinary.com/diliver9j/image/upload/v1748346726/sync-backend/profile/Handsome-Warrior_profile.png\",\n            \"background\": \"https://res.cloudinary.com/diliver9j/image/upload/v1748346727/sync-backend/background/Handsome-Warrior_background.png\",\n            \"status\": \"active\",\n            \"isFollowed\": false,\n            \"isFollowing\": true,\n            \"isBlocked\": false\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
 					"name": "Join Wavelength",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/community/user/join/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"raw": "{{local}}/api/v1/community/user/join/:communityId",
 							"host": [
 								"{{local}}"
 							],
@@ -3185,7 +3749,13 @@
 								"community",
 								"user",
 								"join",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf"
+								":communityId"
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -3276,7 +3846,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/community/user/leave/ac861a38-8460-4645-8d94-b93ea2de8adf",
+							"raw": "{{local}}/api/v1/community/user/leave/:communityId",
 							"host": [
 								"{{local}}"
 							],
@@ -3286,7 +3856,13 @@
 								"community",
 								"user",
 								"leave",
-								"ac861a38-8460-4645-8d94-b93ea2de8adf"
+								":communityId"
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "ac861a38-8460-4645-8d94-b93ea2de8adf"
+								}
 							]
 						}
 					},
@@ -3377,7 +3953,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/user/follow/73b9cd7a-fea1-4fe4-9b7a-ec449036eedd",
+							"raw": "{{local}}/api/v1/user/follow/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3386,7 +3962,13 @@
 								"v1",
 								"user",
 								"follow",
-								"73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "70eadf71-a46b-4352-837c-2c8cbe0a7bc6"
+								}
 							]
 						}
 					},
@@ -3523,7 +4105,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{local}}/api/v1/user/unfollow/73b9cd7a-fea1-4fe4-9b7a-ec449036eedd",
+							"raw": "{{local}}/api/v1/user/unfollow/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3532,7 +4114,13 @@
 								"v1",
 								"user",
 								"unfollow",
-								"73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								}
 							]
 						}
 					},
@@ -3644,7 +4232,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{local}}/api/v1/user/block/73b9cd7a-fea1-4fe4-9b7a-ec449036eedd",
+							"raw": "{{local}}/api/v1/user/block/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3653,7 +4241,13 @@
 								"v1",
 								"user",
 								"block",
-								"73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								}
 							]
 						}
 					},
@@ -3719,7 +4313,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{local}}/api/v1/user/unblock/73b9cd7a-fea1-4fe4-9b7a-ec449036eedd",
+							"raw": "{{local}}/api/v1/user/unblock/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -3728,7 +4322,13 @@
 								"v1",
 								"user",
 								"unblock",
-								"73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "73b9cd7a-fea1-4fe4-9b7a-ec449036eedd"
+								}
 							]
 						}
 					},
@@ -3787,7 +4387,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/like/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/like/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -3796,7 +4396,13 @@
 								"v1",
 								"post",
 								"like",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -3887,7 +4493,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/dislike/0f9a4a16-33df-4fab-a375-3cff7b40d0d",
+							"raw": "{{local}}/api/v1/post/dislike/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -3896,7 +4502,13 @@
 								"v1",
 								"post",
 								"dislike",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d"
+								}
 							]
 						}
 					},
@@ -4189,7 +4801,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/get/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/get/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4198,7 +4810,13 @@
 								"v1",
 								"post",
 								"get",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "f84e3923-050f-43d2-a080-50233b997c49"
+								}
 							]
 						}
 					},
@@ -4309,7 +4927,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4317,7 +4935,13 @@
 								"api",
 								"v1",
 								"post",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4443,12 +5067,12 @@
 					]
 				},
 				{
-					"name": "New Request",
+					"name": "Delete Post",
 					"request": {
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4456,7 +5080,13 @@
 								"api",
 								"v1",
 								"post",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4502,6 +5132,290 @@
 					]
 				},
 				{
+					"name": "User Feed",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/feed",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"feed"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/feed",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"feed"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:18 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "182"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:18.8269202+05:30\"\n    },\n    \"message\": \"User feed posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Trending Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/trending",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"trending"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/trending",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"trending"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:31 GMT"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:31.5387859+05:30\"\n    },\n    \"message\": \"Trending posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [\n            {\n                \"id\": \"9e1568f3-1762-4db6-b337-664b8c8318a0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.618Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.08Z\"\n            },\n            {\n                \"id\": \"a09dc359-96cf-4516-a2a2-00cb99da3d90\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.465Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.106Z\"\n            },\n            {\n                \"id\": \"5e1b734d-79f9-4382-adef-ca64221386d0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.354Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.032Z\"\n            },\n            {\n                \"id\": \"61012f85-5ec7-44d1-bd43-f7a20d638331\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.264Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.031Z\"\n            },\n            {\n                \"id\": \"fb1871f5-8da3-4bae-a57a-bf65a2c7af22\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:37.8Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.055Z\"\n            },\n            {\n                \"id\": \"98d9108e-4bfc-44c9-bbec-2361eae9eabf\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.116Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.095Z\"\n            },\n            {\n                \"id\": \"dd23feb1-1bfd-4027-abd9-4edd228c623b\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.108Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.094Z\"\n            },\n            {\n                \"id\": \"61cb477c-d7e0-40a6-b343-e9b43759a9ae\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:31.254Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.075Z\"\n            },\n            {\n                \"id\": \"732ca6af-62e8-4e69-ace6-b1710b3c1443\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:30.581Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.047Z\"\n            },\n            {\n                \"id\": \"f84e3923-050f-43d2-a080-50233b997c49\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 6,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:28.215Z\",\n                \"updatedAt\": \"2025-05-30T19:28:02.059Z\"\n            }\n        ],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Popular Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/popular",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"popular"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/popular",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"popular"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:51 GMT"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:51.3234838+05:30\"\n    },\n    \"message\": \"Popular posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [\n            {\n                \"id\": \"a09dc359-96cf-4516-a2a2-00cb99da3d90\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.465Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.957Z\"\n            },\n            {\n                \"id\": \"9e1568f3-1762-4db6-b337-664b8c8318a0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.618Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.855Z\"\n            },\n            {\n                \"id\": \"98d9108e-4bfc-44c9-bbec-2361eae9eabf\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.116Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.942Z\"\n            },\n            {\n                \"id\": \"5e1b734d-79f9-4382-adef-ca64221386d0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.354Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.89Z\"\n            },\n            {\n                \"id\": \"fb1871f5-8da3-4bae-a57a-bf65a2c7af22\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:37.8Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.974Z\"\n            },\n            {\n                \"id\": \"dd23feb1-1bfd-4027-abd9-4edd228c623b\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.108Z\",\n                \"updatedAt\": \"2025-05-30T19:30:32.024Z\"\n            },\n            {\n                \"id\": \"732ca6af-62e8-4e69-ace6-b1710b3c1443\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:30.581Z\",\n                \"updatedAt\": \"2025-05-30T19:30:32.039Z\"\n            },\n            {\n                \"id\": \"f84e3923-050f-43d2-a080-50233b997c49\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:28.215Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.856Z\"\n            },\n            {\n                \"id\": \"61cb477c-d7e0-40a6-b343-e9b43759a9ae\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:31.254Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.988Z\"\n            },\n            {\n                \"id\": \"61012f85-5ec7-44d1-bd43-f7a20d638331\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.264Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.972Z\"\n            }\n        ],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "User Saved Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/saved",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"saved"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/popular",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"popular"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:51 GMT"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:51.3234838+05:30\"\n    },\n    \"message\": \"Popular posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [\n            {\n                \"id\": \"a09dc359-96cf-4516-a2a2-00cb99da3d90\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.465Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.957Z\"\n            },\n            {\n                \"id\": \"9e1568f3-1762-4db6-b337-664b8c8318a0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.618Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.855Z\"\n            },\n            {\n                \"id\": \"98d9108e-4bfc-44c9-bbec-2361eae9eabf\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.116Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.942Z\"\n            },\n            {\n                \"id\": \"5e1b734d-79f9-4382-adef-ca64221386d0\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.354Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.89Z\"\n            },\n            {\n                \"id\": \"fb1871f5-8da3-4bae-a57a-bf65a2c7af22\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:37.8Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.974Z\"\n            },\n            {\n                \"id\": \"dd23feb1-1bfd-4027-abd9-4edd228c623b\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:36.108Z\",\n                \"updatedAt\": \"2025-05-30T19:30:32.024Z\"\n            },\n            {\n                \"id\": \"732ca6af-62e8-4e69-ace6-b1710b3c1443\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:30.581Z\",\n                \"updatedAt\": \"2025-05-30T19:30:32.039Z\"\n            },\n            {\n                \"id\": \"f84e3923-050f-43d2-a080-50233b997c49\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:28.215Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.856Z\"\n            },\n            {\n                \"id\": \"61cb477c-d7e0-40a6-b343-e9b43759a9ae\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"4b286217-bc74-43e1-9570-7df4beeb4e84\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:31.254Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.988Z\"\n            },\n            {\n                \"id\": \"61012f85-5ec7-44d1-bd43-f7a20d638331\",\n                \"title\": \"Bruh this is a title\",\n                \"content\": \"Hello this is the content of the post.\",\n                \"authorId\": \"277b9a7b-061c-43a1-9113-57d046329711\",\n                \"community\": {\n                    \"id\": \"e04c757e-56a4-4ce5-9fb8-0f18c89b4f65\",\n                    \"name\": \"New Community\",\n                    \"description\": \"This is a new community\",\n                    \"avatar\": \"https:placehold.co/200x200.png\",\n                    \"background\": \"https://placehold.co/1400x300.png\",\n                    \"createdAt\": \"1970-01-01T00:00:00Z\",\n                    \"status\": \"active\"\n                },\n                \"type\": \"TEXT\",\n                \"status\": \"active\",\n                \"tags\": null,\n                \"synergy\": 0,\n                \"isLiked\": false,\n                \"isDisliked\": false,\n                \"commentCount\": 0,\n                \"viewCount\": 7,\n                \"shareCount\": 0,\n                \"saveCount\": 0,\n                \"isNSFW\": false,\n                \"isSpoiler\": false,\n                \"isStickied\": false,\n                \"isLocked\": false,\n                \"createdAt\": \"2025-05-19T18:46:38.264Z\",\n                \"updatedAt\": \"2025-05-30T19:30:31.972Z\"\n            }\n        ],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
+						}
+					]
+				},
+				{
 					"name": "Like Post",
 					"request": {
 						"method": "POST",
@@ -4527,7 +5441,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/like/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/like/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4536,7 +5450,13 @@
 								"v1",
 								"post",
 								"like",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4687,7 +5607,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/dislike/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/dislike/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4696,7 +5616,13 @@
 								"v1",
 								"post",
 								"dislike",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -4847,7 +5773,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/save/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/save/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -4856,7 +5782,13 @@
 								"v1",
 								"post",
 								"save",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -5007,7 +5939,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/post/share/0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+							"raw": "{{local}}/api/v1/post/share/:postId",
 							"host": [
 								"{{local}}"
 							],
@@ -5016,7 +5948,13 @@
 								"v1",
 								"post",
 								"share",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":postId"
+							],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								}
 							]
 						}
 					},
@@ -5228,7 +6166,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/post/get/community/f13603b2-8f3a-4f98-a092-63f55c4aee64?page=1&limit=5",
+							"raw": "{{local}}/api/v1/post/get/community/:communityId?page=1&limit=5",
 							"host": [
 								"{{local}}"
 							],
@@ -5238,7 +6176,7 @@
 								"post",
 								"get",
 								"community",
-								"f13603b2-8f3a-4f98-a092-63f55c4aee64"
+								":communityId"
 							],
 							"query": [
 								{
@@ -5248,6 +6186,12 @@
 								{
 									"key": "limit",
 									"value": "5"
+								}
+							],
+							"variable": [
+								{
+									"key": "communityId",
+									"value": "f13603b2-8f3a-4f98-a092-63f55c4aee64"
 								}
 							]
 						}
@@ -5302,6 +6246,77 @@
 							],
 							"cookie": [],
 							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-21T00:25:31.7568251+05:30\"\n    },\n    \"message\": \"Community posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [],\n        \"totalPosts\": 0,\n        \"page\": 1,\n        \"limit\": 5\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get User Saved Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{local}}/api/v1/post/saved",
+							"host": [
+								"{{local}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"post",
+								"saved"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{local}}/api/v1/post/saved",
+									"host": [
+										"{{local}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"post",
+										"saved"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 30 May 2025 19:30:01 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "183"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"meta\": {\n        \"success\": true,\n        \"status_code\": 200,\n        \"timestamp\": \"2025-05-31T01:00:01.8896748+05:30\"\n    },\n    \"message\": \"User saved posts retrieved successfully\",\n    \"data\": {\n        \"posts\": [],\n        \"Page\": 1,\n        \"Limit\": 10\n    }\n}"
 						}
 					]
 				}
@@ -5534,7 +6549,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/32da13fe-77bd-483f-ab07-967f87e67c21",
+							"raw": "{{local}}/api/v1/comment/post/:commentId",
 							"host": [
 								"{{local}}"
 							],
@@ -5543,7 +6558,13 @@
 								"v1",
 								"comment",
 								"post",
-								"32da13fe-77bd-483f-ab07-967f87e67c21"
+								":commentId"
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "32da13fe-77bd-483f-ab07-967f87e67c21"
+								}
 							]
 						}
 					},
@@ -5663,7 +6684,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/32da13fe-77bd-483f-ab07-967f87e67c21",
+							"raw": "{{local}}/api/v1/comment/post/:commentId",
 							"host": [
 								"{{local}}"
 							],
@@ -5672,7 +6693,13 @@
 								"v1",
 								"comment",
 								"post",
-								"32da13fe-77bd-483f-ab07-967f87e67c21"
+								":commentId"
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": ""
+								}
 							]
 						}
 					},
@@ -5783,7 +6810,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8?page=1&limit=10",
+							"raw": "{{local}}/api/v1/comment/post/:commentId?page=1&limit=10",
 							"host": [
 								"{{local}}"
 							],
@@ -5792,7 +6819,7 @@
 								"v1",
 								"comment",
 								"post",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								":commentId"
 							],
 							"query": [
 								{
@@ -5802,6 +6829,12 @@
 								{
 									"key": "limit",
 									"value": "10"
+								}
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
 								}
 							]
 						}
@@ -5864,7 +6897,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/comment/post/0f9a4a16-33df-4fab-a375-3cff7b40d0d8/reply/6d3e7daa-874c-45e4-8579-8a4940bd6023?page=1&limit=10",
+							"raw": "{{local}}/api/v1/comment/post/:commentId/reply/:replyId?page=1&limit=10",
 							"host": [
 								"{{local}}"
 							],
@@ -5873,9 +6906,9 @@
 								"v1",
 								"comment",
 								"post",
-								"0f9a4a16-33df-4fab-a375-3cff7b40d0d8",
+								":commentId",
 								"reply",
-								"6d3e7daa-874c-45e4-8579-8a4940bd6023"
+								":replyId"
 							],
 							"query": [
 								{
@@ -5885,6 +6918,16 @@
 								{
 									"key": "limit",
 									"value": "10"
+								}
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "0f9a4a16-33df-4fab-a375-3cff7b40d0d8"
+								},
+								{
+									"key": "replyId",
+									"value": "6d3e7daa-874c-45e4-8579-8a4940bd6023"
 								}
 							]
 						}
@@ -6083,7 +7126,7 @@
 							"raw": "{\r\n    \"comment_id\": \"ada\",\r\n    \"comment\": \"Bruh this is good huh!\"\r\n}"
 						},
 						"url": {
-							"raw": "{{local}}/api/v1/comment/like/b86d2e78-fbad-4c51-b9be-4cf5bced0e63",
+							"raw": "{{local}}/api/v1/comment/like/:commentId",
 							"host": [
 								"{{local}}"
 							],
@@ -6092,7 +7135,13 @@
 								"v1",
 								"comment",
 								"like",
-								"b86d2e78-fbad-4c51-b9be-4cf5bced0e63"
+								":commentId"
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "b86d2e78-fbad-4c51-b9be-4cf5bced0e63"
+								}
 							]
 						}
 					},
@@ -6148,7 +7197,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{local}}/api/v1/comment/dislike/b86d2e78-fbad-4c51-b9be-4cf5bced0e63",
+							"raw": "{{local}}/api/v1/comment/dislike/:commentId",
 							"host": [
 								"{{local}}"
 							],
@@ -6157,7 +7206,13 @@
 								"v1",
 								"comment",
 								"dislike",
-								"b86d2e78-fbad-4c51-b9be-4cf5bced0e63"
+								":commentId"
+							],
+							"variable": [
+								{
+									"key": "commentId",
+									"value": "b86d2e78-fbad-4c51-b9be-4cf5bced0e63"
+								}
 							]
 						}
 					},
@@ -6328,7 +7383,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{local}}/api/v1/comment/user/4b286217-bc74-43e1-9570-7df4beeb4e84",
+							"raw": "{{local}}/api/v1/comment/user/:userId",
 							"host": [
 								"{{local}}"
 							],
@@ -6337,7 +7392,13 @@
 								"v1",
 								"comment",
 								"user",
-								"4b286217-bc74-43e1-9570-7df4beeb4e84"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "4b286217-bc74-43e1-9570-7df4beeb4e84"
+								}
 							]
 						}
 					},

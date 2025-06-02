@@ -38,22 +38,11 @@ type Post struct {
 	IsStickied     bool                `bson:"isStickied" json:"isStickied"`
 	IsLocked       bool                `bson:"isLocked" json:"isLocked"`
 	IsArchived     bool                `bson:"isArchived" json:"isArchived"`
-	Metadata       Metadata            `bson:"metadata" json:"-"`
+	Analytics      *PostAnalytics      `bson:"analytics,omitempty" json:"analytics,omitempty"`
 	CreatedAt      primitive.DateTime  `bson:"createdAt" json:"createdAt"`
 	UpdatedAt      primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
 	DeletedAt      *primitive.DateTime `bson:"deletedAt,omitempty" json:"-"`
 	LastActivityAt primitive.DateTime  `bson:"lastActivityAt" json:"lastActivityAt"`
-}
-
-// Metadata represents common metadata fields used across models
-type Metadata struct {
-	CreatedBy  string         `bson:"createdBy" json:"createdBy"`
-	UpdatedBy  string         `bson:"updatedBy,omitempty" json:"updatedBy,omitempty"`
-	DeletedBy  string         `bson:"deletedBy,omitempty" json:"-"`
-	IPAddress  string         `bson:"ipAddress,omitempty" json:"-"`
-	UserAgent  string         `bson:"userAgent,omitempty" json:"-"`
-	Version    int            `bson:"version" json:"version"`
-	CustomData map[string]any `bson:"customData,omitempty" json:"customData,omitempty"`
 }
 
 // PostType defines the type of post
@@ -111,10 +100,10 @@ const (
 // NewPost creates a new post with default values
 func NewPost(authorId string, communityId string, title string, content string, tags []string, media []Media, postType PostType, isNSFW bool, isSpoiler bool) *Post {
 	now := primitive.NewDateTimeFromTime(time.Now())
-
+	postId := uuid.New().String()
 	return &Post{
 		Id:           primitive.NewObjectID(),
-		PostId:       uuid.New().String(),
+		PostId:       postId,
 		Title:        title,
 		Content:      content,
 		AuthorId:     authorId,
@@ -134,10 +123,7 @@ func NewPost(authorId string, communityId string, title string, content string, 
 		IsStickied:   false,
 		IsLocked:     false,
 		IsArchived:   false,
-		Metadata: Metadata{
-			CreatedBy: authorId,
-			Version:   1,
-		},
+		// Analytics:      NewPostAnalytics(),
 		CreatedAt:      now,
 		UpdatedAt:      now,
 		LastActivityAt: now,

@@ -32,6 +32,17 @@ type UploadedFiles struct {
 	Files []UploadedFile `json:"files"`
 }
 
+func (uf *UploadedFiles) IsEmpty() bool {
+	return len(uf.Files) == 0
+}
+
+func (uf *UploadedFiles) First() (*UploadedFile, error) {
+	if len(uf.Files) == 0 {
+		return nil, fmt.Errorf("no files uploaded")
+	}
+	return &uf.Files[0], nil
+}
+
 type UploadedFile struct {
 	Filename string `json:"filename"`
 	Size     int64  `json:"size"`
