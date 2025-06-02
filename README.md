@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Go Version](https://img.shields.io/badge/go-1.24.2-00ADD8.svg)](https://go.dev/)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/Dracula-101/sync-backend)
-[![Last Updated](https://img.shields.io/badge/updated-May%2021%2C%202025-informational.svg)](https://github.com/Dracula-101/sync-backend)
+[![Last Updated](https://img.shields.io/badge/updated-June%2003%2C%202025-informational.svg)](https://github.com/Dracula-101/sync-backend)
 
 A Go-powered backend service for the Sync social media platform - built for performance, scalability, and developer friendliness. Handles authentication, content management, social interactions, and user data with robust security measures.
 
