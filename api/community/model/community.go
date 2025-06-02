@@ -251,9 +251,9 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 		},
 		{
 			Keys: bson.D{
-				{Key: "ownerId", Value: 1},
+				{Key: "members", Value: 1},
 			},
-			Options: options.Index().SetName("idx_community_owner"),
+			Options: options.Index().SetName("idx_community_members"),
 		},
 		{
 			Keys: bson.D{
@@ -265,60 +265,19 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 		},
 		{
 			Keys: bson.D{
-				{Key: "memberCount", Value: -1},
+				{Key: "stats.popularityScore", Value: -1},
 			},
-			Options: options.Index().SetName("idx_community_member_count"),
+			Options: options.Index().SetName("idx_community_popularity"),
 		},
+		// TTL index for deleted communities - 30 days (1 month)
 		{
 			Keys: bson.D{
-				{Key: "postCount", Value: -1},
+				{Key: "metadata.deletedAt", Value: 1},
 			},
-			Options: options.Index().SetName("idx_community_post_count"),
-		},
-		{
-			Keys: bson.D{
-				{Key: "createdAt", Value: -1},
-			},
-			Options: options.Index().SetName("idx_community_created"),
-		},
-		{
-			Keys: bson.D{
-				{Key: "tags.name", Value: 1},
-			},
-			Options: options.Index().SetName("idx_community_tags"),
-		},
-		// New indexes for analytics
-		{
-			Keys: bson.D{
-				{Key: "analytics.trendingScore", Value: -1},
-			},
-			Options: options.Index().SetName("idx_community_trending_score"),
-		},
-		{
-			Keys: bson.D{
-				{Key: "analytics.engagementScore", Value: -1},
-			},
-			Options: options.Index().SetName("idx_community_engagement_score"),
-		},
-		{
-			Keys: bson.D{
-				{Key: "analytics.qualityScore", Value: -1},
-			},
-			Options: options.Index().SetName("idx_community_quality_score"),
-		},
-		{
-			Keys: bson.D{
-				{Key: "analytics.lastActivityAt", Value: -1},
-			},
-			Options: options.Index().SetName("idx_community_last_activity"),
-		},
-		{
-			Keys: bson.D{
-				{Key: "analytics.activeMembersWeek", Value: -1},
-			},
-			Options: options.Index().SetName("idx_community_active_members"),
+			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60).SetName("ttl_community_deleted"),
 		},
 	}
+
 	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CheckIndexes(indexes)
 
 	searchIndexes := []mongod.SearchIndexModel{
@@ -371,22 +330,16 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 								}},
 							}},
 						}},
-						{Key: "memberCount", Value: bson.D{
-							{Key: "type", Value: "number"},
-						}},
-						{Key: "analytics", Value: bson.D{
+						{Key: "stats", Value: bson.D{
 							{Key: "type", Value: "document"},
 							{Key: "fields", Value: bson.D{
-								{Key: "trendingScore", Value: bson.D{
-									{Key: "type", Value: "number"},
-								}},
-								{Key: "engagementScore", Value: bson.D{
-									{Key: "type", Value: "number"},
-								}},
-								{Key: "qualityScore", Value: bson.D{
+								{Key: "popularityScore", Value: bson.D{
 									{Key: "type", Value: "number"},
 								}},
 							}},
+						}},
+						{Key: "memberCount", Value: bson.D{
+							{Key: "type", Value: "number"},
 						}},
 					}},
 				}},
@@ -412,6 +365,56 @@ func (c *Community) EnsureIndexes(db mongo.Database) {
 			},
 			Options: options.SearchIndexes().SetName("community_search"),
 		},
+		{
+			Definition: bson.D{
+				{Key: "mappings", Value: bson.D{
+					{Key: "dynamic", Value: false},
+					{Key: "fields", Value: bson.D{
+						{Key: "name", Value: bson.D{
+							{Key: "type", Value: "autocomplete"},
+							{Key: "tokenization", Value: "edgeGram"},
+							{Key: "minGrams", Value: 2},
+							{Key: "maxGrams", Value: 20},
+							{Key: "foldDiacritics", Value: true},
+						}},
+						{Key: "description", Value: bson.D{
+							{Key: "type", Value: "string"},
+							{Key: "analyzer", Value: "lucene.standard"},
+						}},
+						{Key: "shortDesc", Value: bson.D{
+							{Key: "type", Value: "string"},
+							{Key: "analyzer", Value: "lucene.standard"},
+						}},
+						{Key: "tags", Value: bson.D{
+							{Key: "type", Value: "document"},
+							{Key: "fields", Value: bson.D{
+								{Key: "name", Value: bson.D{
+									{Key: "type", Value: "autocomplete"},
+									{Key: "tokenization", Value: "edgeGram"},
+									{Key: "minGrams", Value: 2},
+									{Key: "maxGrams", Value: 15},
+									{Key: "foldDiacritics", Value: true},
+								}},
+								{Key: "description", Value: bson.D{
+									{Key: "type", Value: "string"},
+									{Key: "analyzer", Value: "lucene.standard"},
+								}},
+							}},
+						}},
+						{Key: "status", Value: bson.D{
+							{Key: "type", Value: "string"},
+						}},
+						{Key: "isPrivate", Value: bson.D{
+							{Key: "type", Value: "boolean"},
+						}},
+					}},
+				}},
+				{Key: "analyzer", Value: "lucene.standard"},
+				{Key: "searchAnalyzer", Value: "lucene.standard"},
+			},
+			Options: options.SearchIndexes().SetName("community_autocomplete"),
+		},
 	}
+
 	mongo.NewQueryBuilder[Community](db, CommunityCollectionName).Query(context.Background()).CheckSearchIndexes(searchIndexes)
 }
