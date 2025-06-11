@@ -14,7 +14,7 @@ type Controller struct {
 
 func NewSystemController(service SystemService) *Controller {
 	return &Controller{
-		BaseController: network.NewBaseController("/status", nil),
+		BaseController: network.NewBaseController("/system", nil),
 		service:        service,
 	}
 }
