@@ -79,7 +79,7 @@ Edit the `.env` file with your specific configuration, including database connec
 - **MongoDB 6.0+** - Primary database for social content and user data
 - **Redis 7.0+** - Caching, rate limiting, and session management
 - **PostgreSQL 14+** - Geographic data and advanced analytics
-- **Air** - For hot-reload during development (optional)
+- **Air** - For hot-reload during development
 
 ## 🏃‍♂️ Development
 
