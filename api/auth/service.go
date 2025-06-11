@@ -129,7 +129,7 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		IpAddress: loginRequest.IpAddress,
 		UserAgent: loginRequest.DeviceUserAgent,
 		Device: userModels.UserDeviceInfo{
-			Os:    loginRequest.DeviceType,
+			Os:    loginRequest.DeviceOS,
 			Type:  loginRequest.DeviceType,
 			Name:  loginRequest.DeviceName,
 			Model: loginRequest.DeviceModel,
