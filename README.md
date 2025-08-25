@@ -43,7 +43,7 @@ Edit the `.env` file with your specific configuration, including database connec
   ```
 
 > [!TIP]
->  Import the postman collection from `/postman` to test the API endpoints.
+>  Import the postman collection from `/postman` to test the API endpoints or use the test the API using the Postman collection [Link](https://documenter.getpostman.com/view/19532712/2sB2qdeymS)
 
 ## ✨ Features
 
