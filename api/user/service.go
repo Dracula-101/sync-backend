@@ -38,6 +38,14 @@ type UserService interface {
 	DeleteUser(userId string) network.ApiError
 	ChangePassword(userId string, oldPassword string, newPassword string) network.ApiError
 
+	/* EMAIL VERIFICATION & PASSWORD RESET */
+	UpdateEmailVerificationToken(userId string, token string, expiry time.Time) network.ApiError
+	FindUserByEmailVerificationToken(token string) (*model.User, network.ApiError)
+	MarkEmailAsVerified(userId string) network.ApiError
+	UpdatePasswordResetToken(userId string, token string, expiry time.Time) network.ApiError
+	FindUserByPasswordResetToken(token string) (*model.User, network.ApiError)
+	UpdatePasswordWithResetToken(userId string, hashedPassword string) network.ApiError
+
 	/* USER COMMUNITY */
 	JoinCommunity(userId string, communityId string) network.ApiError
 	LeaveCommunity(userId string, communityId string) network.ApiError
@@ -989,5 +997,131 @@ func (s *userService) RemoveModerator(userId string, communityId string) network
 		return NewDBError("removing moderator", err.Error())
 	}
 	s.log.Debug("Moderator %s removed from community %s successfully", userId, communityId)
+	return nil
+}
+
+/* EMAIL VERIFICATION & PASSWORD RESET METHODS */
+
+func (s *userService) UpdateEmailVerificationToken(userId string, token string, expiry time.Time) network.ApiError {
+	s.log.Debug("Updating email verification token for user %s", userId)
+
+	expiryDateTime := primitive.NewDateTimeFromTime(expiry)
+	update := bson.M{
+		"$set": bson.M{
+			"emailVerificationToken":  token,
+			"emailVerificationExpiry": expiryDateTime,
+			"updatedAt":               primitive.NewDateTimeFromTime(time.Now()),
+		},
+	}
+
+	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, update, nil)
+	if err != nil {
+		s.log.Error("Error updating email verification token: %v", err)
+		return NewDBError("updating email verification token", err.Error())
+	}
+
+	s.log.Debug("Email verification token updated successfully for user %s", userId)
+	return nil
+}
+
+func (s *userService) FindUserByEmailVerificationToken(token string) (*model.User, network.ApiError) {
+	s.log.Debug("Finding user by email verification token")
+
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"emailVerificationToken": token}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Debug("No user found with email verification token")
+			return nil, NewUserNotFoundError("token")
+		}
+		s.log.Error("Error finding user by email verification token: %v", err)
+		return nil, NewDBError("finding user by email verification token", err.Error())
+	}
+
+	return user, nil
+}
+
+func (s *userService) MarkEmailAsVerified(userId string) network.ApiError {
+	s.log.Debug("Marking email as verified for user %s", userId)
+
+	update := bson.M{
+		"$set": bson.M{
+			"verifiedEmail": true,
+			"updatedAt":     primitive.NewDateTimeFromTime(time.Now()),
+		},
+		"$unset": bson.M{
+			"emailVerificationToken":  "",
+			"emailVerificationExpiry": "",
+		},
+	}
+
+	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, update, nil)
+	if err != nil {
+		s.log.Error("Error marking email as verified: %v", err)
+		return NewDBError("marking email as verified", err.Error())
+	}
+
+	s.log.Debug("Email marked as verified successfully for user %s", userId)
+	return nil
+}
+
+func (s *userService) UpdatePasswordResetToken(userId string, token string, expiry time.Time) network.ApiError {
+	s.log.Debug("Updating password reset token for user %s", userId)
+
+	expiryDateTime := primitive.NewDateTimeFromTime(expiry)
+	update := bson.M{
+		"$set": bson.M{
+			"passwordResetToken":  token,
+			"passwordResetExpiry": expiryDateTime,
+			"updatedAt":           primitive.NewDateTimeFromTime(time.Now()),
+		},
+	}
+
+	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, update, nil)
+	if err != nil {
+		s.log.Error("Error updating password reset token: %v", err)
+		return NewDBError("updating password reset token", err.Error())
+	}
+
+	s.log.Debug("Password reset token updated successfully for user %s", userId)
+	return nil
+}
+
+func (s *userService) FindUserByPasswordResetToken(token string) (*model.User, network.ApiError) {
+	s.log.Debug("Finding user by password reset token")
+
+	user, err := s.userQueryBuilder.SingleQuery().FilterOne(bson.M{"passwordResetToken": token}, nil)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			s.log.Debug("No user found with password reset token")
+			return nil, NewUserNotFoundError("token")
+		}
+		s.log.Error("Error finding user by password reset token: %v", err)
+		return nil, NewDBError("finding user by password reset token", err.Error())
+	}
+
+	return user, nil
+}
+
+func (s *userService) UpdatePasswordWithResetToken(userId string, hashedPassword string) network.ApiError {
+	s.log.Debug("Updating password with reset token for user %s", userId)
+
+	update := bson.M{
+		"$set": bson.M{
+			"passwordHash": hashedPassword,
+			"updatedAt":    primitive.NewDateTimeFromTime(time.Now()),
+		},
+		"$unset": bson.M{
+			"passwordResetToken":  "",
+			"passwordResetExpiry": "",
+		},
+	}
+
+	_, err := s.userQueryBuilder.SingleQuery().UpdateOne(bson.M{"userId": userId}, update, nil)
+	if err != nil {
+		s.log.Error("Error updating password with reset token: %v", err)
+		return NewDBError("updating password with reset token", err.Error())
+	}
+
+	s.log.Debug("Password updated successfully for user %s", userId)
 	return nil
 }

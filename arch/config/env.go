@@ -34,6 +34,13 @@ type Env struct {
 	CloudinaryCloudName string `mapstructure:"CLOUDINARY_CLOUD_NAME"`
 	CloudinaryAPIKey    string `mapstructure:"CLOUDINARY_API_KEY"`
 	CloudinaryAPISecret string `mapstructure:"CLOUDINARY_API_SECRET"`
+
+	SendGridAPIKey   string `mapstructure:"SENDGRID_API_KEY"`
+	SendGridFromEmail string `mapstructure:"SENDGRID_FROM_EMAIL"`
+	SendGridFromName  string `mapstructure:"SENDGRID_FROM_NAME"`
+
+	AppFrontendURL string `mapstructure:"APP_FRONTEND_URL"`
+	AppBackendURL  string `mapstructure:"APP_BACKEND_URL"`
 }
 
 func NewEnv(file string) Env {
@@ -60,6 +67,11 @@ func NewEnv(file string) Env {
 		CloudinaryCloudName: GetStrEnvOrPanic("CLOUDINARY_CLOUD_NAME"),
 		CloudinaryAPIKey:    GetStrEnvOrPanic("CLOUDINARY_API_KEY"),
 		CloudinaryAPISecret: GetStrEnvOrPanic("CLOUDINARY_API_SECRET"),
+		SendGridAPIKey:      GetStrEnvOrPanic("SENDGRID_API_KEY"),
+		SendGridFromEmail:   GetStrEnvOrPanic("SENDGRID_FROM_EMAIL"),
+		SendGridFromName:    GetStrEnvOrPanic("SENDGRID_FROM_NAME"),
+		AppFrontendURL:      GetStrEnvOrPanic("APP_FRONTEND_URL"),
+		AppBackendURL:       GetStrEnvOrPanic("APP_BACKEND_URL"),
 	}
 	return env
 }

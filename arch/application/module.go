@@ -7,6 +7,7 @@ import (
 	authMW "sync-backend/api/auth/middleware"
 	"sync-backend/api/comment"
 	"sync-backend/api/common/analytics"
+	"sync-backend/api/common/email"
 	"sync-backend/api/common/location"
 	"sync-backend/api/common/media"
 	"sync-backend/api/common/session"
@@ -43,6 +44,7 @@ type appModule struct {
 	LocationService location.LocationService
 	TokenService    token.TokenService
 	MediaService    media.MediaService
+	EmailService    email.EmailService
 
 	// Services
 	AuthService      auth.AuthService
@@ -100,6 +102,7 @@ func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 }
 
 func NewAppModule(context context.Context, env *config.Env, config *config.Config, db mongo.Database, ipDb pg.Database, store redis.Store, engine *gin.Engine) Module {
+	emailService := email.NewEmailService(env, db)
 	mediaService := media.NewMediaService(*env)
 	locationService := location.NewLocationService(ipDb)
 	tokenService := token.NewTokenService(config)
@@ -107,7 +110,7 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 	systemService := system.NewSystemService(config, db, store, engine)
 
 	userService := user.NewUserService(db, mediaService)
-	authService := auth.NewAuthService(config, userService, sessionService, tokenService)
+	authService := auth.NewAuthService(config, env, userService, sessionService, tokenService, emailService)
 	communityService := community.NewCommunityService(db, mediaService)
 	postService := post.NewPostService(db, userService, communityService, mediaService)
 	commentService := comment.NewCommentService(db)
@@ -131,6 +134,7 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 		SessionService:  sessionService,
 		TokenService:    tokenService,
 		MediaService:    mediaService,
+		EmailService:    emailService,
 		SystemService:   systemService,
 
 		// Services

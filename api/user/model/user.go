@@ -39,6 +39,12 @@ type User struct {
 	CreatedAt            primitive.DateTime  `bson:"createdAt" json:"createdAt"`
 	UpdatedAt            primitive.DateTime  `bson:"updatedAt" json:"updatedAt"`
 	DeletedAt            *primitive.DateTime `bson:"deletedAt,omitempty" json:"-"`
+
+	// Email verification and password reset tokens
+	EmailVerificationToken  *string             `bson:"emailVerificationToken,omitempty" json:"-"`
+	EmailVerificationExpiry *primitive.DateTime `bson:"emailVerificationExpiry,omitempty" json:"-"`
+	PasswordResetToken      *string             `bson:"passwordResetToken,omitempty" json:"-"`
+	PasswordResetExpiry     *primitive.DateTime `bson:"passwordResetExpiry,omitempty" json:"-"`
 }
 
 type UserStatus string
@@ -201,6 +207,20 @@ func (*User) EnsureIndexes(db mongo.Database) {
 				{Key: "deletedAt", Value: 1},
 			},
 			Options: options.Index().SetExpireAfterSeconds(30 * 24 * 60 * 60).SetName("ttl_user_deleted"),
+		},
+		// Sparse index for email verification token
+		{
+			Keys: bson.D{
+				{Key: "emailVerificationToken", Value: 1},
+			},
+			Options: options.Index().SetSparse(true).SetName("idx_user_email_verification_token"),
+		},
+		// Sparse index for password reset token
+		{
+			Keys: bson.D{
+				{Key: "passwordResetToken", Value: 1},
+			},
+			Options: options.Index().SetSparse(true).SetName("idx_user_password_reset_token"),
 		},
 	}
 	mongo.NewQueryBuilder[User](db, UserCollectionName).Query(context.Background()).CheckIndexes(indexes)

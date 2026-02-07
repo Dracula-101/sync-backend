@@ -1,7 +1,11 @@
 package auth
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
 	"sync-backend/api/auth/dto"
+	"sync-backend/api/common/email"
 	sessionModels "sync-backend/api/common/session/model"
 	userModels "sync-backend/api/user/model"
 
@@ -25,28 +29,38 @@ type AuthService interface {
 	Logout(userId string) network.ApiError
 	ForgotPassword(forgotPasswordRequest *dto.ForgotPassRequest) network.ApiError
 	RefreshToken(refreshTokenRequest *dto.RefreshTokenRequest) (*dto.RefreshTokenResponse, network.ApiError)
+	VerifyEmail(token string) (*userModels.User, network.ApiError)
+	ResetPassword(token string, newPassword string) network.ApiError
 }
 
 type authService struct {
 	network.BaseService
 	logger         utils.AppLogger
+	config         *config.Config
+	env            *config.Env
 	userService    user.UserService
 	sessionService session.SessionService
 	tokenService   token.TokenService
+	emailService   email.EmailService
 }
 
 func NewAuthService(
 	config *config.Config,
+	env *config.Env,
 	userService user.UserService,
 	sessionService session.SessionService,
 	tokenService token.TokenService,
+	emailService email.EmailService,
 ) AuthService {
 	return &authService{
 		BaseService:    network.NewBaseService(),
 		logger:         utils.NewServiceLogger("AuthService"),
+		config:         config,
+		env:            env,
 		userService:    userService,
 		sessionService: sessionService,
 		tokenService:   tokenService,
+		emailService:   emailService,
 	}
 }
 
@@ -109,9 +123,10 @@ func (s *authService) Login(loginRequest *dto.LoginRequest) (*dto.LoginResponse,
 		return nil, NewUserNoPasswordError(loginRequest.Email)
 	}
 
-	if user.Status == userModels.Deleted {
+	switch user.Status {
+	case userModels.Deleted:
 		return nil, NewUserDeletedError(loginRequest.Email)
-	} else if user.Status == userModels.Banned {
+	case userModels.Banned:
 		return nil, NewUserBannedError(loginRequest.Email, "Banned due to violation of terms of service")
 	}
 
@@ -243,9 +258,10 @@ func (s *authService) GoogleLogin(googleLoginRequest *dto.GoogleLoginRequest) (*
 			return nil, NewSessionError("getting user session", sessionErr.Error())
 		}
 
-		if user.Status == userModels.Deleted {
+		switch user.Status {
+		case userModels.Deleted:
 			return nil, NewUserDeletedError(user.Email)
-		} else if user.Status == userModels.Banned {
+		case userModels.Banned:
 			return nil, NewUserBannedError(user.Email, "Banned due to violation of terms of service")
 		}
 
@@ -291,6 +307,8 @@ func (s *authService) Logout(userId string) network.ApiError {
 
 func (s *authService) ForgotPassword(forgotPasswordRequest *dto.ForgotPassRequest) network.ApiError {
 	s.logger.Info("Processing forgot password for email: %s", forgotPasswordRequest.Email)
+
+	// 1. Find user by email
 	user, err := s.userService.FindUserByEmail(forgotPasswordRequest.Email)
 	if err != nil {
 		return err
@@ -298,6 +316,26 @@ func (s *authService) ForgotPassword(forgotPasswordRequest *dto.ForgotPassReques
 	if user == nil {
 		return NewUserNotFoundError(forgotPasswordRequest.Email)
 	}
+
+	// 2. Generate secure token (32 bytes, hex encoded = 64 characters)
+	token := generateSecureToken(32)
+	expiry := time.Now().Add(1 * time.Hour)
+
+	// 3. Save token to user model
+	err = s.userService.UpdatePasswordResetToken(user.UserId, token, expiry)
+	if err != nil {
+		s.logger.Error("Failed to update password reset token: %v", err)
+		return NewTokenError("generating password reset token", err.Error())
+	}
+
+	// 4. Send email via EmailService
+	resetUrl := fmt.Sprintf("%s/reset-password?token=%s", s.env.AppFrontendURL, token)
+	emailErr := s.emailService.SendPasswordReset(user.Email, token, resetUrl)
+	if emailErr != nil {
+		s.logger.Error("Failed to send password reset email: %v", emailErr)
+		return NewEmailSendError("password reset", emailErr)
+	}
+
 	s.logger.Success("Password reset email sent successfully to: %s", forgotPasswordRequest.Email)
 	return nil
 }
@@ -353,4 +391,104 @@ func (s *authService) RefreshToken(refreshTokenRequest *dto.RefreshTokenRequest)
 	}
 	s.logger.Success("Tokens refreshed successfully")
 	return dto.NewRefreshTokenResponse(accessToken, refreshToken), nil
+}
+
+func (s *authService) VerifyEmail(token string) (*userModels.User, network.ApiError) {
+	s.logger.Info("Verifying email with token")
+
+	// 1. Find user by token
+	user, err := s.userService.FindUserByEmailVerificationToken(token)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, NewInvalidTokenError("email verification")
+	}
+
+	// 2. Check token expiry
+	if user.EmailVerificationExpiry != nil && user.EmailVerificationExpiry.Time().Before(time.Now()) {
+		s.logger.Error("Email verification token expired for user: %s", user.Email)
+		return nil, NewExpiredTokenError("email verification")
+	}
+
+	// 3. Check if already verified
+	if user.VerifiedEmail {
+		s.logger.Info("Email already verified for user: %s", user.Email)
+		return nil, NewEmailAlreadyVerifiedError(user.Email)
+	}
+
+	// 4. Mark email as verified and clear token
+	err = s.userService.MarkEmailAsVerified(user.UserId)
+	if err != nil {
+		s.logger.Error("Failed to mark email as verified: %v", err)
+		return nil, err
+	}
+
+	// 5. Get updated user
+	updatedUser, err := s.userService.FindUserById(user.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	s.logger.Success("Email verified successfully for user: %s", user.Email)
+	return updatedUser, nil
+}
+
+func (s *authService) ResetPassword(token string, newPassword string) network.ApiError {
+	s.logger.Info("Resetting password with token")
+
+	// 1. Find user by reset token
+	user, err := s.userService.FindUserByPasswordResetToken(token)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return NewInvalidTokenError("password reset")
+	}
+
+	// 2. Check token expiry
+	if user.PasswordResetExpiry != nil && user.PasswordResetExpiry.Time().Before(time.Now()) {
+		s.logger.Error("Password reset token expired for user: %s", user.Email)
+		return NewExpiredTokenError("password reset")
+	}
+
+	// 3. Hash new password
+	hashedPassword, hashErr := utils.HashPassword(newPassword)
+	if hashErr != nil {
+		s.logger.Error("Failed to hash password: %v", hashErr)
+		return NewUserError("hashing password", hashErr.Error())
+	}
+
+	// 4. Update password and clear reset token
+	err = s.userService.UpdatePasswordWithResetToken(user.UserId, hashedPassword)
+	if err != nil {
+		s.logger.Error("Failed to update password: %v", err)
+		return err
+	}
+
+	// 5. Invalidate all user sessions (security measure)
+	sessions, sessionErr := s.sessionService.GetActiveSessionsByUserID(user.UserId)
+	if sessionErr != nil {
+		s.logger.Error("Failed to get active sessions: %v", sessionErr)
+		// Don't fail the request, just log the error
+	} else {
+		for _, session := range sessions {
+			invalidateErr := s.sessionService.InvalidateSession(session.SessionID)
+			if invalidateErr != nil {
+				s.logger.Error("Failed to invalidate session %s: %v", session.SessionID, invalidateErr)
+			}
+		}
+	}
+
+	s.logger.Success("Password reset successfully for user: %s", user.Email)
+	return nil
+}
+
+// Helper function to generate cryptographically secure random token
+func generateSecureToken(length int) string {
+	bytes := make([]byte, length)
+	if _, err := rand.Read(bytes); err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(bytes)
 }

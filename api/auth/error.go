@@ -6,14 +6,18 @@ import (
 )
 
 const (
-	ERR_USER              = "ERR_USER"
-	ERR_BAN_USER          = "ERR_BAN_USER"
-	ERR_TOKEN             = "ERR_TOKEN"
-	ERR_SESSION           = "ERR_SESSION"
-	ERR_USER_NOT_FOUND    = "ERR_USER_NOT_FOUND"
-	ERR_SESSION_NOT_FOUND = "ERR_SESSION_NOT_FOUND"
-	ERR_SESSION_EXPIRED   = "ERR_SESSION_EXPIRED"
-	ERR_SESSION_INVALID   = "ERR_SESSION_INVALID"
+	ERR_USER                   = "ERR_USER"
+	ERR_BAN_USER               = "ERR_BAN_USER"
+	ERR_TOKEN                  = "ERR_TOKEN"
+	ERR_SESSION                = "ERR_SESSION"
+	ERR_USER_NOT_FOUND         = "ERR_USER_NOT_FOUND"
+	ERR_SESSION_NOT_FOUND      = "ERR_SESSION_NOT_FOUND"
+	ERR_SESSION_EXPIRED        = "ERR_SESSION_EXPIRED"
+	ERR_SESSION_INVALID        = "ERR_SESSION_INVALID"
+	ERR_INVALID_TOKEN          = "ERR_INVALID_TOKEN"
+	ERR_EXPIRED_TOKEN          = "ERR_EXPIRED_TOKEN"
+	ERR_EMAIL_ALREADY_VERIFIED = "ERR_EMAIL_ALREADY_VERIFIED"
+	ERR_EMAIL_SEND_FAILED      = "ERR_EMAIL_SEND_FAILED"
 )
 
 // User not found error
@@ -136,5 +140,42 @@ func NewSessionError(context string, extra string) network.ApiError {
 		fmt.Sprintf("This may indicate an issue with the session. [Context: %s] [Extra: %s]", context, extra),
 		ERR_SESSION,
 		nil,
+	)
+}
+
+// Invalid token error (for email verification or password reset)
+func NewInvalidTokenError(tokenType string) network.ApiError {
+	return network.NewBadRequestError(
+		"Invalid token",
+		fmt.Sprintf("The %s token is invalid or has already been used", tokenType),
+		nil,
+	)
+}
+
+// Expired token error (for email verification or password reset)
+func NewExpiredTokenError(tokenType string) network.ApiError {
+	return network.NewBadRequestError(
+		"Token expired",
+		fmt.Sprintf("The %s token has expired. Please request a new one", tokenType),
+		nil,
+	)
+}
+
+// Email already verified error
+func NewEmailAlreadyVerifiedError(email string) network.ApiError {
+	return network.NewBadRequestError(
+		"Email already verified",
+		fmt.Sprintf("The email %s has already been verified", email),
+		nil,
+	)
+}
+
+// Email send failed error
+func NewEmailSendError(emailType string, err error) network.ApiError {
+	return network.NewInternalServerError(
+		"Email send failed",
+		fmt.Sprintf("Failed to send %s email. Please try again later", emailType),
+		ERR_EMAIL_SEND_FAILED,
+		err,
 	)
 }

@@ -50,6 +50,10 @@ func (c *authController) MountRoutes(group *gin.RouterGroup) {
 
 	/* PASSWORD MANAGEMENT */
 	group.POST("/forgot-password", c.ForgotPassword)
+	group.PUT("/reset-password", c.ResetPassword)
+
+	/* EMAIL VERIFICATION */
+	group.GET("/verify-email/:token", c.VerifyEmail)
 
 	/* TOKEN MANAGEMENT */
 	group.POST("/refresh-token", c.locationProvider.Middleware(), c.RefreshToken)
@@ -151,4 +155,39 @@ func (c *authController) RefreshToken(ctx *gin.Context) {
 		return
 	}
 	c.Send(ctx).SuccessDataResponse("Token refreshed successfully", data)
+}
+
+func (c *authController) VerifyEmail(ctx *gin.Context) {
+	var req dto.VerifyEmailRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		c.Send(ctx).BadRequestError("Invalid token", "Token is required", err)
+		return
+	}
+
+	user, err := c.authService.VerifyEmail(req.Token)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	response := dto.NewVerifyEmailResponse(
+		"Your email has been verified successfully",
+		*user.GetUserInfo(),
+	)
+	c.Send(ctx).SuccessDataResponse("Email verified successfully", response)
+}
+
+func (c *authController) ResetPassword(ctx *gin.Context) {
+	body, err := network.ReqBody(ctx, dto.NewResetPasswordRequest())
+	if err != nil {
+		return
+	}
+
+	err = c.authService.ResetPassword(body.Token, body.NewPassword)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+
+	c.Send(ctx).SuccessMsgResponse("Password reset successfully. Please login with your new password.")
 }

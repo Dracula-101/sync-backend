@@ -19,6 +19,7 @@ require golang.org/x/term v0.31.0
 require (
 	github.com/cloudinary/cloudinary-go/v2 v2.9.1
 	github.com/google/uuid v1.6.0
+	github.com/sendgrid/sendgrid-go v3.16.1+incompatible
 	github.com/shirou/gopsutil/v3 v3.24.5
 )
 
@@ -28,6 +29,7 @@ require (
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
+	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
