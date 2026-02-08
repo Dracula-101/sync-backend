@@ -1,0 +1,652 @@
+[
+  {
+    "logId": "log_62b91094d8f0",
+    "communityId": "comm_tech_hub_2025",
+    "moderatorId": "usr_marcus_rodriguez_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_917ed9036341",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-07T20:17:32.007587Z"
+  },
+  {
+    "logId": "log_6f86d095934e",
+    "communityId": "comm_gaming_nexus_2025",
+    "moderatorId": "usr_mia_taylor_2025",
+    "actionType": "post_removed",
+    "targetType": "post",
+    "targetId": "post_675846fc0dcd",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-19T20:17:32.007624Z"
+  },
+  {
+    "logId": "log_f3138c0660bb",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "comment_removed",
+    "targetType": "comment",
+    "targetId": "comment_d5ea6e05d641",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-18T20:17:32.007658Z"
+  },
+  {
+    "logId": "log_d498759c7e44",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_8847865797fb",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-01T20:17:32.007682Z"
+  },
+  {
+    "logId": "log_954a3377db14",
+    "communityId": "comm_fitness_warriors_2025",
+    "moderatorId": "usr_isabella_white_2025",
+    "actionType": "comment_removed",
+    "targetType": "comment",
+    "targetId": "comment_be7ec5fe23ea",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-07T20:17:32.007693Z"
+  },
+  {
+    "logId": "log_c3d8871c6256",
+    "communityId": "comm_art_gallery_2025",
+    "moderatorId": "usr_emma_williams_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_dede73f6edf2",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-19T20:17:32.007705Z"
+  },
+  {
+    "logId": "log_f6e84663b8e8",
+    "communityId": "comm_mental_wellness_2025",
+    "moderatorId": "usr_marcus_rodriguez_2025",
+    "actionType": "user_warned",
+    "targetType": "comment",
+    "targetId": "comment_8ce4dc5f2454",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-26T20:17:32.007716Z"
+  },
+  {
+    "logId": "log_e1449167efcd",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_3796f3df2fef",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-27T20:17:32.007737Z"
+  },
+  {
+    "logId": "log_3b159294fcec",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "user_warned",
+    "targetType": "comment",
+    "targetId": "comment_e143bd0c8ea2",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-25T20:17:32.007748Z"
+  },
+  {
+    "logId": "log_9cf7181ee6ae",
+    "communityId": "comm_gaming_nexus_2025",
+    "moderatorId": "usr_mia_taylor_2025",
+    "actionType": "post_removed",
+    "targetType": "post",
+    "targetId": "post_f1c5f8ae92b6",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-24T20:17:32.007760Z"
+  },
+  {
+    "logId": "log_0a45346e1988",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_874034244ca5",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-08T20:17:32.007776Z"
+  },
+  {
+    "logId": "log_00c55e4952b4",
+    "communityId": "comm_wanderlust_2025",
+    "moderatorId": "usr_alex_thompson_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_d7baec474ad3",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-14T20:17:32.007807Z"
+  },
+  {
+    "logId": "log_c65a47749ddb",
+    "communityId": "comm_wanderlust_2025",
+    "moderatorId": "usr_alex_thompson_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_0574e9342e8c",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-16T20:17:32.007846Z"
+  },
+  {
+    "logId": "log_59b7ddfd520a",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_f4c88247578b",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-11T20:17:32.007880Z"
+  },
+  {
+    "logId": "log_600ec5c39c65",
+    "communityId": "comm_music_lovers_2025",
+    "moderatorId": "usr_david_kim_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_3a2517aa4995",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-15T20:17:32.007893Z"
+  },
+  {
+    "logId": "log_ddb4c30e3cc5",
+    "communityId": "comm_gaming_nexus_2025",
+    "moderatorId": "usr_mia_taylor_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_24337db9edc2",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-31T20:17:32.007904Z"
+  },
+  {
+    "logId": "log_3f94d065dabd",
+    "communityId": "comm_music_lovers_2025",
+    "moderatorId": "usr_david_kim_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_4834367ccb8d",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-16T20:17:32.007916Z"
+  },
+  {
+    "logId": "log_830213d55056",
+    "communityId": "comm_tech_hub_2025",
+    "moderatorId": "usr_marcus_rodriguez_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_318ea24596da",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-18T20:17:32.007936Z"
+  },
+  {
+    "logId": "log_d47a286ee292",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_7a5291453b49",
+    "details": {
+      "reason": "Misinformation",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-23T20:17:32.007951Z"
+  },
+  {
+    "logId": "log_12e5b40b7707",
+    "communityId": "comm_music_lovers_2025",
+    "moderatorId": "usr_david_kim_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_50ab374db3b3",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-08T20:17:32.007961Z"
+  },
+  {
+    "logId": "log_f3a4b9c51c8a",
+    "communityId": "comm_fitness_warriors_2025",
+    "moderatorId": "usr_isabella_white_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_5ea9a3bffcc3",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-19T20:17:32.007973Z"
+  },
+  {
+    "logId": "log_5ba2ad285886",
+    "communityId": "comm_gaming_nexus_2025",
+    "moderatorId": "usr_mia_taylor_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_de794f980ee9",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-10T20:17:32.007991Z"
+  },
+  {
+    "logId": "log_9284723adb13",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_0a2cc468ae53",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-17T20:17:32.008002Z"
+  },
+  {
+    "logId": "log_1e2d6220ae45",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "comment_removed",
+    "targetType": "comment",
+    "targetId": "comment_87344f06e006",
+    "details": {
+      "reason": "Misinformation",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-13T20:17:32.008012Z"
+  },
+  {
+    "logId": "log_661e2431306f",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_ef3c958a14a0",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-26T20:17:32.008023Z"
+  },
+  {
+    "logId": "log_5ccbb2d6dc49",
+    "communityId": "comm_gaming_nexus_2025",
+    "moderatorId": "usr_mia_taylor_2025",
+    "actionType": "post_removed",
+    "targetType": "post",
+    "targetId": "post_115ea1bc75cf",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-01T20:17:32.008035Z"
+  },
+  {
+    "logId": "log_cfffaa007d31",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "comment_removed",
+    "targetType": "comment",
+    "targetId": "comment_09355e349743",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-13T20:17:32.008047Z"
+  },
+  {
+    "logId": "log_ceb285ec1109",
+    "communityId": "comm_mental_wellness_2025",
+    "moderatorId": "usr_marcus_rodriguez_2025",
+    "actionType": "post_removed",
+    "targetType": "post",
+    "targetId": "post_4e4b4b36f4ac",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-26T20:17:32.008059Z"
+  },
+  {
+    "logId": "log_99fa558a4fa3",
+    "communityId": "comm_gaming_nexus_2025",
+    "moderatorId": "usr_mia_taylor_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_6296a8e878e8",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-22T20:17:32.008072Z"
+  },
+  {
+    "logId": "log_c9698d6b0abd",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "user_warned",
+    "targetType": "comment",
+    "targetId": "comment_6b7833b61e82",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-27T20:17:32.008083Z"
+  },
+  {
+    "logId": "log_8997a852f0d2",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_3678f442697b",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-15T20:17:32.008093Z"
+  },
+  {
+    "logId": "log_794e28faec50",
+    "communityId": "comm_music_lovers_2025",
+    "moderatorId": "usr_david_kim_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_dbfedfb41888",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-09T20:17:32.008105Z"
+  },
+  {
+    "logId": "log_6694fd85e895",
+    "communityId": "comm_art_gallery_2025",
+    "moderatorId": "usr_emma_williams_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_788e593b0c8d",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-31T20:17:32.008116Z"
+  },
+  {
+    "logId": "log_76dc6a1f718d",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "user_warned",
+    "targetType": "comment",
+    "targetId": "comment_2f22c5ccaabe",
+    "details": {
+      "reason": "Misinformation",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-04T20:17:32.008131Z"
+  },
+  {
+    "logId": "log_469ed3334efe",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_2f5ff4b39068",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-27T20:17:32.008143Z"
+  },
+  {
+    "logId": "log_ac6d5815c24c",
+    "communityId": "comm_mental_wellness_2025",
+    "moderatorId": "usr_marcus_rodriguez_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_a092639d5085",
+    "details": {
+      "reason": "Misinformation",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-22T20:17:32.008154Z"
+  },
+  {
+    "logId": "log_9a0667f62bc1",
+    "communityId": "comm_mental_wellness_2025",
+    "moderatorId": "usr_marcus_rodriguez_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_ad55063a019d",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-03T20:17:32.008165Z"
+  },
+  {
+    "logId": "log_1bb84b8cfc18",
+    "communityId": "comm_music_lovers_2025",
+    "moderatorId": "usr_david_kim_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_db33209f1324",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-21T20:17:32.008185Z"
+  },
+  {
+    "logId": "log_190e81b3e59a",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "user_warned",
+    "targetType": "comment",
+    "targetId": "comment_cd8fabf83ab1",
+    "details": {
+      "reason": "Misinformation",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-03T20:17:32.008197Z"
+  },
+  {
+    "logId": "log_4b5a8b75da65",
+    "communityId": "comm_tech_hub_2025",
+    "moderatorId": "usr_marcus_rodriguez_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_b51f1e68ea81",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-14T20:17:32.008208Z"
+  },
+  {
+    "logId": "log_74b493ff5381",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "user_banned",
+    "targetType": "comment",
+    "targetId": "comment_07bbae473314",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-29T20:17:32.008218Z"
+  },
+  {
+    "logId": "log_2bf35e2bfb12",
+    "communityId": "comm_startup_founders_2025",
+    "moderatorId": "usr_alex_thompson_2025",
+    "actionType": "user_warned",
+    "targetType": "comment",
+    "targetId": "comment_6cdcad7c6933",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-16T20:17:32.008238Z"
+  },
+  {
+    "logId": "log_78768a039171",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_4c659f1c40a3",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-28T20:17:32.008249Z"
+  },
+  {
+    "logId": "log_9f8c815d0d35",
+    "communityId": "comm_music_lovers_2025",
+    "moderatorId": "usr_david_kim_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_c36acaed87cc",
+    "details": {
+      "reason": "Violation of rules",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-02T20:17:32.008260Z"
+  },
+  {
+    "logId": "log_f9fca54ff8f0",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "content_approved",
+    "targetType": "comment",
+    "targetId": "comment_4d8feb529cac",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-27T20:17:32.008272Z"
+  },
+  {
+    "logId": "log_6539de77f76d",
+    "communityId": "comm_fitness_warriors_2025",
+    "moderatorId": "usr_isabella_white_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_52710f6ae311",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-02-01T20:17:32.008283Z"
+  },
+  {
+    "logId": "log_3e63daa47b1d",
+    "communityId": "comm_startup_founders_2025",
+    "moderatorId": "usr_alex_thompson_2025",
+    "actionType": "user_muted",
+    "targetType": "comment",
+    "targetId": "comment_cb63eaf2dcaa",
+    "details": {
+      "reason": "Spam",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-09T20:17:32.008295Z"
+  },
+  {
+    "logId": "log_e098c1080a1a",
+    "communityId": "comm_crypto_traders_2025",
+    "moderatorId": "usr_jake_morrison_2025",
+    "actionType": "post_removed",
+    "targetType": "post",
+    "targetId": "post_457df9352f73",
+    "details": {
+      "reason": "Harassment",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-31T20:17:32.008308Z"
+  },
+  {
+    "logId": "log_88efb3caf1d6",
+    "communityId": "comm_foodie_paradise_2025",
+    "moderatorId": "usr_mason_harris_2025",
+    "actionType": "user_warned",
+    "targetType": "comment",
+    "targetId": "comment_5ab56f8ab639",
+    "details": {
+      "reason": "Off-topic",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-29T20:17:32.008322Z"
+  },
+  {
+    "logId": "log_e8e7f1555b03",
+    "communityId": "comm_fitness_warriors_2025",
+    "moderatorId": "usr_isabella_white_2025",
+    "actionType": "user_warned",
+    "targetType": "comment",
+    "targetId": "comment_24337db9edc2",
+    "details": {
+      "reason": "Misinformation",
+      "details": "Moderator action taken based on community guidelines."
+    },
+    "createdAt": "2026-01-26T20:17:32.008338Z"
+  }
+]

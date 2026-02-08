@@ -1,0 +1,262 @@
+[
+  {
+    "moderatorId": "mod_3f95ea913149",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_tech_hub_2025",
+    "role": "admin",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_alex_thompson_2025",
+    "invitedAt": "2025-11-21T20:17:32.007133Z",
+    "stats": {
+      "contentRemoved": 76,
+      "contentApproved": 206,
+      "usersBanned": 12,
+      "usersMuted": 38,
+      "usersWarned": 86,
+      "reportsProcessed": 179,
+      "lastActiveAt": "2026-02-03T20:17:32.007142Z"
+    },
+    "createdAt": "2025-12-14T20:17:32.007145Z",
+    "updatedAt": "2026-02-07T20:17:32.007148Z"
+  },
+  {
+    "moderatorId": "mod_e8154945dbcc",
+    "userId": "usr_mia_taylor_2025",
+    "communityId": "comm_gaming_nexus_2025",
+    "role": "admin",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_ethan_lee_2025",
+    "invitedAt": "2025-09-24T20:17:32.007180Z",
+    "stats": {
+      "contentRemoved": 103,
+      "contentApproved": 97,
+      "usersBanned": 2,
+      "usersMuted": 27,
+      "usersWarned": 20,
+      "reportsProcessed": 166,
+      "lastActiveAt": "2026-02-03T20:17:32.007190Z"
+    },
+    "createdAt": "2025-11-07T20:17:32.007193Z",
+    "updatedAt": "2026-02-01T20:17:32.007197Z"
+  },
+  {
+    "moderatorId": "mod_124f83fbbd10",
+    "userId": "usr_isabella_white_2025",
+    "communityId": "comm_fitness_warriors_2025",
+    "role": "moderator",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_sarah_chen_2025",
+    "invitedAt": "2025-10-05T20:17:32.007223Z",
+    "stats": {
+      "contentRemoved": 20,
+      "contentApproved": 192,
+      "usersBanned": 17,
+      "usersMuted": 49,
+      "usersWarned": 81,
+      "reportsProcessed": 169,
+      "lastActiveAt": "2026-02-03T20:17:32.007230Z"
+    },
+    "createdAt": "2025-10-09T20:17:32.007232Z",
+    "updatedAt": "2026-02-03T20:17:32.007235Z"
+  },
+  {
+    "moderatorId": "mod_939db5703a55",
+    "userId": "usr_mason_harris_2025",
+    "communityId": "comm_foodie_paradise_2025",
+    "role": "moderator",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_alex_thompson_2025",
+    "invitedAt": "2025-09-19T20:17:32.007263Z",
+    "stats": {
+      "contentRemoved": 189,
+      "contentApproved": 347,
+      "usersBanned": 19,
+      "usersMuted": 7,
+      "usersWarned": 37,
+      "reportsProcessed": 284,
+      "lastActiveAt": "2026-02-07T20:17:32.007268Z"
+    },
+    "createdAt": "2025-11-26T20:17:32.007270Z",
+    "updatedAt": "2026-02-03T20:17:32.007272Z"
+  },
+  {
+    "moderatorId": "mod_fef4cae8f7fa",
+    "userId": "usr_emma_williams_2025",
+    "communityId": "comm_art_gallery_2025",
+    "role": "moderator",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_jake_morrison_2025",
+    "invitedAt": "2025-10-09T20:17:32.007284Z",
+    "stats": {
+      "contentRemoved": 183,
+      "contentApproved": 446,
+      "usersBanned": 4,
+      "usersMuted": 44,
+      "usersWarned": 29,
+      "reportsProcessed": 224,
+      "lastActiveAt": "2026-02-06T20:17:32.007289Z"
+    },
+    "createdAt": "2025-09-03T20:17:32.007291Z",
+    "updatedAt": "2026-02-03T20:17:32.007294Z"
+  },
+  {
+    "moderatorId": "mod_edb881ba1bc3",
+    "userId": "usr_jake_morrison_2025",
+    "communityId": "comm_crypto_traders_2025",
+    "role": "moderator",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_liam_anderson_2025",
+    "invitedAt": "2025-09-07T20:17:32.007310Z",
+    "stats": {
+      "contentRemoved": 179,
+      "contentApproved": 305,
+      "usersBanned": 5,
+      "usersMuted": 26,
+      "usersWarned": 70,
+      "reportsProcessed": 127,
+      "lastActiveAt": "2026-02-02T20:17:32.007320Z"
+    },
+    "createdAt": "2025-07-31T20:17:32.007322Z",
+    "updatedAt": "2026-01-29T20:17:32.007324Z"
+  },
+  {
+    "moderatorId": "mod_0b6bc929d5f8",
+    "userId": "usr_alex_thompson_2025",
+    "communityId": "comm_wanderlust_2025",
+    "role": "admin",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_ethan_lee_2025",
+    "invitedAt": "2025-10-04T20:17:32.007422Z",
+    "stats": {
+      "contentRemoved": 82,
+      "contentApproved": 378,
+      "usersBanned": 2,
+      "usersMuted": 35,
+      "usersWarned": 93,
+      "reportsProcessed": 297,
+      "lastActiveAt": "2026-02-05T20:17:32.007430Z"
+    },
+    "createdAt": "2025-11-18T20:17:32.007432Z",
+    "updatedAt": "2026-02-03T20:17:32.007434Z"
+  },
+  {
+    "moderatorId": "mod_559eca63820f",
+    "userId": "usr_david_kim_2025",
+    "communityId": "comm_music_lovers_2025",
+    "role": "moderator",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_jake_morrison_2025",
+    "invitedAt": "2025-09-01T20:17:32.007455Z",
+    "stats": {
+      "contentRemoved": 136,
+      "contentApproved": 148,
+      "usersBanned": 14,
+      "usersMuted": 50,
+      "usersWarned": 95,
+      "reportsProcessed": 285,
+      "lastActiveAt": "2026-02-06T20:17:32.007461Z"
+    },
+    "createdAt": "2025-09-16T20:17:32.007462Z",
+    "updatedAt": "2026-02-01T20:17:32.007465Z"
+  },
+  {
+    "moderatorId": "mod_4638c5e24936",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_mental_wellness_2025",
+    "role": "admin",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_ava_garcia_2025",
+    "invitedAt": "2025-08-28T20:17:32.007485Z",
+    "stats": {
+      "contentRemoved": 191,
+      "contentApproved": 226,
+      "usersBanned": 10,
+      "usersMuted": 38,
+      "usersWarned": 80,
+      "reportsProcessed": 169,
+      "lastActiveAt": "2026-02-05T20:17:32.007491Z"
+    },
+    "createdAt": "2025-12-18T20:17:32.007492Z",
+    "updatedAt": "2026-02-07T20:17:32.007495Z"
+  },
+  {
+    "moderatorId": "mod_d7457b37a7f5",
+    "userId": "usr_alex_thompson_2025",
+    "communityId": "comm_startup_founders_2025",
+    "role": "moderator",
+    "status": "active",
+    "permissions": [
+      "manage_posts",
+      "manage_comments",
+      "manage_users",
+      "manage_reports"
+    ],
+    "invitedBy": "usr_david_kim_2025",
+    "invitedAt": "2025-08-31T20:17:32.007522Z",
+    "stats": {
+      "contentRemoved": 60,
+      "contentApproved": 229,
+      "usersBanned": 15,
+      "usersMuted": 46,
+      "usersWarned": 77,
+      "reportsProcessed": 70,
+      "lastActiveAt": "2026-02-02T20:17:32.007527Z"
+    },
+    "createdAt": "2025-09-20T20:17:32.007529Z",
+    "updatedAt": "2026-02-07T20:17:32.007532Z"
+  }
+]

@@ -1,0 +1,1109 @@
+[
+  {
+    "userId": "usr_alex_thompson_2025",
+    "username": "alex_thompson",
+    "email": "alex.thompson@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Tech enthusiast, coffee lover, and part-time photographer. Always learning something new! 📚☕",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_001",
+        "url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_001",
+        "url": "https://images.unsplash.com/photo-1557683316-973673baf926?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 557,
+      "comments": 1460,
+      "total": 2017
+    },
+    "followers": [],
+    "follows": [
+      "usr_noah_brown_2025",
+      "usr_sarah_chen_2025",
+      "usr_liam_anderson_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "dark",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Eastern Standard Time",
+        "timezone": "America/Los_Angeles"
+      },
+      "location": "San Francisco, USA",
+      "notifications": {
+        "email": false,
+        "push": false
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": false
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "ios",
+        "token": "fcm_token_alex_thompson_001",
+        "deviceId": "PixelPro_alex_thompson"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-05-04T20:16:14.171643Z",
+    "updatedAt": "2026-02-05T20:16:14.171667Z",
+    "lastSeen": "2026-02-06T20:16:14.171670Z"
+  },
+  {
+    "userId": "usr_sarah_chen_2025",
+    "username": "sarah_chen",
+    "email": "sarah.chen@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Software engineer by day, gamer by night 🎮 | Open source contributor | Dog mom to Luna 🐕",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_002",
+        "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_002",
+        "url": "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 726,
+      "comments": 2607,
+      "total": 3333
+    },
+    "followers": [],
+    "follows": [
+      "usr_ethan_lee_2025",
+      "usr_mason_harris_2025",
+      "usr_mason_harris_2025",
+      "usr_mia_taylor_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "dark",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Eastern Standard Time",
+        "timezone": "America/Los_Angeles"
+      },
+      "location": "New York, USA",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": false
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "android",
+        "token": "fcm_token_sarah_chen_001",
+        "deviceId": "PixelPro_sarah_chen"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-11-24T20:16:14.171728Z",
+    "updatedAt": "2026-02-03T20:16:14.171734Z",
+    "lastSeen": "2026-02-05T20:16:14.171739Z"
+  },
+  {
+    "userId": "usr_marcus_rodriguez_2025",
+    "username": "marcus_rodriguez",
+    "email": "marcus.rodriguez@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Fitness coach & nutrition expert 💪 | Marathon runner | Helping people achieve their health goals 🏃",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_003",
+        "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_003",
+        "url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 518,
+      "comments": 1107,
+      "total": 1625
+    },
+    "followers": [],
+    "follows": [
+      "usr_noah_brown_2025",
+      "usr_isabella_white_2025",
+      "usr_alex_thompson_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "auto",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Eastern Standard Time",
+        "timezone": "Europe/London"
+      },
+      "location": "London, UK",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": false
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "ios",
+        "token": "fcm_token_marcus_rodriguez_001",
+        "deviceId": "PixelPro_marcus_rodriguez"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-08-15T20:16:14.171780Z",
+    "updatedAt": "2026-02-06T20:16:14.171784Z",
+    "lastSeen": "2026-02-07T20:16:14.171786Z"
+  },
+  {
+    "userId": "usr_emma_williams_2025",
+    "username": "emma_williams",
+    "email": "emma.williams@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Artist & designer 🎨 | Creating digital and traditional art | Commission work available! ✨",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_004",
+        "url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_004",
+        "url": "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 286,
+      "comments": 676,
+      "total": 962
+    },
+    "followers": [],
+    "follows": [
+      "usr_alex_thompson_2025",
+      "usr_jake_morrison_2025",
+      "usr_sophia_johnson_2025",
+      "usr_ava_garcia_2025",
+      "usr_sarah_chen_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "auto",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Eastern Standard Time",
+        "timezone": "Europe/London"
+      },
+      "location": "Berlin, Germany",
+      "notifications": {
+        "email": false,
+        "push": false
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": true
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "ios",
+        "token": "apn_token_emma_williams_001",
+        "deviceId": "iPhone14Pro_emma_williams"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-11-18T20:16:14.171850Z",
+    "updatedAt": "2026-02-05T20:16:14.171854Z",
+    "lastSeen": "2026-02-05T20:16:14.171856Z"
+  },
+  {
+    "userId": "usr_jake_morrison_2025",
+    "username": "jake_morrison",
+    "email": "jake.morrison@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Indie game developer 🎮 | Building worlds one pixel at a time | Check out my latest project! 🚀",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_005",
+        "url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_005",
+        "url": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 642,
+      "comments": 2469,
+      "total": 3111
+    },
+    "followers": [],
+    "follows": [
+      "usr_ava_garcia_2025",
+      "usr_alex_thompson_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "light",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Pacific Standard Time",
+        "timezone": "Europe/Paris"
+      },
+      "location": "Tokyo, Japan",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": true
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "android",
+        "token": "apn_token_jake_morrison_001",
+        "deviceId": "PixelPro_jake_morrison"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-07-27T20:16:14.171887Z",
+    "updatedAt": "2026-02-04T20:16:14.171891Z",
+    "lastSeen": "2026-02-05T20:16:14.171893Z"
+  },
+  {
+    "userId": "usr_olivia_martinez_2025",
+    "username": "olivia_martinez",
+    "email": "olivia.martinez@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Food blogger & recipe creator 👩‍🍳 | Sharing delicious recipes daily | Vegan advocate 🌱",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_006",
+        "url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_006",
+        "url": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 589,
+      "comments": 2643,
+      "total": 3232
+    },
+    "followers": [],
+    "follows": [
+      "usr_david_kim_2025",
+      "usr_emma_williams_2025",
+      "usr_sarah_chen_2025",
+      "usr_noah_brown_2025",
+      "usr_noah_brown_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "dark",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Pacific Standard Time",
+        "timezone": "America/New_York"
+      },
+      "location": "Berlin, Germany",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": true
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "ios",
+        "token": "fcm_token_olivia_martinez_001",
+        "deviceId": "iPhone14Pro_olivia_martinez"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-08-06T20:16:14.171929Z",
+    "updatedAt": "2026-02-01T20:16:14.171933Z",
+    "lastSeen": "2026-02-05T20:16:14.171934Z"
+  },
+  {
+    "userId": "usr_david_kim_2025",
+    "username": "david_kim",
+    "email": "david.kim@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Crypto investor & blockchain enthusiast ₿ | DeFi explorer | HODL life 🚀",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_007",
+        "url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_007",
+        "url": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 721,
+      "comments": 1761,
+      "total": 2482
+    },
+    "followers": [],
+    "follows": [
+      "usr_mia_taylor_2025",
+      "usr_isabella_white_2025",
+      "usr_ethan_lee_2025",
+      "usr_jake_morrison_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "light",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Eastern Standard Time",
+        "timezone": "Europe/Paris"
+      },
+      "location": "Berlin, Germany",
+      "notifications": {
+        "email": true,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": true
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "ios",
+        "token": "fcm_token_david_kim_001",
+        "deviceId": "PixelPro_david_kim"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-05-12T20:16:14.171966Z",
+    "updatedAt": "2026-02-01T20:16:14.171970Z",
+    "lastSeen": "2026-02-05T20:16:14.171971Z"
+  },
+  {
+    "userId": "usr_sophia_johnson_2025",
+    "username": "sophia_johnson",
+    "email": "sophia.johnson@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Travel photographer 📸 | 52 countries and counting | Living the nomad life ✈️🌍",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_008",
+        "url": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_008",
+        "url": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 709,
+      "comments": 911,
+      "total": 1620
+    },
+    "followers": [],
+    "follows": [
+      "usr_ava_garcia_2025",
+      "usr_marcus_rodriguez_2025",
+      "usr_sarah_chen_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "light",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Eastern Standard Time",
+        "timezone": "America/New_York"
+      },
+      "location": "San Francisco, USA",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": false
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "ios",
+        "token": "fcm_token_sophia_johnson_001",
+        "deviceId": "PixelPro_sophia_johnson"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-05-08T20:16:14.172001Z",
+    "updatedAt": "2026-02-01T20:16:14.172004Z",
+    "lastSeen": "2026-02-06T20:16:14.172006Z"
+  },
+  {
+    "userId": "usr_liam_anderson_2025",
+    "username": "liam_anderson",
+    "email": "liam.anderson@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Music producer & DJ 🎵 | Electronic music lover | Dropping beats worldwide 🔊",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_009",
+        "url": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_009",
+        "url": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 538,
+      "comments": 908,
+      "total": 1446
+    },
+    "followers": [],
+    "follows": [
+      "usr_sophia_johnson_2025",
+      "usr_olivia_martinez_2025",
+      "usr_sophia_johnson_2025",
+      "usr_jake_morrison_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "dark",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "GMT",
+        "timezone": "Europe/Paris"
+      },
+      "location": "London, UK",
+      "notifications": {
+        "email": true,
+        "push": false
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": true
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [],
+    "loginHistory": [],
+    "createdAt": "2025-08-24T20:16:14.172040Z",
+    "updatedAt": "2026-02-05T20:16:14.172043Z",
+    "lastSeen": "2026-02-05T20:16:14.172045Z"
+  },
+  {
+    "userId": "usr_mia_taylor_2025",
+    "username": "mia_taylor",
+    "email": "mia.taylor@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Mental health advocate 🧘 | Psychology student | Spreading positivity one post at a time 💚",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_010",
+        "url": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_010",
+        "url": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 322,
+      "comments": 2899,
+      "total": 3221
+    },
+    "followers": [],
+    "follows": [
+      "usr_jake_morrison_2025",
+      "usr_liam_anderson_2025",
+      "usr_david_kim_2025",
+      "usr_liam_anderson_2025",
+      "usr_ava_garcia_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "dark",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "GMT",
+        "timezone": "America/Los_Angeles"
+      },
+      "location": "Berlin, Germany",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": false
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [],
+    "loginHistory": [],
+    "createdAt": "2025-06-01T20:16:14.172075Z",
+    "updatedAt": "2026-01-29T20:16:14.172079Z",
+    "lastSeen": "2026-02-06T20:16:14.172080Z"
+  },
+  {
+    "userId": "usr_noah_brown_2025",
+    "username": "noah_brown",
+    "email": "noah.brown@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Entrepreneur & startup founder 🚀 | Building the future of tech | Angel investor 💼",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_011",
+        "url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_011",
+        "url": "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 529,
+      "comments": 1379,
+      "total": 1908
+    },
+    "followers": [],
+    "follows": [
+      "usr_liam_anderson_2025",
+      "usr_sarah_chen_2025",
+      "usr_david_kim_2025",
+      "usr_isabella_white_2025",
+      "usr_marcus_rodriguez_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "auto",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Central European Time",
+        "timezone": "Europe/London"
+      },
+      "location": "London, UK",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": true
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "ios",
+        "token": "fcm_token_noah_brown_001",
+        "deviceId": "GalaxyS23_noah_brown"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-09-03T20:16:14.172110Z",
+    "updatedAt": "2026-01-28T20:16:14.172117Z",
+    "lastSeen": "2026-02-07T20:16:14.172121Z"
+  },
+  {
+    "userId": "usr_ava_garcia_2025",
+    "username": "ava_garcia",
+    "email": "ava.garcia@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Data scientist & AI researcher 🤖 | Making sense of big data | Python enthusiast 🐍",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_012",
+        "url": "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_012",
+        "url": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 610,
+      "comments": 1614,
+      "total": 2224
+    },
+    "followers": [],
+    "follows": [
+      "usr_liam_anderson_2025",
+      "usr_isabella_white_2025",
+      "usr_mason_harris_2025",
+      "usr_marcus_rodriguez_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "light",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "GMT",
+        "timezone": "Europe/Paris"
+      },
+      "location": "San Francisco, USA",
+      "notifications": {
+        "email": true,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": false
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [
+      {
+        "type": "android",
+        "token": "apn_token_ava_garcia_001",
+        "deviceId": "PixelPro_ava_garcia"
+      }
+    ],
+    "loginHistory": [],
+    "createdAt": "2025-12-03T20:16:14.172157Z",
+    "updatedAt": "2026-02-06T20:16:14.172166Z",
+    "lastSeen": "2026-02-07T20:16:14.172168Z"
+  },
+  {
+    "userId": "usr_ethan_lee_2025",
+    "username": "ethan_lee",
+    "email": "ethan.lee@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Professional photographer 📷 | Nature & wildlife specialist | Canon shooter",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_013",
+        "url": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_013",
+        "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 411,
+      "comments": 715,
+      "total": 1126
+    },
+    "followers": [],
+    "follows": [
+      "usr_sophia_johnson_2025",
+      "usr_david_kim_2025",
+      "usr_marcus_rodriguez_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "auto",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Central European Time",
+        "timezone": "Europe/Paris"
+      },
+      "location": "San Francisco, USA",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": false
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [],
+    "loginHistory": [],
+    "createdAt": "2025-07-13T20:16:14.172203Z",
+    "updatedAt": "2026-02-03T20:16:14.172206Z",
+    "lastSeen": "2026-02-06T20:16:14.172208Z"
+  },
+  {
+    "userId": "usr_isabella_white_2025",
+    "username": "isabella_white",
+    "email": "isabella.white@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Content creator & influencer ✨ | Fashion & lifestyle | Partnering with brands I love",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_014",
+        "url": "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_014",
+        "url": "https://images.unsplash.com/photo-1523381294911-8d3cead13475?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 501,
+      "comments": 739,
+      "total": 1240
+    },
+    "followers": [],
+    "follows": [
+      "usr_david_kim_2025",
+      "usr_ava_garcia_2025",
+      "usr_alex_thompson_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "light",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Eastern Standard Time",
+        "timezone": "Europe/London"
+      },
+      "location": "New York, USA",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": true
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [],
+    "loginHistory": [],
+    "createdAt": "2025-12-15T20:16:14.172241Z",
+    "updatedAt": "2026-02-01T20:16:14.172244Z",
+    "lastSeen": "2026-02-05T20:16:14.172246Z"
+  },
+  {
+    "userId": "usr_mason_harris_2025",
+    "username": "mason_harris",
+    "email": "mason.harris@email.com",
+    "passwordHash": "$2a$12$RQSiNW6EHN/ogtNEkzqAKOgx1T9V3KrRAbsXfmOeI4UMyvJO5okBC",
+    "status": "active",
+    "verifiedEmail": true,
+    "bio": "Full-stack developer 💻 | Open source maintainer | Coffee-driven coder ☕",
+    "avatar": {
+      "profile": {
+        "id": "prof_img_015",
+        "url": "https://images.unsplash.com/photo-1552058544-f2b08422138a?w=400",
+        "width": 400,
+        "height": 400
+      },
+      "background": {
+        "id": "bg_img_015",
+        "url": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200",
+        "width": 1200,
+        "height": 400
+      }
+    },
+    "synergy": {
+      "posts": 723,
+      "comments": 1111,
+      "total": 1834
+    },
+    "followers": [],
+    "follows": [
+      "usr_jake_morrison_2025",
+      "usr_marcus_rodriguez_2025",
+      "usr_olivia_martinez_2025",
+      "usr_ethan_lee_2025"
+    ],
+    "joinedWavelengths": [],
+    "moderatedWavelengths": [],
+    "preferences": {
+      "theme": "dark",
+      "language": {
+        "displayname": "English",
+        "nativename": "English"
+      },
+      "timezone": {
+        "displayname": "Central European Time",
+        "timezone": "America/New_York"
+      },
+      "location": "New York, USA",
+      "notifications": {
+        "email": false,
+        "push": true
+      },
+      "contentSettings": {
+        "showAdultContent": false,
+        "showSensitiveContent": true
+      },
+      "privacySettings": {
+        "isProfileVisible": true,
+        "isEmailVisible": false,
+        "isJoinedWavelengthsVisible": true,
+        "followersVisible": true
+      },
+      "blockList": []
+    },
+    "providers": [],
+    "deviceTokens": [],
+    "loginHistory": [],
+    "createdAt": "2025-08-21T20:16:14.172275Z",
+    "updatedAt": "2026-01-31T20:16:14.172278Z",
+    "lastSeen": "2026-02-05T20:16:14.172280Z"
+  }
+]

@@ -1,0 +1,902 @@
+[
+  {
+    "emailId": "email_2eb77b847d62",
+    "to": "ava.garcia@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "delivered",
+    "sentAt": "2025-12-28T20:17:32.008383Z",
+    "createdAt": "2026-01-18T20:17:32.008386Z"
+  },
+  {
+    "emailId": "email_5f73ab91ba87",
+    "to": "marcus.rodriguez@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "sent",
+    "sentAt": "2026-02-05T20:17:32.008400Z",
+    "createdAt": "2025-12-11T20:17:32.008402Z"
+  },
+  {
+    "emailId": "email_03986239311c",
+    "to": "david.kim@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "failed",
+    "sentAt": "2026-01-02T20:17:32.008417Z",
+    "createdAt": "2025-12-12T20:17:32.008420Z"
+  },
+  {
+    "emailId": "email_91237bc2bd49",
+    "to": "mason.harris@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "opened",
+    "sentAt": "2025-12-29T20:17:32.008431Z",
+    "createdAt": "2026-01-26T20:17:32.008434Z"
+  },
+  {
+    "emailId": "email_19f84083c5b5",
+    "to": "olivia.martinez@email.com",
+    "type": "community_invite",
+    "subject": "You've been invited to moderate a community",
+    "status": "sent",
+    "sentAt": "2026-02-07T20:17:32.008450Z",
+    "createdAt": "2026-01-31T20:17:32.008453Z"
+  },
+  {
+    "emailId": "email_946f02fc285c",
+    "to": "alex.thompson@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "delivered",
+    "sentAt": "2026-02-04T20:17:32.008465Z",
+    "createdAt": "2026-01-03T20:17:32.008467Z"
+  },
+  {
+    "emailId": "email_fea2d9824354",
+    "to": "ava.garcia@email.com",
+    "type": "community_invite",
+    "subject": "You've been invited to moderate a community",
+    "status": "sent",
+    "sentAt": "2026-01-19T20:17:32.008478Z",
+    "createdAt": "2026-02-03T20:17:32.008480Z"
+  },
+  {
+    "emailId": "email_14cb8b67be3d",
+    "to": "alex.thompson@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "sent",
+    "sentAt": "2026-01-28T20:17:32.008500Z",
+    "createdAt": "2025-12-20T20:17:32.008502Z"
+  },
+  {
+    "emailId": "email_9e4c59f15af7",
+    "to": "ethan.lee@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "failed",
+    "sentAt": "2026-02-07T20:17:32.008529Z",
+    "createdAt": "2026-01-14T20:17:32.008531Z"
+  },
+  {
+    "emailId": "email_73fd01834b81",
+    "to": "emma.williams@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "sent",
+    "sentAt": "2025-12-12T20:17:32.008543Z",
+    "createdAt": "2026-01-26T20:17:32.008545Z"
+  },
+  {
+    "emailId": "email_37cb6ac2f7d8",
+    "to": "ava.garcia@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "sent",
+    "sentAt": "2026-01-12T20:17:32.008556Z",
+    "createdAt": "2026-01-15T20:17:32.008559Z"
+  },
+  {
+    "emailId": "email_7466e5f4b15c",
+    "to": "ava.garcia@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "delivered",
+    "sentAt": "2026-02-05T20:17:32.008572Z",
+    "createdAt": "2026-02-04T20:17:32.008574Z"
+  },
+  {
+    "emailId": "email_9e5c134f1c4c",
+    "to": "isabella.white@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "sent",
+    "sentAt": "2026-02-02T20:17:32.008586Z",
+    "createdAt": "2025-12-29T20:17:32.008588Z"
+  },
+  {
+    "emailId": "email_0bae338f903f",
+    "to": "sophia.johnson@email.com",
+    "type": "community_invite",
+    "subject": "You've been invited to moderate a community",
+    "status": "failed",
+    "sentAt": "2025-12-29T20:17:32.008599Z",
+    "createdAt": "2026-01-19T20:17:32.008602Z"
+  },
+  {
+    "emailId": "email_cda05037e7c2",
+    "to": "mason.harris@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "opened",
+    "sentAt": "2025-12-22T20:17:32.008616Z",
+    "createdAt": "2026-01-14T20:17:32.008619Z"
+  },
+  {
+    "emailId": "email_9e7a0de1f665",
+    "to": "david.kim@email.com",
+    "type": "community_invite",
+    "subject": "You've been invited to moderate a community",
+    "status": "opened",
+    "sentAt": "2026-01-26T20:17:32.008633Z",
+    "createdAt": "2026-01-06T20:17:32.008635Z"
+  },
+  {
+    "emailId": "email_7be213cc873d",
+    "to": "sophia.johnson@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "delivered",
+    "sentAt": "2026-01-16T20:17:32.008648Z",
+    "createdAt": "2026-01-12T20:17:32.008651Z"
+  },
+  {
+    "emailId": "email_7b3797dbfaa2",
+    "to": "david.kim@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "failed",
+    "sentAt": "2025-12-13T20:17:32.008668Z",
+    "createdAt": "2026-01-29T20:17:32.008671Z"
+  },
+  {
+    "emailId": "email_301eda5f0b96",
+    "to": "ava.garcia@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "failed",
+    "sentAt": "2025-12-19T20:17:32.008683Z",
+    "createdAt": "2025-12-20T20:17:32.008685Z"
+  },
+  {
+    "emailId": "email_0536e2c6ff9b",
+    "to": "liam.anderson@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "delivered",
+    "sentAt": "2025-12-13T20:17:32.008699Z",
+    "createdAt": "2026-01-04T20:17:32.008701Z"
+  },
+  {
+    "emailId": "email_7f2a45144939",
+    "to": "emma.williams@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "opened",
+    "sentAt": "2026-01-02T20:17:32.008715Z",
+    "createdAt": "2026-01-25T20:17:32.008717Z"
+  },
+  {
+    "emailId": "email_a741a31d56f2",
+    "to": "sophia.johnson@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "failed",
+    "sentAt": "2026-02-06T20:17:32.008727Z",
+    "createdAt": "2025-12-21T20:17:32.008730Z"
+  },
+  {
+    "emailId": "email_1dea8fc75711",
+    "to": "david.kim@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "sent",
+    "sentAt": "2026-01-18T20:17:32.008740Z",
+    "createdAt": "2026-02-01T20:17:32.008743Z"
+  },
+  {
+    "emailId": "email_443d998d84b4",
+    "to": "isabella.white@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "sent",
+    "sentAt": "2026-01-02T20:17:32.008754Z",
+    "createdAt": "2025-12-21T20:17:32.008757Z"
+  },
+  {
+    "emailId": "email_6dcdc4d7806a",
+    "to": "liam.anderson@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "delivered",
+    "sentAt": "2026-01-28T20:17:32.008767Z",
+    "createdAt": "2026-01-11T20:17:32.008770Z"
+  },
+  {
+    "emailId": "email_2e62fee5716f",
+    "to": "sarah.chen@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "opened",
+    "sentAt": "2025-12-31T20:17:32.008781Z",
+    "createdAt": "2026-01-16T20:17:32.008784Z"
+  },
+  {
+    "emailId": "email_24c4e7b6a32e",
+    "to": "emma.williams@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "opened",
+    "sentAt": "2026-02-02T20:17:32.008819Z",
+    "createdAt": "2025-12-10T20:17:32.008823Z"
+  },
+  {
+    "emailId": "email_9de3f23e3881",
+    "to": "ethan.lee@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "delivered",
+    "sentAt": "2026-01-22T20:17:32.008834Z",
+    "createdAt": "2026-01-07T20:17:32.008836Z"
+  },
+  {
+    "emailId": "email_b0428c9af97d",
+    "to": "olivia.martinez@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "delivered",
+    "sentAt": "2025-12-29T20:17:32.008854Z",
+    "createdAt": "2025-12-23T20:17:32.008857Z"
+  },
+  {
+    "emailId": "email_c15ea57bc926",
+    "to": "noah.brown@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "delivered",
+    "sentAt": "2025-12-30T20:17:32.008867Z",
+    "createdAt": "2025-12-22T20:17:32.008870Z"
+  },
+  {
+    "emailId": "email_ae0ebd569a9e",
+    "to": "marcus.rodriguez@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "delivered",
+    "sentAt": "2026-01-28T20:17:32.008881Z",
+    "createdAt": "2026-02-03T20:17:32.008884Z"
+  },
+  {
+    "emailId": "email_47eb5f5acaee",
+    "to": "marcus.rodriguez@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "delivered",
+    "sentAt": "2025-12-28T20:17:32.008895Z",
+    "createdAt": "2026-01-26T20:17:32.008898Z"
+  },
+  {
+    "emailId": "email_9b2e1f6277eb",
+    "to": "sarah.chen@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "sent",
+    "sentAt": "2026-02-01T20:17:32.008909Z",
+    "createdAt": "2026-02-03T20:17:32.008911Z"
+  },
+  {
+    "emailId": "email_f9c87ebce8d9",
+    "to": "isabella.white@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "failed",
+    "sentAt": "2026-01-25T20:17:32.008924Z",
+    "createdAt": "2025-12-15T20:17:32.008928Z"
+  },
+  {
+    "emailId": "email_f2a49087fd5d",
+    "to": "sarah.chen@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "failed",
+    "sentAt": "2026-01-23T20:17:32.008940Z",
+    "createdAt": "2026-01-02T20:17:32.008944Z"
+  },
+  {
+    "emailId": "email_20da9b545763",
+    "to": "liam.anderson@email.com",
+    "type": "community_invite",
+    "subject": "You've been invited to moderate a community",
+    "status": "delivered",
+    "sentAt": "2026-01-22T20:17:32.008957Z",
+    "createdAt": "2025-12-22T20:17:32.008961Z"
+  },
+  {
+    "emailId": "email_a9ff78fd63a0",
+    "to": "olivia.martinez@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "sent",
+    "sentAt": "2026-02-07T20:17:32.008975Z",
+    "createdAt": "2026-01-25T20:17:32.008978Z"
+  },
+  {
+    "emailId": "email_aea82ce99347",
+    "to": "isabella.white@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "opened",
+    "sentAt": "2025-12-21T20:17:32.008988Z",
+    "createdAt": "2025-12-19T20:17:32.008990Z"
+  },
+  {
+    "emailId": "email_15f2c54b8712",
+    "to": "isabella.white@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "sent",
+    "sentAt": "2025-12-28T20:17:32.009001Z",
+    "createdAt": "2026-01-07T20:17:32.009003Z"
+  },
+  {
+    "emailId": "email_8871d4453aa0",
+    "to": "sarah.chen@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "opened",
+    "sentAt": "2026-01-13T20:17:32.009013Z",
+    "createdAt": "2026-01-22T20:17:32.009016Z"
+  },
+  {
+    "emailId": "email_c885fa90d9a6",
+    "to": "liam.anderson@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "failed",
+    "sentAt": "2026-02-07T20:17:32.009031Z",
+    "createdAt": "2025-12-26T20:17:32.009034Z"
+  },
+  {
+    "emailId": "email_b350ea7b148e",
+    "to": "mason.harris@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "failed",
+    "sentAt": "2025-12-12T20:17:32.009050Z",
+    "createdAt": "2026-01-08T20:17:32.009053Z"
+  },
+  {
+    "emailId": "email_e1588db56e10",
+    "to": "sophia.johnson@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "delivered",
+    "sentAt": "2026-01-17T20:17:32.009063Z",
+    "createdAt": "2026-01-09T20:17:32.009065Z"
+  },
+  {
+    "emailId": "email_d95902e93f31",
+    "to": "mia.taylor@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "delivered",
+    "sentAt": "2026-01-18T20:17:32.009076Z",
+    "createdAt": "2025-12-25T20:17:32.009079Z"
+  },
+  {
+    "emailId": "email_210991659dcd",
+    "to": "liam.anderson@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "failed",
+    "sentAt": "2025-12-15T20:17:32.009089Z",
+    "createdAt": "2025-12-28T20:17:32.009091Z"
+  },
+  {
+    "emailId": "email_876436ceb63a",
+    "to": "ethan.lee@email.com",
+    "type": "community_invite",
+    "subject": "You've been invited to moderate a community",
+    "status": "opened",
+    "sentAt": "2025-12-09T20:17:32.009103Z",
+    "createdAt": "2026-02-04T20:17:32.009105Z"
+  },
+  {
+    "emailId": "email_0472914db5b0",
+    "to": "emma.williams@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "failed",
+    "sentAt": "2026-01-26T20:17:32.009116Z",
+    "createdAt": "2026-02-07T20:17:32.009119Z"
+  },
+  {
+    "emailId": "email_cd9cbe643a83",
+    "to": "emma.williams@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "sent",
+    "sentAt": "2025-12-12T20:17:32.009133Z",
+    "createdAt": "2025-12-30T20:17:32.009135Z"
+  },
+  {
+    "emailId": "email_a2aeae852f7c",
+    "to": "marcus.rodriguez@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "delivered",
+    "sentAt": "2026-02-07T20:17:32.009146Z",
+    "createdAt": "2026-02-05T20:17:32.009148Z"
+  },
+  {
+    "emailId": "email_cb8de0b3b2f0",
+    "to": "emma.williams@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "opened",
+    "sentAt": "2025-12-14T20:17:32.009158Z",
+    "createdAt": "2026-02-03T20:17:32.009160Z"
+  },
+  {
+    "emailId": "email_1fa4853b7923",
+    "to": "ava.garcia@email.com",
+    "type": "community_invite",
+    "subject": "You've been invited to moderate a community",
+    "status": "delivered",
+    "sentAt": "2025-12-15T20:17:32.009170Z",
+    "createdAt": "2026-02-02T20:17:32.009177Z"
+  },
+  {
+    "emailId": "email_24e4ccaba46d",
+    "to": "ava.garcia@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "opened",
+    "sentAt": "2025-12-21T20:17:32.009190Z",
+    "createdAt": "2026-01-28T20:17:32.009193Z"
+  },
+  {
+    "emailId": "email_c1c79ef2bc65",
+    "to": "isabella.white@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "delivered",
+    "sentAt": "2025-12-20T20:17:32.009207Z",
+    "createdAt": "2025-12-12T20:17:32.009210Z"
+  },
+  {
+    "emailId": "email_ffbe360c581d",
+    "to": "ethan.lee@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "sent",
+    "sentAt": "2025-12-11T20:17:32.009221Z",
+    "createdAt": "2025-12-23T20:17:32.009224Z"
+  },
+  {
+    "emailId": "email_6b356251103a",
+    "to": "noah.brown@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "failed",
+    "sentAt": "2026-01-09T20:17:32.009237Z",
+    "createdAt": "2026-01-19T20:17:32.009240Z"
+  },
+  {
+    "emailId": "email_be388d81f85d",
+    "to": "liam.anderson@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "delivered",
+    "sentAt": "2026-01-12T20:17:32.009251Z",
+    "createdAt": "2026-01-30T20:17:32.009253Z"
+  },
+  {
+    "emailId": "email_7e4dd7aaf9fc",
+    "to": "ethan.lee@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "failed",
+    "sentAt": "2025-12-12T20:17:32.009265Z",
+    "createdAt": "2025-12-15T20:17:32.009267Z"
+  },
+  {
+    "emailId": "email_21950218e632",
+    "to": "ava.garcia@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "failed",
+    "sentAt": "2026-02-05T20:17:32.009277Z",
+    "createdAt": "2025-12-14T20:17:32.009280Z"
+  },
+  {
+    "emailId": "email_11f91d79bf08",
+    "to": "sarah.chen@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "failed",
+    "sentAt": "2025-12-23T20:17:32.009290Z",
+    "createdAt": "2025-12-13T20:17:32.009293Z"
+  },
+  {
+    "emailId": "email_4304ff658c8f",
+    "to": "noah.brown@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "opened",
+    "sentAt": "2026-02-07T20:17:32.009303Z",
+    "createdAt": "2025-12-21T20:17:32.009305Z"
+  },
+  {
+    "emailId": "email_583b2d89b070",
+    "to": "mia.taylor@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "failed",
+    "sentAt": "2025-12-17T20:17:32.009316Z",
+    "createdAt": "2026-02-07T20:17:32.009319Z"
+  },
+  {
+    "emailId": "email_68adca08c4df",
+    "to": "noah.brown@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "sent",
+    "sentAt": "2026-01-25T20:17:32.009331Z",
+    "createdAt": "2026-01-26T20:17:32.009334Z"
+  },
+  {
+    "emailId": "email_8a22f5389c96",
+    "to": "ethan.lee@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "opened",
+    "sentAt": "2025-12-14T20:17:32.009346Z",
+    "createdAt": "2026-01-13T20:17:32.009348Z"
+  },
+  {
+    "emailId": "email_93f892b7c397",
+    "to": "jake.morrison@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "failed",
+    "sentAt": "2026-01-29T20:17:32.009359Z",
+    "createdAt": "2025-12-23T20:17:32.009361Z"
+  },
+  {
+    "emailId": "email_8505931bc161",
+    "to": "liam.anderson@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "delivered",
+    "sentAt": "2026-01-16T20:17:32.009374Z",
+    "createdAt": "2025-12-13T20:17:32.009376Z"
+  },
+  {
+    "emailId": "email_f134faabcb65",
+    "to": "ava.garcia@email.com",
+    "type": "community_invite",
+    "subject": "You've been invited to moderate a community",
+    "status": "sent",
+    "sentAt": "2025-12-28T20:17:32.009392Z",
+    "createdAt": "2025-12-19T20:17:32.009395Z"
+  },
+  {
+    "emailId": "email_3ceb34da2cd7",
+    "to": "sophia.johnson@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "delivered",
+    "sentAt": "2025-12-18T20:17:32.009409Z",
+    "createdAt": "2026-01-14T20:17:32.009413Z"
+  },
+  {
+    "emailId": "email_fbc7f3dc7f6d",
+    "to": "liam.anderson@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "failed",
+    "sentAt": "2026-01-12T20:17:32.009432Z",
+    "createdAt": "2025-12-21T20:17:32.009435Z"
+  },
+  {
+    "emailId": "email_30438c630ad9",
+    "to": "ethan.lee@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "opened",
+    "sentAt": "2025-12-11T20:17:32.009446Z",
+    "createdAt": "2025-12-22T20:17:32.009449Z"
+  },
+  {
+    "emailId": "email_0cb40723fc81",
+    "to": "ava.garcia@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "opened",
+    "sentAt": "2026-01-20T20:17:32.009461Z",
+    "createdAt": "2026-02-07T20:17:32.009464Z"
+  },
+  {
+    "emailId": "email_e97a26cdc36c",
+    "to": "marcus.rodriguez@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "failed",
+    "sentAt": "2025-12-23T20:17:32.009474Z",
+    "createdAt": "2025-12-19T20:17:32.009477Z"
+  },
+  {
+    "emailId": "email_572749861b21",
+    "to": "ava.garcia@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "opened",
+    "sentAt": "2026-01-10T20:17:32.009487Z",
+    "createdAt": "2025-12-20T20:17:32.009489Z"
+  },
+  {
+    "emailId": "email_b4c4b478e52f",
+    "to": "david.kim@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "sent",
+    "sentAt": "2026-01-09T20:17:32.009499Z",
+    "createdAt": "2025-12-28T20:17:32.009502Z"
+  },
+  {
+    "emailId": "email_64fd8b917aca",
+    "to": "emma.williams@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "opened",
+    "sentAt": "2025-12-22T20:17:32.009512Z",
+    "createdAt": "2025-12-14T20:17:32.009514Z"
+  },
+  {
+    "emailId": "email_e1c9d1fc0298",
+    "to": "olivia.martinez@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "opened",
+    "sentAt": "2025-12-19T20:17:32.009525Z",
+    "createdAt": "2025-12-22T20:17:32.009527Z"
+  },
+  {
+    "emailId": "email_b2e30ab4ae5e",
+    "to": "sarah.chen@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "sent",
+    "sentAt": "2026-02-01T20:17:32.009537Z",
+    "createdAt": "2025-12-18T20:17:32.009540Z"
+  },
+  {
+    "emailId": "email_ae157e69b6d8",
+    "to": "olivia.martinez@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "opened",
+    "sentAt": "2026-01-10T20:17:32.009551Z",
+    "createdAt": "2025-12-09T20:17:32.009553Z"
+  },
+  {
+    "emailId": "email_9e8d722c792c",
+    "to": "sophia.johnson@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "opened",
+    "sentAt": "2025-12-27T20:17:32.009564Z",
+    "createdAt": "2026-01-26T20:17:32.009567Z"
+  },
+  {
+    "emailId": "email_307b47befc07",
+    "to": "mason.harris@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "delivered",
+    "sentAt": "2026-02-02T20:17:32.009577Z",
+    "createdAt": "2025-12-31T20:17:32.009579Z"
+  },
+  {
+    "emailId": "email_9074e9d50705",
+    "to": "mia.taylor@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "delivered",
+    "sentAt": "2025-12-30T20:17:32.009592Z",
+    "createdAt": "2026-01-07T20:17:32.009594Z"
+  },
+  {
+    "emailId": "email_66cfa97bbb8b",
+    "to": "ava.garcia@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "failed",
+    "sentAt": "2026-01-24T20:17:32.009605Z",
+    "createdAt": "2026-01-29T20:17:32.009607Z"
+  },
+  {
+    "emailId": "email_7e1e15d302de",
+    "to": "mia.taylor@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "sent",
+    "sentAt": "2026-01-28T20:17:32.009622Z",
+    "createdAt": "2026-01-10T20:17:32.009624Z"
+  },
+  {
+    "emailId": "email_88742bce91f4",
+    "to": "isabella.white@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "sent",
+    "sentAt": "2026-01-08T20:17:32.009635Z",
+    "createdAt": "2026-01-17T20:17:32.009638Z"
+  },
+  {
+    "emailId": "email_de012081c4c6",
+    "to": "sophia.johnson@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "delivered",
+    "sentAt": "2026-01-20T20:17:32.009655Z",
+    "createdAt": "2025-12-20T20:17:32.009657Z"
+  },
+  {
+    "emailId": "email_6107046d6ea9",
+    "to": "ava.garcia@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "delivered",
+    "sentAt": "2026-01-03T20:17:32.009667Z",
+    "createdAt": "2025-12-19T20:17:32.009670Z"
+  },
+  {
+    "emailId": "email_4aa9d9f05f70",
+    "to": "olivia.martinez@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "failed",
+    "sentAt": "2026-02-04T20:17:32.009680Z",
+    "createdAt": "2025-12-17T20:17:32.009683Z"
+  },
+  {
+    "emailId": "email_3626e0ccd887",
+    "to": "olivia.martinez@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "sent",
+    "sentAt": "2026-01-16T20:17:32.009706Z",
+    "createdAt": "2026-01-15T20:17:32.009708Z"
+  },
+  {
+    "emailId": "email_8067466684e0",
+    "to": "mason.harris@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "sent",
+    "sentAt": "2026-01-23T20:17:32.009721Z",
+    "createdAt": "2025-12-14T20:17:32.009723Z"
+  },
+  {
+    "emailId": "email_5b5019d18246",
+    "to": "jake.morrison@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "opened",
+    "sentAt": "2025-12-13T20:17:32.009734Z",
+    "createdAt": "2025-12-19T20:17:32.009736Z"
+  },
+  {
+    "emailId": "email_b84ddffb9688",
+    "to": "ava.garcia@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "sent",
+    "sentAt": "2025-12-12T20:17:32.009747Z",
+    "createdAt": "2026-02-02T20:17:32.009749Z"
+  },
+  {
+    "emailId": "email_c3aa7fb7c343",
+    "to": "alex.thompson@email.com",
+    "type": "verification",
+    "subject": "Verify your email address",
+    "status": "delivered",
+    "sentAt": "2026-01-12T20:17:32.009768Z",
+    "createdAt": "2025-12-25T20:17:32.009771Z"
+  },
+  {
+    "emailId": "email_5cd9ac83bd1f",
+    "to": "mia.taylor@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "delivered",
+    "sentAt": "2026-01-17T20:17:32.009781Z",
+    "createdAt": "2025-12-11T20:17:32.009784Z"
+  },
+  {
+    "emailId": "email_0aae02707124",
+    "to": "alex.thompson@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "opened",
+    "sentAt": "2026-02-06T20:17:32.009816Z",
+    "createdAt": "2025-12-23T20:17:32.009819Z"
+  },
+  {
+    "emailId": "email_a7b4f4ebe29e",
+    "to": "jake.morrison@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "opened",
+    "sentAt": "2026-02-05T20:17:32.009830Z",
+    "createdAt": "2026-01-23T20:17:32.009832Z"
+  },
+  {
+    "emailId": "email_2f2e1e2cd5e0",
+    "to": "olivia.martinez@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "failed",
+    "sentAt": "2026-02-04T20:17:32.009843Z",
+    "createdAt": "2025-12-13T20:17:32.009845Z"
+  },
+  {
+    "emailId": "email_a5f44076d331",
+    "to": "alex.thompson@email.com",
+    "type": "notification_digest",
+    "subject": "Your weekly digest",
+    "status": "failed",
+    "sentAt": "2025-12-15T20:17:32.009855Z",
+    "createdAt": "2025-12-28T20:17:32.009857Z"
+  },
+  {
+    "emailId": "email_328b6457f37e",
+    "to": "olivia.martinez@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "failed",
+    "sentAt": "2026-01-11T20:17:32.009867Z",
+    "createdAt": "2025-12-20T20:17:32.009870Z"
+  },
+  {
+    "emailId": "email_3b9bf949d7e2",
+    "to": "liam.anderson@email.com",
+    "type": "password_reset",
+    "subject": "Password reset request",
+    "status": "failed",
+    "sentAt": "2025-12-31T20:17:32.009881Z",
+    "createdAt": "2025-12-25T20:17:32.009883Z"
+  },
+  {
+    "emailId": "email_7644263a96db",
+    "to": "isabella.white@email.com",
+    "type": "welcome",
+    "subject": "Welcome to Wavelength!",
+    "status": "failed",
+    "sentAt": "2025-12-10T20:17:32.009893Z",
+    "createdAt": "2026-02-02T20:17:32.009896Z"
+  },
+  {
+    "emailId": "email_e887fa465109",
+    "to": "emma.williams@email.com",
+    "type": "post_reply",
+    "subject": "New reply to your post",
+    "status": "sent",
+    "sentAt": "2026-02-02T20:17:32.009917Z",
+    "createdAt": "2026-01-23T20:17:32.009920Z"
+  }
+]

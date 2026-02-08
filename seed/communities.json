@@ -1,0 +1,1053 @@
+[
+  {
+    "communityId": "comm_tech_hub_2025",
+    "name": "Tech Hub",
+    "slug": "tech-hub",
+    "description": "A community for technology enthusiasts, programmers, and innovators to discuss the latest in tech, share projects, and learn together.",
+    "type": "public",
+    "category": "Technology",
+    "tags": [
+      "550e8400-e29b-41d4-a716-446655440000",
+      "5a4b3c2d-1e0f-9g8h-7i6j-5k4l3m2n1o0p"
+    ],
+    "avatar": {
+      "id": "comm_avatar_001",
+      "url": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_001",
+      "url": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_alex_thompson_2025",
+    "moderators": [
+      "usr_alex_thompson_2025"
+    ],
+    "memberCount": 15243,
+    "postCount": 8567,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": false,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 5,
+      "commentsEnabled": true,
+      "allowDownvotes": false
+    },
+    "stats": {
+      "totalViews": 762150,
+      "totalEngagements": 334113,
+      "activeUsers24h": 2286,
+      "activeUsers7d": 6859,
+      "activeUsers30d": 11432,
+      "growthRate": 26.8
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-08-05T20:16:14.172320Z",
+    "updatedAt": "2026-02-07T20:16:14.172323Z"
+  },
+  {
+    "communityId": "comm_gaming_nexus_2025",
+    "name": "Gaming Nexus",
+    "slug": "gaming-nexus",
+    "description": "The ultimate gaming community! Discuss your favorite games, share gameplay, connect with fellow gamers, and stay updated on gaming news.",
+    "type": "public",
+    "category": "Gaming",
+    "tags": [
+      "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+    ],
+    "avatar": {
+      "id": "comm_avatar_002",
+      "url": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_002",
+      "url": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_ethan_lee_2025",
+    "moderators": [
+      "usr_ethan_lee_2025"
+    ],
+    "memberCount": 23456,
+    "postCount": 12345,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": true,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 0,
+      "commentsEnabled": true,
+      "allowDownvotes": false
+    },
+    "stats": {
+      "totalViews": 1618464,
+      "totalEngagements": 382695,
+      "activeUsers24h": 3518,
+      "activeUsers7d": 10555,
+      "activeUsers30d": 17592,
+      "growthRate": 19.4
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-10-22T20:16:14.172339Z",
+    "updatedAt": "2026-02-06T20:16:14.172342Z"
+  },
+  {
+    "communityId": "comm_fitness_warriors_2025",
+    "name": "Fitness Warriors",
+    "slug": "fitness-warriors",
+    "description": "Join our fitness journey! Share workouts, nutrition tips, progress photos, and motivate each other to achieve health goals.",
+    "type": "public",
+    "category": "Fitness",
+    "tags": [
+      "9a8b7c6d-5e4f-3g2h-1i0j-9k8l7m6n5o4p"
+    ],
+    "avatar": {
+      "id": "comm_avatar_003",
+      "url": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_003",
+      "url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_sarah_chen_2025",
+    "moderators": [
+      "usr_sarah_chen_2025"
+    ],
+    "memberCount": 18654,
+    "postCount": 9876,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": false,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 10,
+      "commentsEnabled": true,
+      "allowDownvotes": true
+    },
+    "stats": {
+      "totalViews": 1175202,
+      "totalEngagements": 197520,
+      "activeUsers24h": 2798,
+      "activeUsers7d": 8394,
+      "activeUsers30d": 13990,
+      "growthRate": 23.2
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-10-30T20:16:14.172350Z",
+    "updatedAt": "2026-02-06T20:16:14.172353Z"
+  },
+  {
+    "communityId": "comm_foodie_paradise_2025",
+    "name": "Foodie Paradise",
+    "slug": "foodie-paradise",
+    "description": "A delicious community for food lovers! Share recipes, restaurant recommendations, cooking tips, and food photography.",
+    "type": "public",
+    "category": "Food",
+    "tags": [
+      "cb0bd7a0-4bfb-4a0c-a68d-c26c9dced908"
+    ],
+    "avatar": {
+      "id": "comm_avatar_004",
+      "url": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_004",
+      "url": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_alex_thompson_2025",
+    "moderators": [
+      "usr_alex_thompson_2025"
+    ],
+    "memberCount": 21345,
+    "postCount": 15678,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": false,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 100,
+      "commentsEnabled": true,
+      "allowDownvotes": false
+    },
+    "stats": {
+      "totalViews": 1707600,
+      "totalEngagements": 313560,
+      "activeUsers24h": 3201,
+      "activeUsers7d": 9605,
+      "activeUsers30d": 16008,
+      "growthRate": 24.1
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-10-28T20:16:14.172360Z",
+    "updatedAt": "2026-02-04T20:16:14.172362Z"
+  },
+  {
+    "communityId": "comm_art_gallery_2025",
+    "name": "Art Gallery",
+    "slug": "art-gallery",
+    "description": "A creative space for artists of all mediums! Share your artwork, get feedback, discuss techniques, and find inspiration.",
+    "type": "public",
+    "category": "Art",
+    "tags": [
+      "e7c7b0da-a8c2-4e15-9f19-9c6c3e4e6a32"
+    ],
+    "avatar": {
+      "id": "comm_avatar_005",
+      "url": "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_005",
+      "url": "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_jake_morrison_2025",
+    "moderators": [
+      "usr_jake_morrison_2025"
+    ],
+    "memberCount": 16789,
+    "postCount": 11234,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": false,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 100,
+      "commentsEnabled": true,
+      "allowDownvotes": true
+    },
+    "stats": {
+      "totalViews": 1242386,
+      "totalEngagements": 404424,
+      "activeUsers24h": 2518,
+      "activeUsers7d": 7555,
+      "activeUsers30d": 12591,
+      "growthRate": 16.2
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-11-11T20:16:14.172381Z",
+    "updatedAt": "2026-02-07T20:16:14.172384Z"
+  },
+  {
+    "communityId": "comm_crypto_traders_2025",
+    "name": "Crypto Traders",
+    "slug": "crypto-traders",
+    "description": "Cryptocurrency discussion, trading strategies, market analysis, and blockchain technology. Stay informed about the crypto world.",
+    "type": "public",
+    "category": "Crypto",
+    "tags": [
+      "1p0o9n8m-7l6k-5j4i-3h2g-1f0e9d8c7b6a"
+    ],
+    "avatar": {
+      "id": "comm_avatar_006",
+      "url": "https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_006",
+      "url": "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_liam_anderson_2025",
+    "moderators": [
+      "usr_liam_anderson_2025"
+    ],
+    "memberCount": 19876,
+    "postCount": 13456,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": true,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 10,
+      "commentsEnabled": true,
+      "allowDownvotes": true
+    },
+    "stats": {
+      "totalViews": 1331692,
+      "totalEngagements": 659344,
+      "activeUsers24h": 2981,
+      "activeUsers7d": 8944,
+      "activeUsers30d": 14907,
+      "growthRate": 16.4
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-08-22T20:16:14.172392Z",
+    "updatedAt": "2026-02-05T20:16:14.172397Z"
+  },
+  {
+    "communityId": "comm_wanderlust_2025",
+    "name": "Wanderlust",
+    "slug": "wanderlust",
+    "description": "Share travel stories, destination guides, travel tips, and beautiful photography from around the world. Let's explore together!",
+    "type": "public",
+    "category": "Travel",
+    "tags": [
+      "p6o5n4m3-l2k1-j0i9-h8g7-f6e5d4c3b2a1"
+    ],
+    "avatar": {
+      "id": "comm_avatar_007",
+      "url": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_007",
+      "url": "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_ethan_lee_2025",
+    "moderators": [
+      "usr_ethan_lee_2025"
+    ],
+    "memberCount": 24567,
+    "postCount": 16789,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": false,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 10,
+      "commentsEnabled": true,
+      "allowDownvotes": false
+    },
+    "stats": {
+      "totalViews": 1498587,
+      "totalEngagements": 621193,
+      "activeUsers24h": 3685,
+      "activeUsers7d": 11055,
+      "activeUsers30d": 18425,
+      "growthRate": 23.1
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-10-07T20:16:14.172404Z",
+    "updatedAt": "2026-02-05T20:16:14.172407Z"
+  },
+  {
+    "communityId": "comm_music_lovers_2025",
+    "name": "Music Lovers",
+    "slug": "music-lovers",
+    "description": "All genres, all eras, all welcome! Discuss music, share discoveries, recommend albums, and connect with fellow music enthusiasts.",
+    "type": "public",
+    "category": "Music",
+    "tags": [
+      "6a5b4c3d-2e1f-0g9h-8i7j-6k5l4m3n2o1p"
+    ],
+    "avatar": {
+      "id": "comm_avatar_008",
+      "url": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_008",
+      "url": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_jake_morrison_2025",
+    "moderators": [
+      "usr_jake_morrison_2025"
+    ],
+    "memberCount": 28901,
+    "postCount": 19234,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": true,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 5,
+      "commentsEnabled": true,
+      "allowDownvotes": false
+    },
+    "stats": {
+      "totalViews": 1618456,
+      "totalEngagements": 461616,
+      "activeUsers24h": 4335,
+      "activeUsers7d": 13005,
+      "activeUsers30d": 21675,
+      "growthRate": 22.9
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-11-01T20:16:14.172420Z",
+    "updatedAt": "2026-02-07T20:16:14.172423Z"
+  },
+  {
+    "communityId": "comm_mental_wellness_2025",
+    "name": "Mental Wellness",
+    "slug": "mental-wellness",
+    "description": "A supportive community for mental health discussions, coping strategies, self-care tips, and emotional support. You're not alone.",
+    "type": "public",
+    "category": "Mental Health",
+    "tags": [
+      "7a6b5c4d-3e2f-1g0h-9i8j-7k6l5m4n3o2p"
+    ],
+    "avatar": {
+      "id": "comm_avatar_009",
+      "url": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_009",
+      "url": "https://images.unsplash.com/photo-1516302752625-fcc3c50ae61f?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_ava_garcia_2025",
+    "moderators": [
+      "usr_ava_garcia_2025"
+    ],
+    "memberCount": 32456,
+    "postCount": 21345,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": true,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 0,
+      "commentsEnabled": true,
+      "allowDownvotes": true
+    },
+    "stats": {
+      "totalViews": 2077184,
+      "totalEngagements": 683040,
+      "activeUsers24h": 4868,
+      "activeUsers7d": 14605,
+      "activeUsers30d": 24342,
+      "growthRate": 15.6
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-09-15T20:16:14.173889Z",
+    "updatedAt": "2026-02-06T20:16:14.173904Z"
+  },
+  {
+    "communityId": "comm_startup_founders_2025",
+    "name": "Startup Founders",
+    "slug": "startup-founders",
+    "description": "For entrepreneurs building the next big thing. Share experiences, ask for advice, discuss challenges, and celebrate wins together.",
+    "type": "public",
+    "category": "Startups",
+    "tags": [
+      "5a4b3c2d-1e0f-9g8h-7i6j-5k4l3m2n1o0p"
+    ],
+    "avatar": {
+      "id": "comm_avatar_010",
+      "url": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_010",
+      "url": "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_david_kim_2025",
+    "moderators": [
+      "usr_david_kim_2025"
+    ],
+    "memberCount": 14567,
+    "postCount": 7890,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": true,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 100,
+      "commentsEnabled": true,
+      "allowDownvotes": false
+    },
+    "stats": {
+      "totalViews": 742917,
+      "totalEngagements": 331380,
+      "activeUsers24h": 2185,
+      "activeUsers7d": 6555,
+      "activeUsers30d": 10925,
+      "growthRate": 18.0
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-11-27T20:16:14.173932Z",
+    "updatedAt": "2026-02-05T20:16:14.173935Z"
+  },
+  {
+    "communityId": "comm_book_club_2025",
+    "name": "Book Club",
+    "slug": "book-club",
+    "description": "For bibliophiles and literary enthusiasts! Discuss books, share recommendations, participate in reading challenges.",
+    "type": "public",
+    "category": "Books",
+    "tags": [
+      "2a3b4c5d-6e7f-8g9h-0i1j-2k3l4m5n6o7p"
+    ],
+    "avatar": {
+      "id": "comm_avatar_011",
+      "url": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_011",
+      "url": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_isabella_white_2025",
+    "moderators": [
+      "usr_isabella_white_2025"
+    ],
+    "memberCount": 19234,
+    "postCount": 10567,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": true,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 10,
+      "commentsEnabled": true,
+      "allowDownvotes": true
+    },
+    "stats": {
+      "totalViews": 1307912,
+      "totalEngagements": 306443,
+      "activeUsers24h": 2885,
+      "activeUsers7d": 8655,
+      "activeUsers30d": 14425,
+      "growthRate": 20.8
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-12-27T20:16:14.173944Z",
+    "updatedAt": "2026-02-04T20:16:14.173946Z"
+  },
+  {
+    "communityId": "comm_science_hub_2025",
+    "name": "Science Hub",
+    "slug": "science-hub",
+    "description": "Explore the wonders of science! Discuss research, breakthroughs, theories, and the scientific method.",
+    "type": "public",
+    "category": "Science",
+    "tags": [
+      "38d63b3a-7e2c-4e5b-9035-8d42f5e77777"
+    ],
+    "avatar": {
+      "id": "comm_avatar_012",
+      "url": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_012",
+      "url": "https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_noah_brown_2025",
+    "moderators": [
+      "usr_noah_brown_2025"
+    ],
+    "memberCount": 22345,
+    "postCount": 11234,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": true,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 0,
+      "commentsEnabled": true,
+      "allowDownvotes": true
+    },
+    "stats": {
+      "totalViews": 1631185,
+      "totalEngagements": 314552,
+      "activeUsers24h": 3351,
+      "activeUsers7d": 10055,
+      "activeUsers30d": 16758,
+      "growthRate": 24.9
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-09-24T20:16:14.173960Z",
+    "updatedAt": "2026-02-07T20:16:14.173964Z"
+  },
+  {
+    "communityId": "comm_movie_buffs_2025",
+    "name": "Movie Buffs",
+    "slug": "movie-buffs",
+    "description": "Cinema lovers unite! Discuss films, share reviews, debate rankings, and discover hidden gems.",
+    "type": "public",
+    "category": "Movies",
+    "tags": [
+      "u6v5w4x3-y2z1-a0b9-c8d7-e6f5g4h3j2k"
+    ],
+    "avatar": {
+      "id": "comm_avatar_013",
+      "url": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_013",
+      "url": "https://images.unsplash.com/photo-1574267432644-f74f8ec6c69e?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_marcus_rodriguez_2025",
+    "moderators": [
+      "usr_marcus_rodriguez_2025"
+    ],
+    "memberCount": 26789,
+    "postCount": 15234,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": false,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 0,
+      "commentsEnabled": true,
+      "allowDownvotes": true
+    },
+    "stats": {
+      "totalViews": 1634129,
+      "totalEngagements": 517956,
+      "activeUsers24h": 4018,
+      "activeUsers7d": 12055,
+      "activeUsers30d": 20091,
+      "growthRate": 21.1
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-10-24T20:16:14.173972Z",
+    "updatedAt": "2026-02-07T20:16:14.173977Z"
+  },
+  {
+    "communityId": "comm_pet_paradise_2025",
+    "name": "Pet Paradise",
+    "slug": "pet-paradise",
+    "description": "Share your adorable pet photos, ask for care advice, and connect with fellow animal lovers!",
+    "type": "public",
+    "category": "Pets",
+    "tags": [
+      "9a0b1c2d-3e4f-5g6h-7i8j-9k0l1m2n3o4p"
+    ],
+    "avatar": {
+      "id": "comm_avatar_014",
+      "url": "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_014",
+      "url": "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_emma_williams_2025",
+    "moderators": [
+      "usr_emma_williams_2025"
+    ],
+    "memberCount": 31234,
+    "postCount": 18901,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": true,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 50,
+      "commentsEnabled": true,
+      "allowDownvotes": true
+    },
+    "stats": {
+      "totalViews": 1874040,
+      "totalEngagements": 926149,
+      "activeUsers24h": 4685,
+      "activeUsers7d": 14055,
+      "activeUsers30d": 23425,
+      "growthRate": 23.6
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-09-08T20:16:14.173987Z",
+    "updatedAt": "2026-02-04T20:16:14.173990Z"
+  },
+  {
+    "communityId": "comm_photography_pro_2025",
+    "name": "Photography Pro",
+    "slug": "photography-pro",
+    "description": "A community for photographers! Share your shots, discuss techniques, review gear, and improve your craft.",
+    "type": "public",
+    "category": "Photography",
+    "tags": [
+      "8a7b6c5d-4e3f-2g1h-0i9j-8k7l6m5n4o3p"
+    ],
+    "avatar": {
+      "id": "comm_avatar_015",
+      "url": "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400",
+      "width": 400,
+      "height": 400
+    },
+    "banner": {
+      "id": "comm_banner_015",
+      "url": "https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=1200",
+      "width": 1200,
+      "height": 300
+    },
+    "creatorId": "usr_ethan_lee_2025",
+    "moderators": [
+      "usr_ethan_lee_2025"
+    ],
+    "memberCount": 20456,
+    "postCount": 12678,
+    "rules": [
+      {
+        "title": "Be respectful",
+        "description": "Treat all members with respect and courtesy. No harassment or personal attacks."
+      },
+      {
+        "title": "Stay on topic",
+        "description": "Keep discussions relevant to the community's theme."
+      },
+      {
+        "title": "No spam",
+        "description": "Do not post repetitive content or advertisements."
+      },
+      {
+        "title": "Quality content",
+        "description": "Share meaningful content that adds value to the community."
+      }
+    ],
+    "settings": {
+      "allowPolls": true,
+      "allowImages": true,
+      "allowVideos": true,
+      "allowLinks": true,
+      "requirePostApproval": false,
+      "allowCrossposting": true,
+      "minimumSynergyToPost": 10,
+      "commentsEnabled": true,
+      "allowDownvotes": false
+    },
+    "stats": {
+      "totalViews": 1186448,
+      "totalEngagements": 431052,
+      "activeUsers24h": 3068,
+      "activeUsers7d": 9205,
+      "activeUsers30d": 15342,
+      "growthRate": 29.6
+    },
+    "status": "active",
+    "visibility": "public",
+    "createdAt": "2025-10-26T20:16:14.173997Z",
+    "updatedAt": "2026-02-04T20:16:14.174000Z"
+  }
+]

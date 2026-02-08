@@ -1,0 +1,650 @@
+[
+  {
+    "interactionId": "interaction_bb1aa38fa84f",
+    "userId": "usr_alex_thompson_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-12-11T20:17:32.010080Z",
+    "updatedAt": "2026-01-12T20:17:32.010085Z"
+  },
+  {
+    "interactionId": "interaction_223856bf707e",
+    "userId": "usr_alex_thompson_2025",
+    "communityId": "comm_gaming_nexus_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2026-01-21T20:17:32.010098Z",
+    "updatedAt": "2026-02-07T20:17:32.010101Z"
+  },
+  {
+    "interactionId": "interaction_7fc41c031367",
+    "userId": "usr_alex_thompson_2025",
+    "communityId": "comm_wanderlust_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-11-01T20:17:32.010112Z",
+    "updatedAt": "2026-02-02T20:17:32.010115Z"
+  },
+  {
+    "interactionId": "interaction_de1610056ff3",
+    "userId": "usr_alex_thompson_2025",
+    "communityId": "comm_foodie_paradise_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-09-24T20:17:32.010129Z",
+    "updatedAt": "2026-01-29T20:17:32.010132Z"
+  },
+  {
+    "interactionId": "interaction_75bc1467a433",
+    "userId": "usr_sarah_chen_2025",
+    "communityId": "comm_mental_wellness_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-12-29T20:17:32.010163Z",
+    "updatedAt": "2026-02-01T20:17:32.010166Z"
+  },
+  {
+    "interactionId": "interaction_105ea9f456b4",
+    "userId": "usr_sarah_chen_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-11-16T20:17:32.010182Z",
+    "updatedAt": "2026-01-28T20:17:32.010185Z"
+  },
+  {
+    "interactionId": "interaction_627a5ebed386",
+    "userId": "usr_sarah_chen_2025",
+    "communityId": "comm_fitness_warriors_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-10-19T20:17:32.010195Z",
+    "updatedAt": "2026-02-06T20:17:32.010198Z"
+  },
+  {
+    "interactionId": "interaction_144e0f8c8784",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_music_lovers_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-12-05T20:17:32.010237Z",
+    "updatedAt": "2026-01-24T20:17:32.010239Z"
+  },
+  {
+    "interactionId": "interaction_d120f2694fdd",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_crypto_traders_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2026-01-03T20:17:32.010248Z",
+    "updatedAt": "2026-01-26T20:17:32.010251Z"
+  },
+  {
+    "interactionId": "interaction_9d3cf5609d14",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-11-12T20:17:32.010260Z",
+    "updatedAt": "2026-01-30T20:17:32.010263Z"
+  },
+  {
+    "interactionId": "interaction_8c68c889e578",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_pet_paradise_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-12-07T20:17:32.010272Z",
+    "updatedAt": "2026-01-17T20:17:32.010275Z"
+  },
+  {
+    "interactionId": "interaction_23f7e8df7db9",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_mental_wellness_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-10-19T20:17:32.010284Z",
+    "updatedAt": "2026-01-31T20:17:32.010286Z"
+  },
+  {
+    "interactionId": "interaction_11b903caf896",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_fitness_warriors_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2025-10-24T20:17:32.010295Z",
+    "updatedAt": "2026-02-01T20:17:32.010298Z"
+  },
+  {
+    "interactionId": "interaction_2bce967e94cc",
+    "userId": "usr_marcus_rodriguez_2025",
+    "communityId": "comm_book_club_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-10-14T20:17:32.010309Z",
+    "updatedAt": "2026-01-27T20:17:32.010312Z"
+  },
+  {
+    "interactionId": "interaction_6c126d7a60dc",
+    "userId": "usr_emma_williams_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-10-01T20:17:32.010323Z",
+    "updatedAt": "2026-01-09T20:17:32.010325Z"
+  },
+  {
+    "interactionId": "interaction_fd7b8fbfb7e6",
+    "userId": "usr_emma_williams_2025",
+    "communityId": "comm_photography_pro_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-09-30T20:17:32.010337Z",
+    "updatedAt": "2026-01-26T20:17:32.010339Z"
+  },
+  {
+    "interactionId": "interaction_cf04394e1ef6",
+    "userId": "usr_emma_williams_2025",
+    "communityId": "comm_foodie_paradise_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-12-25T20:17:32.010348Z",
+    "updatedAt": "2026-01-18T20:17:32.010351Z"
+  },
+  {
+    "interactionId": "interaction_3412823401c6",
+    "userId": "usr_emma_williams_2025",
+    "communityId": "comm_crypto_traders_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2026-02-04T20:17:32.010360Z",
+    "updatedAt": "2026-01-30T20:17:32.010363Z"
+  },
+  {
+    "interactionId": "interaction_cbf970e32203",
+    "userId": "usr_jake_morrison_2025",
+    "communityId": "comm_photography_pro_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2026-01-23T20:17:32.010377Z",
+    "updatedAt": "2026-02-01T20:17:32.010380Z"
+  },
+  {
+    "interactionId": "interaction_ba855a068dd8",
+    "userId": "usr_jake_morrison_2025",
+    "communityId": "comm_movie_buffs_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-10-21T20:17:32.010388Z",
+    "updatedAt": "2026-01-30T20:17:32.010391Z"
+  },
+  {
+    "interactionId": "interaction_f846576e8275",
+    "userId": "usr_jake_morrison_2025",
+    "communityId": "comm_science_hub_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2025-11-20T20:17:32.010400Z",
+    "updatedAt": "2026-01-29T20:17:32.010402Z"
+  },
+  {
+    "interactionId": "interaction_b506162e6c68",
+    "userId": "usr_jake_morrison_2025",
+    "communityId": "comm_foodie_paradise_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2025-11-27T20:17:32.010414Z",
+    "updatedAt": "2026-01-13T20:17:32.010416Z"
+  },
+  {
+    "interactionId": "interaction_5f159fd22d6f",
+    "userId": "usr_jake_morrison_2025",
+    "communityId": "comm_wanderlust_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2026-02-06T20:17:32.010426Z",
+    "updatedAt": "2026-01-11T20:17:32.010430Z"
+  },
+  {
+    "interactionId": "interaction_1a5e7e276f5b",
+    "userId": "usr_jake_morrison_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-11-27T20:17:32.010438Z",
+    "updatedAt": "2026-01-26T20:17:32.010441Z"
+  },
+  {
+    "interactionId": "interaction_1b37cd425148",
+    "userId": "usr_olivia_martinez_2025",
+    "communityId": "comm_startup_founders_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-10-20T20:17:32.010453Z",
+    "updatedAt": "2026-01-17T20:17:32.010456Z"
+  },
+  {
+    "interactionId": "interaction_387761e9b504",
+    "userId": "usr_olivia_martinez_2025",
+    "communityId": "comm_foodie_paradise_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-10-23T20:17:32.010465Z",
+    "updatedAt": "2026-02-07T20:17:32.010468Z"
+  },
+  {
+    "interactionId": "interaction_a721705d497d",
+    "userId": "usr_olivia_martinez_2025",
+    "communityId": "comm_tech_hub_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2025-12-18T20:17:32.010481Z",
+    "updatedAt": "2026-01-27T20:17:32.010485Z"
+  },
+  {
+    "interactionId": "interaction_a5ca8e00d3d8",
+    "userId": "usr_olivia_martinez_2025",
+    "communityId": "comm_gaming_nexus_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-11-23T20:17:32.010496Z",
+    "updatedAt": "2026-02-05T20:17:32.010499Z"
+  },
+  {
+    "interactionId": "interaction_dbe3bf70ccf8",
+    "userId": "usr_david_kim_2025",
+    "communityId": "comm_science_hub_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2026-01-29T20:17:32.010513Z",
+    "updatedAt": "2026-01-18T20:17:32.010516Z"
+  },
+  {
+    "interactionId": "interaction_97aced25074e",
+    "userId": "usr_david_kim_2025",
+    "communityId": "comm_pet_paradise_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-10-02T20:17:32.010525Z",
+    "updatedAt": "2026-01-12T20:17:32.010528Z"
+  },
+  {
+    "interactionId": "interaction_0cdb3d3ea781",
+    "userId": "usr_david_kim_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2026-01-19T20:17:32.010537Z",
+    "updatedAt": "2026-01-12T20:17:32.010540Z"
+  },
+  {
+    "interactionId": "interaction_d427b15ed1fc",
+    "userId": "usr_david_kim_2025",
+    "communityId": "comm_gaming_nexus_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-12-06T20:17:32.010548Z",
+    "updatedAt": "2026-01-30T20:17:32.010550Z"
+  },
+  {
+    "interactionId": "interaction_1ff8d19d6c5b",
+    "userId": "usr_sophia_johnson_2025",
+    "communityId": "comm_tech_hub_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2025-09-23T20:17:32.010565Z",
+    "updatedAt": "2026-01-13T20:17:32.010568Z"
+  },
+  {
+    "interactionId": "interaction_ffb317ac795e",
+    "userId": "usr_sophia_johnson_2025",
+    "communityId": "comm_wanderlust_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-10-10T20:17:32.010584Z",
+    "updatedAt": "2026-01-30T20:17:32.010586Z"
+  },
+  {
+    "interactionId": "interaction_f30ec716dab9",
+    "userId": "usr_sophia_johnson_2025",
+    "communityId": "comm_book_club_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-09-22T20:17:32.010600Z",
+    "updatedAt": "2026-01-18T20:17:32.010603Z"
+  },
+  {
+    "interactionId": "interaction_3225c9e71531",
+    "userId": "usr_liam_anderson_2025",
+    "communityId": "comm_wanderlust_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-09-17T20:17:32.010615Z",
+    "updatedAt": "2026-01-19T20:17:32.010617Z"
+  },
+  {
+    "interactionId": "interaction_c86a3d724fcb",
+    "userId": "usr_liam_anderson_2025",
+    "communityId": "comm_science_hub_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2026-01-25T20:17:32.010625Z",
+    "updatedAt": "2026-01-08T20:17:32.010628Z"
+  },
+  {
+    "interactionId": "interaction_5c89b2349970",
+    "userId": "usr_liam_anderson_2025",
+    "communityId": "comm_fitness_warriors_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-10-29T20:17:32.010637Z",
+    "updatedAt": "2026-01-20T20:17:32.010640Z"
+  },
+  {
+    "interactionId": "interaction_22b620d7af9b",
+    "userId": "usr_mia_taylor_2025",
+    "communityId": "comm_music_lovers_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-09-10T20:17:32.010658Z",
+    "updatedAt": "2026-02-03T20:17:32.010660Z"
+  },
+  {
+    "interactionId": "interaction_8765a65bb565",
+    "userId": "usr_mia_taylor_2025",
+    "communityId": "comm_wanderlust_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-10-02T20:17:32.010669Z",
+    "updatedAt": "2026-01-10T20:17:32.010671Z"
+  },
+  {
+    "interactionId": "interaction_fc317fdd710d",
+    "userId": "usr_mia_taylor_2025",
+    "communityId": "comm_science_hub_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-10-24T20:17:32.010680Z",
+    "updatedAt": "2026-01-10T20:17:32.010682Z"
+  },
+  {
+    "interactionId": "interaction_99cd6717c2ad",
+    "userId": "usr_mia_taylor_2025",
+    "communityId": "comm_pet_paradise_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2026-01-22T20:17:32.010691Z",
+    "updatedAt": "2026-02-05T20:17:32.010694Z"
+  },
+  {
+    "interactionId": "interaction_a46487df63f7",
+    "userId": "usr_mia_taylor_2025",
+    "communityId": "comm_crypto_traders_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-10-04T20:17:32.010702Z",
+    "updatedAt": "2026-02-03T20:17:32.010704Z"
+  },
+  {
+    "interactionId": "interaction_961d8df37bd6",
+    "userId": "usr_mia_taylor_2025",
+    "communityId": "comm_startup_founders_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2026-01-13T20:17:32.010712Z",
+    "updatedAt": "2026-01-23T20:17:32.010715Z"
+  },
+  {
+    "interactionId": "interaction_64ff3cfc8eec",
+    "userId": "usr_noah_brown_2025",
+    "communityId": "comm_tech_hub_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-09-12T20:17:32.010726Z",
+    "updatedAt": "2026-01-11T20:17:32.010729Z"
+  },
+  {
+    "interactionId": "interaction_415d5c60dd6f",
+    "userId": "usr_noah_brown_2025",
+    "communityId": "comm_crypto_traders_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-10-21T20:17:32.010738Z",
+    "updatedAt": "2026-01-15T20:17:32.010741Z"
+  },
+  {
+    "interactionId": "interaction_ba84e34e3684",
+    "userId": "usr_noah_brown_2025",
+    "communityId": "comm_wanderlust_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-12-09T20:17:32.010752Z",
+    "updatedAt": "2026-01-12T20:17:32.010756Z"
+  },
+  {
+    "interactionId": "interaction_ca0addeb885c",
+    "userId": "usr_noah_brown_2025",
+    "communityId": "comm_foodie_paradise_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-12-24T20:17:32.010771Z",
+    "updatedAt": "2026-01-31T20:17:32.010774Z"
+  },
+  {
+    "interactionId": "interaction_fefcf284bf36",
+    "userId": "usr_noah_brown_2025",
+    "communityId": "comm_fitness_warriors_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-09-28T20:17:32.010799Z",
+    "updatedAt": "2026-01-13T20:17:32.010823Z"
+  },
+  {
+    "interactionId": "interaction_3b3992d355c6",
+    "userId": "usr_noah_brown_2025",
+    "communityId": "comm_startup_founders_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-10-31T20:17:32.010847Z",
+    "updatedAt": "2026-01-18T20:17:32.010850Z"
+  },
+  {
+    "interactionId": "interaction_92d39e544e18",
+    "userId": "usr_noah_brown_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-09-20T20:17:32.010859Z",
+    "updatedAt": "2026-01-28T20:17:32.010862Z"
+  },
+  {
+    "interactionId": "interaction_aefdfdd4fe2b",
+    "userId": "usr_ava_garcia_2025",
+    "communityId": "comm_movie_buffs_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2025-10-12T20:17:32.010874Z",
+    "updatedAt": "2026-01-30T20:17:32.010877Z"
+  },
+  {
+    "interactionId": "interaction_8a59678a80c6",
+    "userId": "usr_ava_garcia_2025",
+    "communityId": "comm_pet_paradise_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-09-15T20:17:32.010886Z",
+    "updatedAt": "2026-02-05T20:17:32.010889Z"
+  },
+  {
+    "interactionId": "interaction_86432eecb01b",
+    "userId": "usr_ava_garcia_2025",
+    "communityId": "comm_tech_hub_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-10-20T20:17:32.010898Z",
+    "updatedAt": "2026-01-18T20:17:32.010901Z"
+  },
+  {
+    "interactionId": "interaction_b07d6caf277e",
+    "userId": "usr_ava_garcia_2025",
+    "communityId": "comm_science_hub_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2026-01-12T20:17:32.010910Z",
+    "updatedAt": "2026-01-10T20:17:32.010912Z"
+  },
+  {
+    "interactionId": "interaction_0741e438a55b",
+    "userId": "usr_ava_garcia_2025",
+    "communityId": "comm_book_club_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2026-01-04T20:17:32.010924Z",
+    "updatedAt": "2026-01-28T20:17:32.010927Z"
+  },
+  {
+    "interactionId": "interaction_d0a185ba466a",
+    "userId": "usr_ethan_lee_2025",
+    "communityId": "comm_book_club_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2026-01-28T20:17:32.010940Z",
+    "updatedAt": "2026-01-24T20:17:32.010942Z"
+  },
+  {
+    "interactionId": "interaction_60eab0ddd50e",
+    "userId": "usr_ethan_lee_2025",
+    "communityId": "comm_startup_founders_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2026-02-05T20:17:32.010951Z",
+    "updatedAt": "2026-01-22T20:17:32.010954Z"
+  },
+  {
+    "interactionId": "interaction_74ea011373bc",
+    "userId": "usr_ethan_lee_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-09-10T20:17:32.010963Z",
+    "updatedAt": "2026-01-16T20:17:32.010966Z"
+  },
+  {
+    "interactionId": "interaction_c78b46011b84",
+    "userId": "usr_ethan_lee_2025",
+    "communityId": "comm_fitness_warriors_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-12-03T20:17:32.010974Z",
+    "updatedAt": "2026-01-16T20:17:32.010977Z"
+  },
+  {
+    "interactionId": "interaction_33d627f95296",
+    "userId": "usr_ethan_lee_2025",
+    "communityId": "comm_foodie_paradise_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-12-13T20:17:32.010994Z",
+    "updatedAt": "2026-01-24T20:17:32.010997Z"
+  },
+  {
+    "interactionId": "interaction_3a7c787f8e62",
+    "userId": "usr_ethan_lee_2025",
+    "communityId": "comm_mental_wellness_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-11-30T20:17:32.011008Z",
+    "updatedAt": "2026-01-10T20:17:32.011011Z"
+  },
+  {
+    "interactionId": "interaction_216b0ec4e3dc",
+    "userId": "usr_isabella_white_2025",
+    "communityId": "comm_pet_paradise_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-09-29T20:17:32.011023Z",
+    "updatedAt": "2026-01-23T20:17:32.011026Z"
+  },
+  {
+    "interactionId": "interaction_4c27ec7e07ce",
+    "userId": "usr_isabella_white_2025",
+    "communityId": "comm_gaming_nexus_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-09-28T20:17:32.011036Z",
+    "updatedAt": "2026-01-28T20:17:32.011039Z"
+  },
+  {
+    "interactionId": "interaction_09153f899be3",
+    "userId": "usr_isabella_white_2025",
+    "communityId": "comm_tech_hub_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-10-17T20:17:32.011050Z",
+    "updatedAt": "2026-01-20T20:17:32.011052Z"
+  },
+  {
+    "interactionId": "interaction_1b911a509440",
+    "userId": "usr_isabella_white_2025",
+    "communityId": "comm_photography_pro_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2026-02-03T20:17:32.011064Z",
+    "updatedAt": "2026-01-27T20:17:32.011066Z"
+  },
+  {
+    "interactionId": "interaction_7bf45654a817",
+    "userId": "usr_mason_harris_2025",
+    "communityId": "comm_art_gallery_2025",
+    "interactionType": "favorited",
+    "status": "active",
+    "createdAt": "2025-09-28T20:17:32.011077Z",
+    "updatedAt": "2026-01-27T20:17:32.011080Z"
+  },
+  {
+    "interactionId": "interaction_9cd979f2df53",
+    "userId": "usr_mason_harris_2025",
+    "communityId": "comm_music_lovers_2025",
+    "interactionType": "muted",
+    "status": "active",
+    "createdAt": "2025-11-24T20:17:32.011089Z",
+    "updatedAt": "2026-01-30T20:17:32.011093Z"
+  },
+  {
+    "interactionId": "interaction_dc3b5a88be78",
+    "userId": "usr_mason_harris_2025",
+    "communityId": "comm_photography_pro_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-11-21T20:17:32.011104Z",
+    "updatedAt": "2026-01-16T20:17:32.011108Z"
+  },
+  {
+    "interactionId": "interaction_e47f8b8a734f",
+    "userId": "usr_mason_harris_2025",
+    "communityId": "comm_mental_wellness_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2026-02-02T20:17:32.011119Z",
+    "updatedAt": "2026-01-10T20:17:32.011123Z"
+  },
+  {
+    "interactionId": "interaction_5e6bf8df1bc7",
+    "userId": "usr_mason_harris_2025",
+    "communityId": "comm_book_club_2025",
+    "interactionType": "hidden",
+    "status": "active",
+    "createdAt": "2025-10-25T20:17:32.011134Z",
+    "updatedAt": "2026-01-23T20:17:32.011137Z"
+  },
+  {
+    "interactionId": "interaction_c7bff68a13c3",
+    "userId": "usr_mason_harris_2025",
+    "communityId": "comm_tech_hub_2025",
+    "interactionType": "joined",
+    "status": "active",
+    "createdAt": "2025-12-21T20:17:32.011145Z",
+    "updatedAt": "2026-02-02T20:17:32.011148Z"
+  }
+]
