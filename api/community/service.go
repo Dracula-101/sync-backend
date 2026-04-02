@@ -529,17 +529,18 @@ func (s *communityService) CheckUserInCommunity(userId string, communityId strin
 			err,
 		)
 	}
-	if communityInteraction.InteractionType == model.CommunityInteractionTypeJoin {
+	switch communityInteraction.InteractionType {
+	case model.CommunityInteractionTypeJoin:
 		s.logger.Info("User %s is a member of community %s", userId, communityId)
 		return nil
-	} else if communityInteraction.InteractionType == model.CommunityInteractionTypeLeave {
+	case model.CommunityInteractionTypeLeave:
 		s.logger.Info("User %s left the community %s", userId, communityId)
 		return network.NewNotFoundError(
 			"User is not a member of the community",
 			fmt.Sprintf("User %s left the community %s. Context - [ No Data ] ", userId, communityId),
 			errors.New("user is not a member of the community"),
 		)
-	} else {
+	default:
 		// This case should not happen, but just in case
 		s.logger.Error("User is not a member of the community")
 		return network.NewNotFoundError(

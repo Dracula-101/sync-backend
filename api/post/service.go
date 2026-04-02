@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync-backend/api/common/media"
 	"sync-backend/api/community"
+	"sync-backend/api/moderator"
+	moderatorModel "sync-backend/api/moderator/model"
 	"sync-backend/api/post/model"
 	"sync-backend/api/user"
 	"sync-backend/arch/mongo"
@@ -35,6 +37,12 @@ type PostService interface {
 
 	GetPostsByUserId(userId string, page int, limit int) (posts []*model.Post, numOfPosts int, err network.ApiError)
 	GetPostsByCommunityId(communityId string, page int, limit int) (posts []*model.Post, numOfPosts int, err network.ApiError)
+
+	// Post moderation actions
+	ToggleStickyPost(userId string, postId string) (bool, network.ApiError)
+	ToggleLockPost(userId string, postId string) (bool, network.ApiError)
+	ToggleArchivePost(userId string, postId string) (bool, network.ApiError)
+	ToggleNSFWPost(userId string, postId string) (bool, network.ApiError)
 }
 
 type postService struct {
@@ -43,6 +51,7 @@ type postService struct {
 	logger                      utils.AppLogger
 	communityService            community.CommunityService
 	userService                 user.UserService
+	moderatorService            moderator.ModeratorService
 	postQueryBuilder            mongo.QueryBuilder[model.Post]
 	postInteractionQueryBuilder mongo.QueryBuilder[model.PostInteraction]
 	getPostAggregateBuilder     mongo.AggregateBuilder[model.Post, model.PublicPost]
@@ -50,13 +59,14 @@ type postService struct {
 	transaction                 mongo.TransactionBuilder
 }
 
-func NewPostService(db mongo.Database, userService user.UserService, communityService community.CommunityService, mediaService media.MediaService) PostService {
+func NewPostService(db mongo.Database, userService user.UserService, communityService community.CommunityService, mediaService media.MediaService, moderatorService moderator.ModeratorService) PostService {
 	return &postService{
 		BaseService:                 network.NewBaseService(),
 		logger:                      utils.NewServiceLogger("PostService"),
 		mediaService:                mediaService,
 		communityService:            communityService,
 		userService:                 userService,
+		moderatorService:            moderatorService,
 		postQueryBuilder:            mongo.NewQueryBuilder[model.Post](db, model.PostCollectionName),
 		postInteractionQueryBuilder: mongo.NewQueryBuilder[model.PostInteraction](db, model.PostInteractionCollectionName),
 		getPostAggregateBuilder:     mongo.NewAggregateBuilder[model.Post, model.PublicPost](db, model.PostCollectionName),
@@ -1350,4 +1360,81 @@ func (s *postService) GetPostsByCommunityId(communityId string, page int, limit 
 
 	s.logger.Info("Posts retrieved successfully for community with ID: %s", communityId)
 	return dbPosts, int(nPosts), nil
+}
+
+// togglePostField is a helper that toggles a boolean field on a post after verifying moderator permissions
+func (s *postService) togglePostField(userId, postId, field string, pinAction, unpinAction moderatorModel.ModActionType) (bool, network.ApiError) {
+	s.logger.Info("Toggling %s for post %s by user %s", field, postId, userId)
+
+	// Find the post
+	post, err := s.postQueryBuilder.SingleQuery().FindOne(
+		bson.M{"postId": postId, "status": model.PostStatusActive},
+		nil,
+	)
+	if err != nil {
+		if mongo.IsNoDocumentFoundError(err) {
+			return false, NewPostNotFoundError(postId)
+		}
+		return false, NewDBError("finding post", err.Error())
+	}
+
+	// Check moderator permission
+	isMod, modErr := s.moderatorService.IsModeratorOrHigher(userId, post.CommunityId)
+	if modErr != nil {
+		return false, modErr
+	}
+	if !isMod {
+		return false, NewForbiddenError(fmt.Sprintf("toggle %s on", field), userId, postId)
+	}
+
+	// Get current value and toggle
+	var currentValue bool
+	switch field {
+	case "isStickied":
+		currentValue = post.IsStickied
+	case "isLocked":
+		currentValue = post.IsLocked
+	case "isArchived":
+		currentValue = post.IsArchived
+	case "isNSFW":
+		currentValue = post.IsNSFW
+	}
+	newValue := !currentValue
+
+	// Update the post
+	filter := bson.M{"postId": postId}
+	update := bson.M{"$set": bson.M{
+		field:       newValue,
+		"updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+	}}
+	_, updateErr := s.postQueryBuilder.SingleQuery().UpdateOne(filter, update, nil)
+	if updateErr != nil {
+		return false, NewDBError(fmt.Sprintf("toggling %s", field), updateErr.Error())
+	}
+
+	// Log the moderation action
+	action := pinAction
+	if !newValue {
+		action = unpinAction
+	}
+	go s.moderatorService.LogModAction(post.CommunityId, userId, action, postId, "post", fmt.Sprintf("%s set to %v", field, newValue))
+
+	s.logger.Info("Successfully toggled %s to %v for post %s", field, newValue, postId)
+	return newValue, nil
+}
+
+func (s *postService) ToggleStickyPost(userId string, postId string) (bool, network.ApiError) {
+	return s.togglePostField(userId, postId, "isStickied", moderatorModel.ActionPinPost, moderatorModel.ActionUnpinPost)
+}
+
+func (s *postService) ToggleLockPost(userId string, postId string) (bool, network.ApiError) {
+	return s.togglePostField(userId, postId, "isLocked", moderatorModel.ActionLockPost, moderatorModel.ActionUnlockPost)
+}
+
+func (s *postService) ToggleArchivePost(userId string, postId string) (bool, network.ApiError) {
+	return s.togglePostField(userId, postId, "isArchived", moderatorModel.ActionLockPost, moderatorModel.ActionUnlockPost)
+}
+
+func (s *postService) ToggleNSFWPost(userId string, postId string) (bool, network.ApiError) {
+	return s.togglePostField(userId, postId, "isNSFW", moderatorModel.ActionMarkNSFW, moderatorModel.ActionMarkNSFW)
 }

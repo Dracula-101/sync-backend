@@ -2,6 +2,7 @@ package post
 
 import (
 	"sync-backend/api/common/analytics"
+	modMW "sync-backend/api/moderator/middleware"
 	"sync-backend/api/post/dto"
 	"sync-backend/api/post/model"
 	"sync-backend/arch/common"
@@ -17,19 +18,21 @@ type postController struct {
 	common.ContextPayload
 	authenticatorProvider network.AuthenticationProvider
 	uploadProvider        middleware.UploadProvider
+	moderatorMiddleware   modMW.ModeratorMiddleware
 	logger                utils.AppLogger
 	postService           PostService
 	postAnalytics         analytics.PostAnalytics
 	communityAnalytics    analytics.CommunityAnalytics
 }
 
-func NewPostController(authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider, postService PostService, postAnalytics analytics.PostAnalytics, communityAnalytics analytics.CommunityAnalytics) *postController {
+func NewPostController(authenticatorProvider network.AuthenticationProvider, uploadProvider middleware.UploadProvider, postService PostService, postAnalytics analytics.PostAnalytics, communityAnalytics analytics.CommunityAnalytics, moderatorMiddleware modMW.ModeratorMiddleware) *postController {
 	return &postController{
 		BaseController:        network.NewBaseController("/post", authenticatorProvider),
 		ContextPayload:        common.NewContextPayload(),
 		logger:                utils.NewServiceLogger("PostController"),
 		authenticatorProvider: authenticatorProvider,
 		uploadProvider:        uploadProvider,
+		moderatorMiddleware:   moderatorMiddleware,
 		postService:           postService,
 		postAnalytics:         postAnalytics,
 		communityAnalytics:    communityAnalytics,
@@ -58,6 +61,12 @@ func (c *postController) MountRoutes(group *gin.RouterGroup) {
 
 	// Community post routes
 	group.GET("/get/community/:communityId", c.GetCommunityPosts)
+
+	// Post moderation actions
+	group.POST("/:postId/sticky", c.StickyPost)
+	group.POST("/:postId/lock", c.LockPost)
+	group.POST("/:postId/archive", c.ArchivePost)
+	group.POST("/:postId/nsfw", c.MarkNSFW)
 }
 
 func (c *postController) CreatePost(ctx *gin.Context) {
@@ -438,4 +447,64 @@ func (c *postController) GetCommunityPosts(ctx *gin.Context) {
 		go c.postService.RecordPostView(post.PostId, *userId)
 		go c.postAnalytics.RecordPostView(post.PostId, *userId)
 	}
+}
+
+func (c *postController) StickyPost(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError("Post ID is required", "Please provide a valid post ID in the request params.", nil)
+		return
+	}
+	userId := c.MustGetUserId(ctx)
+	newValue, err := c.postService.ToggleStickyPost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("Post sticky toggled successfully", dto.NewTogglePostResponse(postId, "isStickied", newValue))
+}
+
+func (c *postController) LockPost(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError("Post ID is required", "Please provide a valid post ID in the request params.", nil)
+		return
+	}
+	userId := c.MustGetUserId(ctx)
+	newValue, err := c.postService.ToggleLockPost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("Post lock toggled successfully", dto.NewTogglePostResponse(postId, "isLocked", newValue))
+}
+
+func (c *postController) ArchivePost(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError("Post ID is required", "Please provide a valid post ID in the request params.", nil)
+		return
+	}
+	userId := c.MustGetUserId(ctx)
+	newValue, err := c.postService.ToggleArchivePost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("Post archive toggled successfully", dto.NewTogglePostResponse(postId, "isArchived", newValue))
+}
+
+func (c *postController) MarkNSFW(ctx *gin.Context) {
+	postId := ctx.Param("postId")
+	if postId == "" {
+		c.Send(ctx).BadRequestError("Post ID is required", "Please provide a valid post ID in the request params.", nil)
+		return
+	}
+	userId := c.MustGetUserId(ctx)
+	newValue, err := c.postService.ToggleNSFWPost(*userId, postId)
+	if err != nil {
+		c.Send(ctx).MixedError(err)
+		return
+	}
+	c.Send(ctx).SuccessDataResponse("Post NSFW toggled successfully", dto.NewTogglePostResponse(postId, "isNSFW", newValue))
 }

@@ -49,7 +49,7 @@ type GetTrendingPostResponse struct {
 func NewGetTrendingPostResponse(posts []model.FeedPost, page int, limit int) *GetTrendingPostResponse {
 	return &GetTrendingPostResponse{
 		Posts:      posts,
-		Pagination: coredto.Pagination{page, limit},
+		Pagination: coredto.Pagination{Page: page, Limit: limit},
 	}
 }
 

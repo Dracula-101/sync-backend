@@ -7,8 +7,18 @@
     "type": "public",
     "category": "Technology",
     "tags": [
-      "550e8400-e29b-41d4-a716-446655440000",
-      "5a4b3c2d-1e0f-9g8h-7i6j-5k4l3m2n1o0p"
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "name": "Technology",
+        "description": "Communities focused on tech news, gadgets, programming, and digital innovation",
+        "icon": "💻"
+      },
+      {
+        "id": "5a4b3c2d-1e0f-9g8h-7i6j-5k4l3m2n1o0p",
+        "name": "Startups",
+        "description": "Entrepreneurship, business development, innovation, and startup culture",
+        "icon": "🚀"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_001",
@@ -24,7 +34,12 @@
     },
     "creatorId": "usr_alex_thompson_2025",
     "moderators": [
-      "usr_alex_thompson_2025"
+      {
+        "userId": "usr_alex_thompson_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 15243,
     "postCount": 8567,
@@ -78,7 +93,12 @@
     "type": "public",
     "category": "Gaming",
     "tags": [
-      "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+      {
+        "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        "name": "Gaming",
+        "description": "Video games, board games, game development, and gaming culture discussions",
+        "icon": "🎮"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_002",
@@ -94,7 +114,12 @@
     },
     "creatorId": "usr_ethan_lee_2025",
     "moderators": [
-      "usr_ethan_lee_2025"
+      {
+        "userId": "usr_ethan_lee_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 23456,
     "postCount": 12345,
@@ -148,7 +173,12 @@
     "type": "public",
     "category": "Fitness",
     "tags": [
-      "9a8b7c6d-5e4f-3g2h-1i0j-9k8l7m6n5o4p"
+      {
+        "id": "9a8b7c6d-5e4f-3g2h-1i0j-9k8l7m6n5o4p",
+        "name": "Fitness",
+        "description": "Exercise routines, health tips, workout plans, and physical wellbeing",
+        "icon": "💪"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_003",
@@ -164,7 +194,12 @@
     },
     "creatorId": "usr_sarah_chen_2025",
     "moderators": [
-      "usr_sarah_chen_2025"
+      {
+        "userId": "usr_sarah_chen_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 18654,
     "postCount": 9876,
@@ -218,7 +253,12 @@
     "type": "public",
     "category": "Food",
     "tags": [
-      "cb0bd7a0-4bfb-4a0c-a68d-c26c9dced908"
+      {
+        "id": "cb0bd7a0-4bfb-4a0c-a68d-c26c9dced908",
+        "name": "Food",
+        "description": "Recipes, cooking tips, restaurants, culinary arts, and food culture",
+        "icon": "🍳"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_004",
@@ -234,7 +274,12 @@
     },
     "creatorId": "usr_alex_thompson_2025",
     "moderators": [
-      "usr_alex_thompson_2025"
+      {
+        "userId": "usr_alex_thompson_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 21345,
     "postCount": 15678,
@@ -288,7 +333,12 @@
     "type": "public",
     "category": "Art",
     "tags": [
-      "e7c7b0da-a8c2-4e15-9f19-9c6c3e4e6a32"
+      {
+        "id": "e7c7b0da-a8c2-4e15-9f19-9c6c3e4e6a32",
+        "name": "Art",
+        "description": "Visual arts, painting, photography, sculpture, and creative expression",
+        "icon": "🎨"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_005",
@@ -304,7 +354,12 @@
     },
     "creatorId": "usr_jake_morrison_2025",
     "moderators": [
-      "usr_jake_morrison_2025"
+      {
+        "userId": "usr_jake_morrison_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 16789,
     "postCount": 11234,
@@ -358,7 +413,12 @@
     "type": "public",
     "category": "Crypto",
     "tags": [
-      "1p0o9n8m-7l6k-5j4i-3h2g-1f0e9d8c7b6a"
+      {
+        "id": "1p0o9n8m-7l6k-5j4i-3h2g-1f0e9d8c7b6a",
+        "name": "Crypto",
+        "description": "Cryptocurrency discussions, blockchain technology, NFTs, and digital assets",
+        "icon": "₿"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_006",
@@ -374,7 +434,12 @@
     },
     "creatorId": "usr_liam_anderson_2025",
     "moderators": [
-      "usr_liam_anderson_2025"
+      {
+        "userId": "usr_liam_anderson_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 19876,
     "postCount": 13456,
@@ -428,7 +493,12 @@
     "type": "public",
     "category": "Travel",
     "tags": [
-      "p6o5n4m3-l2k1-j0i9-h8g7-f6e5d4c3b2a1"
+      {
+        "id": "p6o5n4m3-l2k1-j0i9-h8g7-f6e5d4c3b2a1",
+        "name": "Travel",
+        "description": "Travel destinations, tips, experiences, and global exploration",
+        "icon": "✈️"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_007",
@@ -444,7 +514,12 @@
     },
     "creatorId": "usr_ethan_lee_2025",
     "moderators": [
-      "usr_ethan_lee_2025"
+      {
+        "userId": "usr_ethan_lee_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 24567,
     "postCount": 16789,
@@ -498,7 +573,12 @@
     "type": "public",
     "category": "Music",
     "tags": [
-      "6a5b4c3d-2e1f-0g9h-8i7j-6k5l4m3n2o1p"
+      {
+        "id": "6a5b4c3d-2e1f-0g9h-8i7j-6k5l4m3n2o1p",
+        "name": "Music",
+        "description": "Music discovery, artists, instruments, production, and audio content",
+        "icon": "🎵"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_008",
@@ -514,7 +594,12 @@
     },
     "creatorId": "usr_jake_morrison_2025",
     "moderators": [
-      "usr_jake_morrison_2025"
+      {
+        "userId": "usr_jake_morrison_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 28901,
     "postCount": 19234,
@@ -568,7 +653,12 @@
     "type": "public",
     "category": "Mental Health",
     "tags": [
-      "7a6b5c4d-3e2f-1g0h-9i8j-7k6l5m4n3o2p"
+      {
+        "id": "7a6b5c4d-3e2f-1g0h-9i8j-7k6l5m4n3o2p",
+        "name": "Mental Health",
+        "description": "Mental wellbeing resources, support, awareness, and psychological discussions",
+        "icon": "🧘"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_009",
@@ -584,7 +674,12 @@
     },
     "creatorId": "usr_ava_garcia_2025",
     "moderators": [
-      "usr_ava_garcia_2025"
+      {
+        "userId": "usr_ava_garcia_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 32456,
     "postCount": 21345,
@@ -638,7 +733,12 @@
     "type": "public",
     "category": "Startups",
     "tags": [
-      "5a4b3c2d-1e0f-9g8h-7i6j-5k4l3m2n1o0p"
+      {
+        "id": "5a4b3c2d-1e0f-9g8h-7i6j-5k4l3m2n1o0p",
+        "name": "Startups",
+        "description": "Entrepreneurship, business development, innovation, and startup culture",
+        "icon": "🚀"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_010",
@@ -654,7 +754,12 @@
     },
     "creatorId": "usr_david_kim_2025",
     "moderators": [
-      "usr_david_kim_2025"
+      {
+        "userId": "usr_david_kim_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 14567,
     "postCount": 7890,
@@ -708,7 +813,12 @@
     "type": "public",
     "category": "Books",
     "tags": [
-      "2a3b4c5d-6e7f-8g9h-0i1j-2k3l4m5n6o7p"
+      {
+        "id": "2a3b4c5d-6e7f-8g9h-0i1j-2k3l4m5n6o7p",
+        "name": "Books",
+        "description": "Literature, reading recommendations, author discussions, and book reviews",
+        "icon": "📖"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_011",
@@ -724,7 +834,12 @@
     },
     "creatorId": "usr_isabella_white_2025",
     "moderators": [
-      "usr_isabella_white_2025"
+      {
+        "userId": "usr_isabella_white_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 19234,
     "postCount": 10567,
@@ -778,7 +893,12 @@
     "type": "public",
     "category": "Science",
     "tags": [
-      "38d63b3a-7e2c-4e5b-9035-8d42f5e77777"
+      {
+        "id": "38d63b3a-7e2c-4e5b-9035-8d42f5e77777",
+        "name": "Science",
+        "description": "Scientific research, discoveries, theories, and academic discussions",
+        "icon": "🔬"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_012",
@@ -794,7 +914,12 @@
     },
     "creatorId": "usr_noah_brown_2025",
     "moderators": [
-      "usr_noah_brown_2025"
+      {
+        "userId": "usr_noah_brown_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 22345,
     "postCount": 11234,
@@ -848,7 +973,12 @@
     "type": "public",
     "category": "Movies",
     "tags": [
-      "u6v5w4x3-y2z1-a0b9-c8d7-e6f5g4h3j2k"
+      {
+        "id": "u6v5w4x3-y2z1-a0b9-c8d7-e6f5g4h3j2k",
+        "name": "Movies",
+        "description": "Film discussions, reviews, recommendations, and cinema culture",
+        "icon": "🎬"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_013",
@@ -864,7 +994,12 @@
     },
     "creatorId": "usr_marcus_rodriguez_2025",
     "moderators": [
-      "usr_marcus_rodriguez_2025"
+      {
+        "userId": "usr_marcus_rodriguez_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 26789,
     "postCount": 15234,
@@ -918,7 +1053,12 @@
     "type": "public",
     "category": "Pets",
     "tags": [
-      "9a0b1c2d-3e4f-5g6h-7i8j-9k0l1m2n3o4p"
+      {
+        "id": "9a0b1c2d-3e4f-5g6h-7i8j-9k0l1m2n3o4p",
+        "name": "Pets",
+        "description": "Pet care, animal companions, wildlife, and animal welfare discussions",
+        "icon": "🐾"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_014",
@@ -934,7 +1074,12 @@
     },
     "creatorId": "usr_emma_williams_2025",
     "moderators": [
-      "usr_emma_williams_2025"
+      {
+        "userId": "usr_emma_williams_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 31234,
     "postCount": 18901,
@@ -988,7 +1133,12 @@
     "type": "public",
     "category": "Photography",
     "tags": [
-      "8a7b6c5d-4e3f-2g1h-0i9j-8k7l6m5n4o3p"
+      {
+        "id": "8a7b6c5d-4e3f-2g1h-0i9j-8k7l6m5n4o3p",
+        "name": "Photography",
+        "description": "Photography techniques, camera gear, visual storytelling, and image sharing",
+        "icon": "📷"
+      }
     ],
     "avatar": {
       "id": "comm_avatar_015",
@@ -1004,7 +1154,12 @@
     },
     "creatorId": "usr_ethan_lee_2025",
     "moderators": [
-      "usr_ethan_lee_2025"
+      {
+        "userId": "usr_ethan_lee_2025",
+        "addedBy": "system",
+        "addedAt": "2025-06-01T00:00:00.000Z",
+        "role": "moderator"
+      }
     ],
     "memberCount": 20456,
     "postCount": 12678,

@@ -1,0 +1,1958 @@
+openapi: 3.0.3
+info:
+  title: Sync Backend API
+  description: |
+    Comprehensive API documentation for Sync - a social networking platform backend.
+
+    ## Authentication
+    Most endpoints require JWT authentication. Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+
+    ## Features
+    - User authentication and management
+    - Community creation and moderation
+    - Post creation and interactions
+    - Comment system with threading
+    - File uploads for media content
+
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@sync.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+  - url: https://api.sync.com/v1
+    description: Production server
+
+tags:
+  - name: Auth
+    description: Authentication and authorization endpoints
+  - name: User
+    description: User profile and account management
+  - name: Post
+    description: Post creation and interactions
+  - name: Comment
+    description: Comment creation and management
+  - name: Community
+    description: Community management and moderation
+  - name: System
+    description: System health and monitoring
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login or signup endpoints
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid credentials"
+        message:
+          type: string
+          example: "The email or password you entered is incorrect"
+        code:
+          type: string
+          example: "ERR_INVALID_CREDENTIALS"
+        details:
+          type: object
+
+    User:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: "usr_alex_thompson_2025"
+        username:
+          type: string
+          example: "alex_thompson"
+        email:
+          type: string
+          example: "alex@example.com"
+        bio:
+          type: string
+          example: "Tech enthusiast and coffee lover"
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+        verifiedEmail:
+          type: boolean
+        avatar:
+          type: object
+          properties:
+            profile:
+              $ref: '#/components/schemas/MediaAsset'
+            background:
+              $ref: '#/components/schemas/MediaAsset'
+        synergy:
+          type: object
+          properties:
+            posts:
+              type: integer
+            comments:
+              type: integer
+            total:
+              type: integer
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lastSeen:
+          type: string
+          format: date-time
+
+    UserPreferences:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [light, dark, auto]
+        language:
+          type: object
+          properties:
+            displayname:
+              type: string
+            nativename:
+              type: string
+        timezone:
+          type: object
+          properties:
+            displayname:
+              type: string
+            timezone:
+              type: string
+        location:
+          type: string
+        notifications:
+          type: object
+          properties:
+            email:
+              type: boolean
+            push:
+              type: boolean
+        contentSettings:
+          type: object
+          properties:
+            showAdultContent:
+              type: boolean
+            showSensitiveContent:
+              type: boolean
+        privacySettings:
+          type: object
+          properties:
+            isProfileVisible:
+              type: boolean
+            isEmailVisible:
+              type: boolean
+            isJoinedWavelengthsVisible:
+              type: boolean
+            followersVisible:
+              type: boolean
+
+    MediaAsset:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+          format: uri
+        width:
+          type: integer
+        height:
+          type: integer
+
+    Post:
+      type: object
+      properties:
+        postId:
+          type: string
+        communityId:
+          type: string
+        authorId:
+          type: string
+        type:
+          type: string
+          enum: [text, media, link]
+        title:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum: [published, draft, removed]
+        synergy:
+          type: integer
+        viewCount:
+          type: integer
+        commentCount:
+          type: integer
+        shareCount:
+          type: integer
+        saveCount:
+          type: integer
+        isNSFW:
+          type: boolean
+        isSpoiler:
+          type: boolean
+        isStickied:
+          type: boolean
+        isLocked:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Comment:
+      type: object
+      properties:
+        commentId:
+          type: string
+        postId:
+          type: string
+        authorId:
+          type: string
+        parentId:
+          type: string
+        content:
+          type: string
+        synergy:
+          type: integer
+        replyCount:
+          type: integer
+        level:
+          type: integer
+        path:
+          type: string
+        isEdited:
+          type: boolean
+        isPinned:
+          type: boolean
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Community:
+      type: object
+      properties:
+        communityId:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        shortDesc:
+          type: string
+        description:
+          type: string
+        ownerId:
+          type: string
+        isPrivate:
+          type: boolean
+        status:
+          type: string
+        memberCount:
+          type: integer
+        postCount:
+          type: integer
+        media:
+          type: object
+          properties:
+            avatar:
+              $ref: '#/components/schemas/MediaAsset'
+            background:
+              $ref: '#/components/schemas/MediaAsset'
+        settings:
+          $ref: '#/components/schemas/CommunitySettings'
+        createdAt:
+          type: string
+          format: date-time
+
+    CommunitySettings:
+      type: object
+      properties:
+        joinPolicy:
+          type: string
+          enum: [open, approval, invite]
+        postApproval:
+          type: boolean
+        allowedPostTypes:
+          type: array
+          items:
+            type: string
+        enableComments:
+          type: boolean
+        minSynergyToPost:
+          type: integer
+
+paths:
+  # ==================== AUTH ENDPOINTS ====================
+  /auth/signup:
+    post:
+      tags:
+        - Auth
+      summary: Create a new user account
+      description: |
+        Register a new user with email and password. Optionally upload profile and background photos.
+
+        **Important Headers:**
+        - `Content-Type: multipart/form-data` (when uploading files)
+
+        **Middleware:** LocationProvider, FileUpload(profile_photo, background_photo)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - email
+                - username
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                  example: "john_doe"
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "SecurePass123!"
+                bio:
+                  type: string
+                  maxLength: 500
+                profile_photo:
+                  type: string
+                  format: binary
+                  description: Profile photo (optional)
+                background_photo:
+                  type: string
+                  format: binary
+                  description: Background photo (optional)
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Account created successfully"
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+        '400':
+          description: Invalid input or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login to existing account
+      description: |
+        Authenticate with email and password to receive access tokens.
+
+        **Middleware:** LocationProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "SecurePass123!"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logout from current session
+      description: Invalidates the current session token
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: Request password reset email
+      description: Sends a password reset link to the user's email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+      responses:
+        '200':
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset email sent. Check your inbox."
+
+  /auth/reset-password:
+    put:
+      tags:
+        - Auth
+      summary: Reset password with token
+      description: Reset user password using the token from email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - new_password
+              properties:
+                token:
+                  type: string
+                  example: "reset_token_here"
+                new_password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "NewSecurePass123!"
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset successfully"
+
+  /auth/verify-email/{token}:
+    get:
+      tags:
+        - Auth
+      summary: Verify email address
+      description: Verify user email using the token from verification email
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email verified successfully"
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+
+  /auth/refresh-token:
+    post:
+      tags:
+        - Auth
+      summary: Refresh access token
+      description: |
+        Get a new access token using a refresh token
+
+        **Middleware:** LocationProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+
+  /auth/google:
+    post:
+      tags:
+        - Auth
+      summary: Google OAuth login
+      description: |
+        Authenticate using Google OAuth token
+
+        **Middleware:** LocationProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+                  description: Google OAuth token
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+
+  # ==================== USER ENDPOINTS ====================
+  /user/me:
+    get:
+      tags:
+        - User
+      summary: Get current user profile
+      description: Retrieve the authenticated user's profile information
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - User
+      summary: Update current user profile
+      description: |
+        Update user profile information including avatar and background photos
+
+        **Middleware:** AuthProvider, FileUpload(avatar, background)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                bio:
+                  type: string
+                  maxLength: 500
+                avatar:
+                  type: string
+                  format: binary
+                background:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Profile updated successfully"
+                  data:
+                    $ref: '#/components/schemas/User'
+
+    delete:
+      tags:
+        - User
+      summary: Delete current user account
+      description: Permanently delete the authenticated user's account
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Account deleted successfully"
+
+  /user/me/preferences:
+    put:
+      tags:
+        - User
+      summary: Update user preferences
+      description: Update user preferences including theme, notifications, privacy settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferences'
+      responses:
+        '200':
+          description: Preferences updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/UserPreferences'
+
+  /user/me/password:
+    get:
+      tags:
+        - User
+      summary: Change password
+      description: Change the current user's password
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: current_password
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: new_password
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 8
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password changed successfully"
+
+  /user/search:
+    get:
+      tags:
+        - User
+      summary: Search users
+      description: Search for users by username or email
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+
+  /user/{userId}:
+    get:
+      tags:
+        - User
+      summary: Get user by ID
+      description: Retrieve a user's profile by their user ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /user/follow/{userId}:
+    post:
+      tags:
+        - User
+      summary: Follow a user
+      description: Follow another user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User followed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User followed successfully"
+
+  /user/unfollow/{userId}:
+    post:
+      tags:
+        - User
+      summary: Unfollow a user
+      description: Unfollow a previously followed user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User unfollowed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User unfollowed successfully"
+
+  /user/block/{userId}:
+    post:
+      tags:
+        - User
+      summary: Block a user
+      description: Block another user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User blocked successfully
+
+  /user/unblock/{userId}:
+    post:
+      tags:
+        - User
+      summary: Unblock a user
+      description: Unblock a previously blocked user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User unblocked successfully
+
+  # ==================== POST ENDPOINTS ====================
+  /post/create:
+    post:
+      tags:
+        - Post
+      summary: Create a new post
+      description: |
+        Create a new post in a community. Supports text, media, and link posts.
+
+        **Important:**
+        - Max 10 media files can be uploaded
+        - Content-Type must be multipart/form-data when uploading files
+
+        **Middleware:** AuthProvider, FileUpload(media - max 10 files)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - communityId
+                - type
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 300
+                  example: "My First Post"
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 10000
+                  example: "This is the content of my post"
+                communityId:
+                  type: string
+                  example: "comm-123"
+                type:
+                  type: string
+                  enum: [TEXT, IMAGE, VIDEO, LINK]
+                  example: "TEXT"
+                tags:
+                  type: array
+                  items:
+                    type: string
+                isNSFW:
+                  type: boolean
+                  default: false
+                isSpoiler:
+                  type: boolean
+                  default: false
+                media:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  maxItems: 10
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Post created successfully"
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+
+  /post/get/{postId}:
+    get:
+      tags:
+        - Post
+      summary: Get post by ID
+      description: Retrieve a post by its ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+
+  /post/{postId}:
+    put:
+      tags:
+        - Post
+      summary: Edit a post
+      description: Edit an existing post (only by author)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 300
+                content:
+                  type: string
+                  maxLength: 10000
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Post updated successfully
+        '403':
+          description: Not authorized to edit this post
+        '404':
+          description: Post not found
+
+    delete:
+      tags:
+        - Post
+      summary: Delete a post
+      description: Delete a post (only by author or moderator)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post deleted successfully
+        '403':
+          description: Not authorized to delete this post
+        '404':
+          description: Post not found
+
+  /post/like/{postId}:
+    post:
+      tags:
+        - Post
+      summary: Like a post
+      description: Add a like to a post
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post liked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Post liked"
+                  data:
+                    type: object
+                    properties:
+                      synergy:
+                        type: integer
+
+  /post/dislike/{postId}:
+    post:
+      tags:
+        - Post
+      summary: Dislike a post
+      description: Add a dislike to a post
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post disliked successfully
+
+  /post/save/{postId}:
+    post:
+      tags:
+        - Post
+      summary: Save a post
+      description: Save a post to user's saved posts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post saved successfully
+
+  /post/share/{postId}:
+    post:
+      tags:
+        - Post
+      summary: Share a post
+      description: Increment share count for a post
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post shared successfully
+
+  /post/feed:
+    get:
+      tags:
+        - Post
+      summary: Get user feed posts
+      description: Get personalized feed of posts from followed users and joined communities
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Feed posts retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+
+  /post/trending:
+    get:
+      tags:
+        - Post
+      summary: Get trending posts
+      description: Get currently trending posts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Trending posts retrieved
+
+  /post/popular:
+    get:
+      tags:
+        - Post
+      summary: Get popular posts
+      description: Get most popular posts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Popular posts retrieved
+
+  /post/saved:
+    get:
+      tags:
+        - Post
+      summary: Get saved posts
+      description: Get user's saved posts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Saved posts retrieved
+
+  /post/get/community/{communityId}:
+    get:
+      tags:
+        - Post
+      summary: Get community posts
+      description: Get all posts from a specific community
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Community posts retrieved
+
+  # ==================== COMMENT ENDPOINTS ====================
+  /comment/post/create:
+    post:
+      tags:
+        - Comment
+      summary: Create a comment on a post
+      description: |
+        Add a comment to a post
+
+        **Middleware:** AuthProvider, LocationProvider
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - postId
+                - content
+              properties:
+                postId:
+                  type: string
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 5000
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Comment'
+
+  /comment/post/{commentId}:
+    put:
+      tags:
+        - Comment
+      summary: Edit a comment
+      description: Edit an existing comment (only by author)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  maxLength: 5000
+      responses:
+        '200':
+          description: Comment updated successfully
+
+    delete:
+      tags:
+        - Comment
+      summary: Delete a comment
+      description: Delete a comment (only by author or moderator)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment deleted successfully
+
+  /comment/post/{postId}:
+    get:
+      tags:
+        - Comment
+      summary: Get comments for a post
+      description: Retrieve all top-level comments for a post
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Comments retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+
+  /comment/post/{postId}/reply/{commentId}:
+    get:
+      tags:
+        - Comment
+      summary: Get replies to a comment
+      description: Retrieve all replies for a specific comment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Replies retrieved
+
+  /comment/post/reply/create:
+    post:
+      tags:
+        - Comment
+      summary: Create a reply to a comment
+      description: |
+        Add a reply to an existing comment
+
+        **Middleware:** AuthProvider, LocationProvider
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - commentId
+                - postId
+                - content
+              properties:
+                commentId:
+                  type: string
+                  description: Parent comment ID
+                postId:
+                  type: string
+                content:
+                  type: string
+                  maxLength: 5000
+      responses:
+        '201':
+          description: Reply created successfully
+
+  /comment/like/{commentId}:
+    post:
+      tags:
+        - Comment
+      summary: Like a comment
+      description: Add a like to a comment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment liked successfully
+
+  /comment/dislike/{commentId}:
+    post:
+      tags:
+        - Comment
+      summary: Dislike a comment
+      description: Add a dislike to a comment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment disliked successfully
+
+  # ==================== COMMUNITY ENDPOINTS ====================
+  /community/create:
+    post:
+      tags:
+        - Community
+      summary: Create a new community
+      description: |
+        Create a new community with optional avatar and background images
+
+        **Middleware:** AuthProvider, FileUpload(avatar_photo, background_photo)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - slug
+                - shortDesc
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                slug:
+                  type: string
+                  pattern: '^[a-z0-9-]+$'
+                shortDesc:
+                  type: string
+                  maxLength: 150
+                description:
+                  type: string
+                  maxLength: 5000
+                isPrivate:
+                  type: boolean
+                  default: false
+                avatar_photo:
+                  type: string
+                  format: binary
+                background_photo:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Community created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Community'
+
+  /community/{communityId}:
+    get:
+      tags:
+        - Community
+      summary: Get community by ID
+      description: Retrieve community details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Community retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Community'
+
+    put:
+      tags:
+        - Community
+      summary: Update a community
+      description: |
+        Update community details (only by owner or admin moderators)
+
+        **Middleware:** AuthProvider, FileUpload(avatar_photo, background_photo)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                shortDesc:
+                  type: string
+                description:
+                  type: string
+                isPrivate:
+                  type: boolean
+                avatar_photo:
+                  type: string
+                  format: binary
+                background_photo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Community updated successfully
+
+    delete:
+      tags:
+        - Community
+      summary: Delete a community
+      description: Permanently delete a community (only by owner)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Community deleted successfully
+
+  /community/search:
+    get:
+      tags:
+        - Community
+      summary: Search communities
+      description: Search for communities by name or description
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Community'
+
+  /community/user/join/{communityId}:
+    post:
+      tags:
+        - Community
+      summary: Join a community
+      description: |
+        Join a community as a member
+
+        **Middleware:** AuthProvider, CheckUserNotBanned
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Joined community successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Joined community successfully"
+
+  /community/user/leave/{communityId}:
+    post:
+      tags:
+        - Community
+      summary: Leave a community
+      description: Leave a community you're a member of
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Left community successfully
+
+  /community/user/joined:
+    get:
+      tags:
+        - Community
+      summary: Get joined communities
+      description: Get all communities the user is a member of
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Joined communities retrieved
+
+  /community/moderator/{communityId}/add:
+    post:
+      tags:
+        - Community
+      summary: Add a moderator
+      description: Add a user as moderator to the community (requires owner or admin permissions)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - role
+              properties:
+                userId:
+                  type: string
+                role:
+                  type: string
+                  enum: [moderator, admin]
+                permissions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Moderator added successfully
+
+  /community/moderator/{communityId}/ban/{userId}:
+    post:
+      tags:
+        - Community
+      summary: Ban a user from community
+      description: |
+        Ban a user from the community (requires moderator permissions)
+
+        **Middleware:** AuthProvider, RequiresModerator
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                duration:
+                  type: string
+                  description: Ban duration (e.g., "7d", "30d", "permanent")
+      responses:
+        '200':
+          description: User banned successfully
+
+  # ==================== SYSTEM ENDPOINTS ====================
+  /system/status:
+    get:
+      tags:
+        - System
+      summary: Get system status
+      description: Get overall system status
+      responses:
+        '200':
+          description: System status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "operational"
+                  version:
+                    type: string
+                  uptime:
+                    type: integer
+
+  /system/health:
+    get:
+      tags:
+        - System
+      summary: Get health check
+      description: Detailed health check including database and cache status
+      responses:
+        '200':
+          description: Health check results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  database:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      latency:
+                        type: string
+                  cache:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      latency:
+                        type: string
+
+  /system/routes:
+    get:
+      tags:
+        - System
+      summary: Get all API routes
+      description: List all registered API routes
+      responses:
+        '200':
+          description: Routes list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  routes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        method:
+                          type: string
+                        path:
+                          type: string

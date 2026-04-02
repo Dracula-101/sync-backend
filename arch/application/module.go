@@ -13,6 +13,7 @@ import (
 	"sync-backend/api/common/session"
 	"sync-backend/api/common/token"
 	"sync-backend/api/community"
+	"sync-backend/api/docs"
 	"sync-backend/api/moderator"
 	modMW "sync-backend/api/moderator/middleware"
 	"sync-backend/api/post"
@@ -69,9 +70,10 @@ func (m *appModule) Controllers() []network.Controller {
 		auth.NewAuthController(m.AuthenticationProvider(), m.LocationProvider(), m.UploadProvider(), m.AuthService),
 		community.NewCommunityController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.CommunityService, m.ModeratorService, m.ModeratorMiddleware(), m.CommunityAnalyticsService),
 		user.NewUserController(m.AuthenticationProvider(), m.UploadProvider(), m.UserService, m.LocationService),
-		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService, m.PostAnalyticsService, m.CommunityAnalyticsService),
+		post.NewPostController(m.AuthenticationProvider(), m.UploadProvider(), m.PostService, m.PostAnalyticsService, m.CommunityAnalyticsService, m.ModeratorMiddleware()),
 		comment.NewCommentController(m.AuthenticationProvider(), m.LocationProvider(), m.CommentService),
 		system.NewSystemController(m.SystemService),
+		docs.NewDocsController(),
 	}
 }
 
@@ -93,7 +95,14 @@ func (m *appModule) ModeratorMiddleware() modMW.ModeratorMiddleware {
 
 func (m *appModule) RootMiddlewares() []network.RootMiddleware {
 	middlewares := []network.RootMiddleware{}
+
+	// CORS must be first to ensure headers are set for all responses
+	if m.Config.API.CORS.Enabled {
+		middlewares = append(middlewares, coreMW.NewCORS(m.Config.API.CORS))
+	}
+
 	middlewares = append(middlewares, coreMW.NewErrorCatcher())
+
 	if m.Config.API.RateLimit.Enabled {
 		middlewares = append(middlewares, coreMW.NewRateLimiter(m.Store, *m.Config))
 	}
@@ -112,9 +121,9 @@ func NewAppModule(context context.Context, env *config.Env, config *config.Confi
 	userService := user.NewUserService(db, mediaService)
 	authService := auth.NewAuthService(config, env, userService, sessionService, tokenService, emailService)
 	communityService := community.NewCommunityService(db, mediaService)
-	postService := post.NewPostService(db, userService, communityService, mediaService)
-	commentService := comment.NewCommentService(db)
 	moderatorService := moderator.NewModeratorService(db)
+	postService := post.NewPostService(db, userService, communityService, mediaService, moderatorService)
+	commentService := comment.NewCommentService(db)
 
 	communityAnalyticsService := analytics.NewCommunityAnalyticsService(db)
 	postAnalyticsService := analytics.NewPostAnalyticsService(db)
